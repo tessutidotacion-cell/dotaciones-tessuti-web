@@ -1,0 +1,6 @@
+node_modules
+.env
+.env.local
+*.log
+dist
+uniformes-tienda-64f84-firebase-adminsdk-fbsvc-5b58b61cb6.json
