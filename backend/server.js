@@ -22,6 +22,8 @@ const isProd = process.env.NODE_ENV === "production";
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:4173",
+  "https://www.tessuti.store",
+  "https://tessuti.store",
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
@@ -57,9 +59,9 @@ app.use(
         upgradeInsecureRequests: [],
       },
     },
-    crossOriginEmbedderPolicy: true,
+    crossOriginEmbedderPolicy: false,
     crossOriginOpenerPolicy: { policy: "same-origin" },
-    crossOriginResourcePolicy: { policy: "same-origin" },
+    crossOriginResourcePolicy: { policy: "cross-origin" },
     dnsPrefetchControl: { allow: false },
     frameguard: { action: "deny" },           // X-Frame-Options: DENY
     hidePoweredBy: true,                      // Elimina X-Powered-By
