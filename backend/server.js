@@ -37,6 +37,10 @@ const corsOptions = {
   credentials: true,
 };
 
+// ─── CORS (antes de Helmet para que preflight funcione) ──────────────────────
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+
 // ─── HELMET (Security Headers) ────────────────────────────────────────────────
 app.use(
   helmet({
@@ -111,8 +115,6 @@ const unauthorizedLimiter = rateLimit({
 });
 
 // ─── MIDDLEWARES GLOBALES ─────────────────────────────────────────────────────
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
 app.use(globalLimiter);
 app.use(hpp());                              // Previene HTTP Parameter Pollution
 app.use(express.json({ limit: "2mb" }));    // Reducido de 10mb a 2mb
