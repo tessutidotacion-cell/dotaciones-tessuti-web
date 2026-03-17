@@ -23,6 +23,10 @@ const getStatusOptions = (deliveryType) =>
 
 import { DEMO_COLLEGES } from "../../data/colleges";
 
+const getAllUniforms = (col) => col.sections?.length > 0
+  ? col.sections.flatMap(s => s.uniforms.map(u => ({ ...u, sectionName: s.name })))
+  : col.uniforms.map(u => ({ ...u, sectionName: null }));
+
 // ── Helpers UI ────────────────────────────────────────────────
 function Spinner({ size = 20, color = "currentColor" }) {
   return (
@@ -579,6 +583,7 @@ export default function AdminPanel({ onLogout, toast }) {
   const [discountData,       setDiscountData]       = useState({});
   const [loadingDiscounts,   setLoadingDiscounts]   = useState(false);
   const [discountColFilter,  setDiscountColFilter]  = useState("all");
+  const [stockSectionFilter, setStockSectionFilter] = useState({});   // { [colId]: "all" | sectionId }
 
   const loadDiscounts = useCallback(async () => {
     setLoadingDiscounts(true);
@@ -622,18 +627,37 @@ export default function AdminPanel({ onLogout, toast }) {
   ];
 
   const TabBar = () => (
-    <div style={{ display:"flex", gap:4, marginBottom:24, borderBottom:"1px solid #e5e7eb", paddingBottom:0 }}>
-      {TABS.map(t => (
-        <button key={t.id} onClick={()=>setTab(t.id)}
-          style={{ padding:"10px 18px", fontSize:13, fontWeight:600, border:"none",
-            borderBottom: tab===t.id ? "2px solid #111" : "2px solid transparent",
-            background:"none", cursor:"pointer",
-            color: tab===t.id ? "#111" : "#9ca3af",
-            transition:"all .15s", marginBottom:-1 }}>
-          {t.label}
-        </button>
-      ))}
-    </div>
+    <>
+      {/* Desktop tabs */}
+      <div className="admin-tabs-desktop" style={{ display:"flex", gap:4, marginBottom:24, borderBottom:"1px solid #e5e7eb", paddingBottom:0 }}>
+        {TABS.map(t => (
+          <button key={t.id} onClick={()=>setTab(t.id)}
+            style={{ padding:"10px 18px", fontSize:13, fontWeight:600, border:"none",
+              borderBottom: tab===t.id ? "2px solid #111" : "2px solid transparent",
+              background:"none", cursor:"pointer",
+              color: tab===t.id ? "#111" : "#9ca3af",
+              transition:"all .15s", marginBottom:-1 }}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+      {/* Mobile select */}
+      <div className="admin-tabs-mobile" style={{ display:"none", marginBottom:16 }}>
+        <select
+          value={tab}
+          onChange={e => setTab(e.target.value)}
+          style={{ width:"100%", padding:"12px 16px", fontSize:14, fontWeight:600,
+            color:"#111", background:"#fff", border:"1px solid #e5e7eb", borderRadius:8,
+            appearance:"none", WebkitAppearance:"none",
+            backgroundImage:"url(\"data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5' stroke-linecap='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
+            backgroundRepeat:"no-repeat", backgroundPosition:"right 16px center",
+            cursor:"pointer", fontFamily:"inherit" }}>
+          {TABS.map(t => (
+            <option key={t.id} value={t.id}>{t.label}</option>
+          ))}
+        </select>
+      </div>
+    </>
   );
 
   const ActionBar = ({ onRefresh }) => (
@@ -672,6 +696,8 @@ export default function AdminPanel({ onLogout, toast }) {
         .stock-card{border:1px solid #e5e7eb;border-radius:10px;background:#fff;padding:14px 16px;margin-bottom:10px}
         .mobile-stock-cards{display:none}
         @media(max-width:768px){
+          .admin-tabs-desktop{display:none!important}
+          .admin-tabs-mobile{display:block!important}
           .sidebar{position:fixed;top:0;left:0;height:100%;z-index:999;transform:translateX(-100%)}
           .sidebar.open{transform:translateX(0);animation:slideIn .25s ease}
           .mobile-overlay.visible{display:block}
@@ -990,64 +1016,96 @@ export default function AdminPanel({ onLogout, toast }) {
 
                 {loadingStock
                   ? <div style={{ display:"flex", justifyContent:"center", padding:52 }}><Spinner size={28} color="#9ca3af" /></div>
-                  : DEMO_COLLEGES.map(col => (
+                  : DEMO_COLLEGES.map(col => {
+                    const allUnis = getAllUniforms(col);
+                    const hasSections = col.sections?.length > 0;
+                    const currentFilter = stockSectionFilter[col.id] || "all";
+                    const allSections = hasSections
+                      ? col.sections.map(s => ({ id: s.id, name: s.name, uniforms: s.uniforms }))
+                      : [{ id: null, name: null, uniforms: col.uniforms }];
+                    const sections = currentFilter === "all"
+                      ? allSections
+                      : allSections.filter(s => s.id === currentFilter);
+
+                    return (
                     <div key={col.id} style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:10, overflow:"hidden", marginBottom:20 }}>
                       <div style={{ padding:"14px 18px", borderBottom:"1px solid #e5e7eb", background:"#f9fafb",
-                        display:"flex", alignItems:"center", gap:10 }}>
+                        display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" }}>
                         <div style={{ width:10, height:10, borderRadius:"50%", background:col.primaryColor }} />
                         <span style={{ fontWeight:700, fontSize:14, color:"#111" }}>{col.name}</span>
-                        <span style={{ fontSize:12, color:"#9ca3af" }}>· {col.uniforms.length} productos</span>
+                        <span style={{ fontSize:12, color:"#9ca3af" }}>· {allUnis.length} productos</span>
+                        {hasSections && (
+                          <select
+                            value={currentFilter}
+                            onChange={e => setStockSectionFilter(prev => ({ ...prev, [col.id]: e.target.value }))}
+                            style={{ marginLeft:"auto", padding:"6px 10px", border:"1px solid #d1d5db", borderRadius:6,
+                              fontSize:12, background:"#fff", color:"#374151", cursor:"pointer" }}>
+                            <option value="all">Todas las secciones</option>
+                            {col.sections.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                          </select>
+                        )}
                       </div>
-                      <div className="desktop-table">
-                        <table style={{ width:"100%", borderCollapse:"collapse" }}>
-                          <thead>
-                            <tr style={{ background:"#f3f4f6", borderBottom:"1px solid #e5e7eb" }}>
-                              {["Producto","Categoría","Stock actual","Editar"].map(h=><th key={h}>{h}</th>)}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {col.uniforms.map((u,i) => (
-                              <StockRow key={u.id} uniform={u} college={col}
-                                stockData={stockData[col.id]}
-                                onStockUpdated={(pid,size,val)=>setStockData(s=>({
-                                  ...s, [col.id]:{ ...s[col.id], [pid]:{ ...(s[col.id]?.[pid]||{}), [size]:val } }
-                                }))}
-                                isEven={i%2===0} toast={toast} />
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                      {/* Mobile stock cards */}
-                      <div style={{ padding:"0 0 8px" }} className="mobile-stock-cards">
-                        {col.uniforms.map((u,i) => {
-                          const sizeMap = stockData[col.id]?.[String(u.id)] || {};
-                          const totalQty = u.sizes.reduce((s,sz) => s + (sizeMap[sz] ?? 0), 0);
-                          const hasStock = Object.keys(sizeMap).length > 0;
-                          const bg    = !hasStock?"#f3f4f6":totalQty===0?"#fee2e2":totalQty<=5?"#fef9c3":"#dcfce7";
-                          const color = !hasStock?"#9ca3af":totalQty===0?"#991b1b":totalQty<=5?"#854d0e":"#065f46";
-                          return (
-                            <div key={u.id} className="stock-card">
-                              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
-                                <div>
-                                  <div style={{ fontSize:13, fontWeight:600, color:"#111" }}>{u.name}</div>
-                                  <div style={{ fontSize:11, color:"#9ca3af" }}>{u.category}</div>
-                                </div>
-                                <span style={{ background:bg, color, padding:"3px 9px", borderRadius:4, fontSize:11, fontWeight:700, flexShrink:0 }}>
-                                  {!hasStock?"Sin definir":totalQty===0?"Agotado":`${totalQty} uds`}
-                                </span>
-                              </div>
-                              <StockRow uniform={u} college={col}
-                                stockData={stockData[col.id]}
-                                onStockUpdated={(pid,size,val)=>setStockData(s=>({
-                                  ...s, [col.id]:{ ...s[col.id], [pid]:{ ...(s[col.id]?.[pid]||{}), [size]:val } }
-                                }))}
-                                isEven={i%2===0} toast={toast} mobileOnly={true} />
+
+                      {sections.map((section, si) => (
+                        <div key={section.id || si}>
+                          {section.name && (
+                            <div style={{ padding:"10px 18px", background:"#f3f4f6", borderBottom:"1px solid #e5e7eb",
+                              fontSize:12, fontWeight:700, color:"#6b7280", letterSpacing:".06em", textTransform:"uppercase" }}>
+                              {section.name}
                             </div>
-                          );
-                        })}
-                      </div>
+                          )}
+                          <div className="desktop-table">
+                            <table style={{ width:"100%", borderCollapse:"collapse" }}>
+                              <thead>
+                                <tr style={{ background:"#f9fafb", borderBottom:"1px solid #e5e7eb" }}>
+                                  {["Producto","Categoría","Stock actual","Editar"].map(h=><th key={h}>{h}</th>)}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {section.uniforms.map((u,i) => (
+                                  <StockRow key={u.id} uniform={u} college={col}
+                                    stockData={stockData[col.id]}
+                                    onStockUpdated={(pid,size,val)=>setStockData(s=>({
+                                      ...s, [col.id]:{ ...s[col.id], [pid]:{ ...(s[col.id]?.[pid]||{}), [size]:val } }
+                                    }))}
+                                    isEven={i%2===0} toast={toast} />
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          {/* Mobile stock cards */}
+                          <div style={{ padding:"0 0 8px" }} className="mobile-stock-cards">
+                            {section.uniforms.map((u,i) => {
+                              const sizeMap = stockData[col.id]?.[String(u.id)] || {};
+                              const totalQty = u.sizes.reduce((s,sz) => s + (sizeMap[sz] ?? 0), 0);
+                              const hasStock = Object.keys(sizeMap).length > 0;
+                              const bg    = !hasStock?"#f3f4f6":totalQty===0?"#fee2e2":totalQty<=5?"#fef9c3":"#dcfce7";
+                              const color = !hasStock?"#9ca3af":totalQty===0?"#991b1b":totalQty<=5?"#854d0e":"#065f46";
+                              return (
+                                <div key={u.id} className="stock-card">
+                                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+                                    <div>
+                                      <div style={{ fontSize:13, fontWeight:600, color:"#111" }}>{u.name}</div>
+                                      <div style={{ fontSize:11, color:"#9ca3af" }}>{u.category}</div>
+                                    </div>
+                                    <span style={{ background:bg, color, padding:"3px 9px", borderRadius:4, fontSize:11, fontWeight:700, flexShrink:0 }}>
+                                      {!hasStock?"Sin definir":totalQty===0?"Agotado":`${totalQty} uds`}
+                                    </span>
+                                  </div>
+                                  <StockRow uniform={u} college={col}
+                                    stockData={stockData[col.id]}
+                                    onStockUpdated={(pid,size,val)=>setStockData(s=>({
+                                      ...s, [col.id]:{ ...s[col.id], [pid]:{ ...(s[col.id]?.[pid]||{}), [size]:val } }
+                                    }))}
+                                    isEven={i%2===0} toast={toast} mobileOnly={true} />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))
+                  );})
                 }
               </>
             )}
@@ -1055,7 +1113,7 @@ export default function AdminPanel({ onLogout, toast }) {
             {/* ── DESCUENTOS ── */}
             {tab === "discounts" && (() => {
               const allItems = DEMO_COLLEGES.flatMap(col =>
-                col.uniforms.map(u => ({
+                getAllUniforms(col).map(u => ({
                   college: col, uniform: u,
                   pct: discountData[col.id]?.[String(u.id)] ?? null,
                 }))
