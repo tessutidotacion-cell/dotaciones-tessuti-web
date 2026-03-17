@@ -12,7 +12,13 @@ const initFirebase = () => {
   if (_ready && _db) return _db;
 
   if (!firebaseAdmin.apps.length) {
-    const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+    let privateKey = process.env.FIREBASE_PRIVATE_KEY || "";
+    // Support base64-encoded key (avoids Vercel \n escaping issues)
+    if (privateKey && !privateKey.includes("-----BEGIN")) {
+      privateKey = Buffer.from(privateKey, "base64").toString("utf8");
+    } else {
+      privateKey = privateKey.replace(/\\n/g, "\n");
+    }
 
     if (!process.env.FIREBASE_PROJECT_ID || !privateKey || !process.env.FIREBASE_CLIENT_EMAIL) {
       throw new Error("Faltan variables Firebase: " + [
