@@ -3,8 +3,11 @@ import { LOGO_TESSUTI } from "../../assets";
 import { DEMO_COLLEGES } from "../../data/colleges";
 import fondoHero from "../../assets/banner_home.webp";
 
-const countItems    = (col) => col.uniforms.length;
-const getCategories = (col) => [...new Set(col.uniforms.map(u => u.category))];
+const getAllUniforms = (col) => col.sections?.length > 0
+  ? col.sections.flatMap(s => s.uniforms)
+  : col.uniforms;
+const countItems    = (col) => getAllUniforms(col).length;
+const getCategories = (col) => [...new Set(getAllUniforms(col).map(u => u.category))];
 
 // ── Todos los estilos en un solo bloque — siempre montado ─────
 const ALL_STYLES = `
@@ -124,6 +127,8 @@ const ALL_STYLES = `
   .hl-hero-btns.in { opacity:1;transform:none; }
 
   @media (max-width:640px) {
+    .hl-hero { height:60vh; min-height:420px; }
+    .hl-hero-logo img { width:clamp(100px,18vw,140px); height:clamp(100px,18vw,140px); }
     .hl-hero-btns {
       flex-direction:column;
       align-items:center;

@@ -183,12 +183,16 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
           padding:clamp(16px,3vw,22px);
         }
         .qr-img {
-          width:clamp(180px,40vw,260px);
-          height:clamp(180px,40vw,260px);
+          width:clamp(200px,50vw,260px);
+          height:clamp(200px,50vw,260px);
           object-fit:contain;
           border-radius:8px;
           border:1px solid #e5e7eb;
           flex-shrink:0;
+        }
+        @media(max-width:500px) {
+          .qr-block { flex-direction:column; align-items:center; }
+          .qr-img { width:min(280px, 80vw); height:min(280px, 80vw); }
         }
 
         /* Wompi strip */
@@ -625,8 +629,28 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                   <div key={item.id+item.size} style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:8 }}>
                     <div style={{ flex:1, minWidth:0 }}>
                       <div style={{ fontSize:12, fontWeight:500, color:"#111", lineHeight:1.3, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.name}</div>
-                      <div style={{ fontSize:10, color:"#9ca3af", marginTop:1, fontFamily:"var(--font-mono,'DM Mono',monospace)" }}>
-                        T.{item.size} · ×{item.qty} · {COP(item.price)}
+                      <div style={{ fontSize:10, color:"#9ca3af", marginTop:1 }}>
+                        T.{item.size} · {COP(item.price)} c/u
+                      </div>
+                      <div style={{ display:"flex", alignItems:"center", gap:0, marginTop:6 }}>
+                        <button
+                          onClick={() => setCart(prev => {
+                            if (item.qty <= 1) return prev.filter(i => !(i.id === item.id && i.size === item.size));
+                            return prev.map(i => i.id === item.id && i.size === item.size ? { ...i, qty: i.qty - 1 } : i);
+                          })}
+                          style={{ width:28, height:28, borderRadius:"4px 0 0 4px", border:"1px solid #e5e7eb", background:"#f9fafb", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:700, color:"#374151" }}
+                        >
+                          {item.qty <= 1 ? (
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.5" strokeLinecap="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                          ) : "−"}
+                        </button>
+                        <span style={{ width:32, height:28, display:"flex", alignItems:"center", justifyContent:"center", border:"1px solid #e5e7eb", borderLeft:"none", borderRight:"none", fontSize:12, fontWeight:700, color:"#111", background:"#fff" }}>
+                          {item.qty}
+                        </span>
+                        <button
+                          onClick={() => setCart(prev => prev.map(i => i.id === item.id && i.size === item.size ? { ...i, qty: i.qty + 1 } : i))}
+                          style={{ width:28, height:28, borderRadius:"0 4px 4px 0", border:"1px solid #e5e7eb", background:"#f9fafb", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:700, color:"#374151" }}
+                        >+</button>
                       </div>
                     </div>
                     <div style={{ fontSize:12, fontWeight:600, color:"#111", flexShrink:0 }}>{COP(item.price*item.qty)}</div>

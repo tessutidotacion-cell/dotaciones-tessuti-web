@@ -331,6 +331,17 @@ const { toastState, toast, clearToast } = useToast();
                      cartPulse 2.6s ease-in-out 1.2s infinite;
           transition: transform .18s, box-shadow .18s;
         }
+        @media (max-width: 640px) {
+          .cart-fab {
+            bottom: 80px; left: 16px; right: 16px;
+            width: auto;
+            justify-content: center;
+            height: 52px;
+            font-size: 12px;
+            border-radius: 14px;
+            box-shadow: 0 6px 28px rgba(24,23,21,.35);
+          }
+        }
         .cart-fab:hover {
           transform: scale(1.05) translateY(-2px);
           box-shadow: 0 10px 30px rgba(24,23,21,.35);

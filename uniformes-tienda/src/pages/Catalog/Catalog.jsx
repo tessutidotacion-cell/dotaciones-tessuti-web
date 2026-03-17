@@ -25,9 +25,17 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
   const [filter, setFilter]   = useState("Todos");
   const [sizes,  setSizes]    = useState({});
   const [flash,  setFlash]    = useState({});
+  const [activeSection, setActiveSection] = useState(
+    college.sections?.length > 0 ? college.sections[0].id : null
+  );
 
-  const cats      = ["Todos", ...new Set(college.uniforms.map(u => u.category))];
-  const items     = filter === "Todos" ? college.uniforms : college.uniforms.filter(u => u.category === filter);
+  const hasSections = college.sections?.length > 0;
+  const currentUniforms = hasSections
+    ? (college.sections.find(s => s.id === activeSection)?.uniforms || [])
+    : college.uniforms;
+
+  const cats      = ["Todos", ...new Set(currentUniforms.map(u => u.category))];
+  const items     = filter === "Todos" ? currentUniforms : currentUniforms.filter(u => u.category === filter);
   const cartQty   = cart.reduce((s, i) => s + i.qty, 0);
   const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
 
@@ -154,6 +162,70 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           font-size: 10px; font-weight: 700;
         }
 
+        /* ── Section tabs ─── */
+        .cat-sections {
+          background: #fff;
+          padding: 8px clamp(16px,4vw,36px);
+          display: flex;
+          gap: 6px;
+          overflow-x: auto;
+          position: sticky;
+          top: calc(64px + 60px);
+          z-index: 50;
+          scrollbar-width: none;
+          border-bottom: 1px solid #e8e5e1;
+        }
+        .cat-sections::-webkit-scrollbar { display: none; }
+        .cat-section-btn {
+          padding: 8px 16px;
+          border: 1.5px solid #e8e5e1;
+          border-radius: 99px;
+          cursor: pointer;
+          white-space: nowrap;
+          background: #fff;
+          font-size: 11px;
+          font-family: var(--font);
+          font-weight: 500;
+          letter-spacing: .06em;
+          text-transform: uppercase;
+          color: #9b9591;
+          transition: all .15s;
+        }
+        .cat-section-btn:hover { color: #3d3a36; border-color: #ccc; }
+        .cat-section-btn.active {
+          color: #fff;
+          font-weight: 700;
+          background: ${P};
+          border-color: ${P};
+        }
+
+        /* Mobile dropdown for sections */
+        .cat-section-select {
+          display: none;
+          width: 100%;
+          padding: 12px 16px;
+          font-family: var(--font);
+          font-size: 13px;
+          font-weight: 600;
+          color: ${P};
+          background: #fff;
+          border: none;
+          border-bottom: 1px solid #e8e5e1;
+          appearance: none;
+          -webkit-appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239b9591' stroke-width='2.5' stroke-linecap='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 16px center;
+          cursor: pointer;
+          position: sticky;
+          top: calc(56px + 44px);
+          z-index: 50;
+        }
+        .cat-section-select:focus {
+          outline: none;
+          box-shadow: inset 0 -2px 0 ${P};
+        }
+
         /* ── Filters ─── */
         .cat-filters {
           background: #fff;
@@ -207,10 +279,13 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
         .cat-grid {
           max-width: 1400px;
           margin: 0 auto;
-          padding: clamp(20px,3vw,44px) clamp(16px,4vw,40px);
+          padding: clamp(14px,3vw,44px) clamp(10px,4vw,40px);
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(min(100%,260px), 1fr));
-          gap: clamp(14px,2vw,22px);
+          gap: clamp(10px,2vw,22px);
+        }
+        @media (max-width: 640px) {
+          .cat-grid { grid-template-columns: 1fr 1fr; }
         }
 
         /* ── Card ─── */
@@ -277,12 +352,12 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           gap: 8px;
         }
         .prod-name {
-          font-size: 10px;
+          font-size: 12px;
           font-weight: 600;
           color: #2a2722;
-          letter-spacing: .12em;
+          letter-spacing: .08em;
           text-transform: uppercase;
-          line-height: 1.5;
+          line-height: 1.4;
           flex: 1;
         }
         .prod-price-col {
@@ -331,9 +406,9 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           gap: 6px;
         }
         .size-pill {
-          min-width: 36px;
-          height: 34px;
-          padding: 0 10px;
+          min-width: 44px;
+          height: 44px;
+          padding: 0 12px;
           border: 1px solid #ddd9d3;
           background: transparent;
           color: #3d3a36;
@@ -438,10 +513,25 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           font-size: 12px; font-weight: 300; line-height: 1.6;
         }
 
+        @media (max-width: 640px) {
+          .cat-header { height: 44px; top: 56px; padding: 0 12px; }
+          .cat-sections { display: none; }
+          .cat-section-select { display: block; }
+          .cat-filters { position: relative; top: auto; padding: 0 12px; }
+          .cat-filter-btn { padding: 10px 10px; font-size: 9px; }
+          .cat-col-sub { display: none; }
+          .cat-col-name { font-size: 13px; }
+          .cat-back-btn { width: 30px; height: 30px; }
+          .cat-cart-btn .cart-price-text { display: none; }
+          .cat-cart-btn { height: 32px; padding: 0 10px; font-size: 9px; }
+        }
         @media (max-width: 420px) {
-          .cat-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-          .prod-body { padding: 12px 12px 14px; gap: 10px; }
-          .size-pill { min-width: 32px; height: 30px; font-size: 10px; }
+          .prod-body { padding: 10px 10px 12px; gap: 8px; }
+          .size-pill { min-width: 36px; height: 38px; font-size: 10px; padding: 0 6px; }
+          .prod-name { font-size: 10px; }
+          .prod-price-final { font-size: 12px; }
+          .prod-add-btn { padding: 10px 8px; font-size: 9px; letter-spacing: .08em; }
+          .prod-category { font-size: 8px; }
         }
         @media (max-width: 280px) {
           .cat-grid { grid-template-columns: 1fr; }
@@ -473,18 +563,45 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
             <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/>
           </svg>
           {cartQty > 0
-            ? <><span className="cat-cart-qty">{cartQty}</span>{COP(cartTotal)}</>
-            : "Sin artículos"
+            ? <><span className="cat-cart-qty">{cartQty}</span><span className="cart-price-text">{COP(cartTotal)}</span></>
+            : <span className="cart-price-text">Sin artículos</span>
           }
         </button>
       </div>
 
+      {/* Section tabs — pills on desktop, dropdown on mobile */}
+      {hasSections && (
+        <>
+          <nav className="cat-sections" aria-label="Sección">
+            {college.sections.map(s => (
+              <button
+                key={s.id}
+                className={`cat-section-btn${activeSection === s.id ? " active" : ""}`}
+                onClick={() => { setActiveSection(s.id); setFilter("Todos"); }}
+              >
+                {s.name}
+              </button>
+            ))}
+          </nav>
+          <select
+            className="cat-section-select"
+            value={activeSection}
+            onChange={e => { setActiveSection(e.target.value); setFilter("Todos"); }}
+            aria-label="Seleccionar sección"
+          >
+            {college.sections.map(s => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+        </>
+      )}
+
       {/* Filters */}
-      <nav className="cat-filters" aria-label="Filtrar por categoría">
+      <nav className="cat-filters" style={hasSections ? { position: "relative", top: "auto" } : {}} aria-label="Filtrar por categoría">
         {cats.map(c => {
           const count = c === "Todos"
-            ? college.uniforms.length
-            : college.uniforms.filter(u => u.category === c).length;
+            ? currentUniforms.length
+            : currentUniforms.filter(u => u.category === c).length;
           return (
             <button
               key={c}
