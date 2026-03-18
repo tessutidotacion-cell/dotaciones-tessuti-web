@@ -127,24 +127,25 @@ const ALL_STYLES = `
   .hl-hero-btns.in { opacity:1;transform:none; }
 
   @media (max-width:640px) {
-    .hl-hero { height:60vh; min-height:420px; }
+    .hl-hero { height:100vh; height:100dvh; min-height:0; }
     .hl-hero-logo img { width:clamp(100px,18vw,140px); height:clamp(100px,18vw,140px); }
     .hl-hero-btns {
       flex-direction:column;
       align-items:center;
       gap:10px;
-      padding:0 28px 14vh;
+      padding:0 28px 22vh;
     }
     .hl-hero-nav-btn {
-      font-size:10px;
+      font-size:11px;
       letter-spacing:.28em;
-      padding:12px 0 18px;
+      padding:14px 0 20px;
       border-bottom:none;
       border:none;
-      border-radius:2px;
-      background:rgba(10,8,6,.55);
+      border-radius:4px;
+      background:rgba(10,8,6,.62);
+      backdrop-filter:blur(6px);
       width:100%;
-      max-width:260px;
+      max-width:280px;
       text-align:center;
       display:flex;
       align-items:center;
