@@ -186,6 +186,17 @@ export default function GlobalStyles() {
       .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
       @media(max-width:600px){ .grid-2{ grid-template-columns:1fr; gap:14px; } }
 
+      /* Grain texture overlay */
+      body::after {
+        content:'';
+        position:fixed; inset:0; z-index:99999;
+        pointer-events:none;
+        opacity:.028;
+        background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        background-repeat:repeat;
+        mix-blend-mode:multiply;
+      }
+
       .app-nav {
         position:sticky; top:0; z-index:500;
         height:64px; padding:0 clamp(20px,5vw,60px);

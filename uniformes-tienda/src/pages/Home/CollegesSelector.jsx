@@ -77,25 +77,34 @@ const ALL_STYLES = `
     position:absolute;inset:0;
     background:linear-gradient(
       to bottom,
-      rgba(0,0,0,.04) 0%,
-      rgba(0,0,0,.10) 60%,
-      rgba(0,0,0,.32) 100%
+      rgba(0,0,0,.06) 0%,
+      rgba(0,0,0,.08) 40%,
+      rgba(0,0,0,.38) 100%
     );
     pointer-events:none;
+  }
+  /* Subtle vignette for cinematic feel */
+  .hl-hero::after {
+    content:'';
+    position:absolute;inset:0;
+    background:radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,.18) 100%);
+    pointer-events:none;
+    z-index:1;
   }
 
   /* Logo centrado en la imagen */
   .hl-hero-logo {
     position:absolute;
     top:50%;left:50%;
-    transform:translate(-50%,-60%);
+    transform:translate(-50%,-60%) scale(.94);
     display:flex;flex-direction:column;align-items:center;gap:14px;
     opacity:0;
-    transition:opacity .7s var(--ease-out), transform .7s var(--ease-out);
+    z-index:2;
+    transition:opacity .9s var(--ease-out) .15s, transform .9s var(--ease-out) .15s;
   }
   .hl-hero-logo.in {
     opacity:1;
-    transform:translate(-50%,-60%) translateY(0);
+    transform:translate(-50%,-60%) scale(1);
   }
   .hl-hero-logo img {
     width:clamp(140px,22vw,180px);
@@ -186,15 +195,29 @@ const ALL_STYLES = `
     font-weight:500;
     letter-spacing:.18em;text-transform:uppercase;
     color:#fff;
-    padding-bottom:4px;
-    border-bottom:1px solid rgba(255,255,255,.55);
+    padding-bottom:6px;
+    border-bottom:1px solid rgba(255,255,255,.45);
     text-shadow:0 1px 8px rgba(0,0,0,.4);
-    transition:border-color .2s ease, opacity .2s ease;
+    transition:all .35s cubic-bezier(.16,1,.3,1);
     line-height:1;
+    position:relative;
+  }
+  .hl-hero-nav-btn::after {
+    content:'';
+    position:absolute;
+    bottom:-1px;left:0;right:0;
+    height:1px;
+    background:var(--gold);
+    transform:scaleX(0);
+    transform-origin:center;
+    transition:transform .35s cubic-bezier(.16,1,.3,1);
   }
   .hl-hero-nav-btn:hover {
-    border-color:rgba(255,255,255,1);
-    opacity:.85;
+    border-color:transparent;
+    letter-spacing:.22em;
+  }
+  .hl-hero-nav-btn:hover::after {
+    transform:scaleX(1);
   }
 
   /* ── Colegios section ── */
@@ -259,14 +282,14 @@ const ALL_STYLES = `
   .cs-card{
     background:var(--surface);border:1px solid var(--line);border-radius:12px;
     overflow:hidden;cursor:pointer;text-align:left;
-    transition:border-color var(--t-mid) ease,box-shadow var(--t-mid) ease,transform var(--t-mid) var(--ease-out);
+    transition:border-color .35s ease,box-shadow .45s cubic-bezier(.16,1,.3,1),transform .45s cubic-bezier(.16,1,.3,1);
     display:flex;flex-direction:column;
     animation:fadeUp .4s var(--ease-out) both;
   }
   .cs-card:hover{
     border-color:var(--gold);
-    box-shadow:0 12px 48px rgba(28,24,20,.10),0 0 0 1px var(--gold);
-    transform:translateY(-4px);
+    box-shadow:0 16px 56px rgba(28,24,20,.12),0 0 0 1px var(--gold);
+    transform:translateY(-6px);
   }
 
   .cs-banner{

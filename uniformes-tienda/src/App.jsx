@@ -200,6 +200,11 @@ const { toastState, toast, clearToast } = useToast();
           border: 1.5px solid var(--line-2);
           box-shadow: var(--sh-sm);
           display: block; flex-shrink: 0;
+          transition: transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s ease;
+        }
+        .nav-logo-btn:hover .nav-logo-img {
+          transform: scale(1.08) rotate(-3deg);
+          box-shadow: 0 4px 16px rgba(24,23,21,.12);
         }
         .nav-logo-texts { display: none; }
 
@@ -316,11 +321,11 @@ const { toastState, toast, clearToast } = useToast();
         .cart-fab {
           position: fixed; bottom: 88px; right: 24px; z-index: 7999;
           height: 48px;
-          padding: 0 16px;
+          padding: 0 20px;
           border-radius: 99px;
           background: var(--ink);
           color: #fff;
-          border: none;
+          border: 1px solid rgba(255,255,255,.08);
           cursor: pointer;
           display: flex; align-items: center; gap: 9px;
           font-family: var(--font);
@@ -330,6 +335,7 @@ const { toastState, toast, clearToast } = useToast();
           animation: cartFabIn .5s cubic-bezier(.22,.68,0,1.2) both,
                      cartPulse 2.6s ease-in-out 1.2s infinite;
           transition: transform .18s, box-shadow .18s;
+          backdrop-filter: blur(8px);
         }
         @media (max-width: 640px) {
           .cart-fab {
@@ -382,11 +388,11 @@ const { toastState, toast, clearToast } = useToast();
 
         /* ── Transición de vistas ─────────────────── */
         @keyframes viewFadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to   { opacity: 1; transform: none; }
+          from { opacity: 0; transform: translateY(14px); filter: blur(2px); }
+          to   { opacity: 1; transform: none; filter: blur(0); }
         }
         .view-enter {
-          animation: viewFadeIn 0.32s cubic-bezier(.16,1,.3,1) both;
+          animation: viewFadeIn 0.4s cubic-bezier(.16,1,.3,1) both;
         }
       `}</style>
 
@@ -533,8 +539,9 @@ const { toastState, toast, clearToast } = useToast();
       {isPublic && !["adminLogin"].includes(view) && (
         <footer style={{
           background: "#0f0e0d",
-          borderTop: "1px solid rgba(255,255,255,.06)",
+          borderTop: "2px solid #b89a6a",
           fontFamily: "'Jost', sans-serif",
+          position: "relative",
         }}>
           <div style={{
             borderBottom: "1px solid rgba(255,255,255,.06)",
