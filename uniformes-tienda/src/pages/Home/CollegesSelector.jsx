@@ -293,11 +293,12 @@ const ALL_STYLES = `
   }
 
   .cs-banner{
-    padding:clamp(28px,5vw,44px) 24px;
+    padding:0;
     display:flex;align-items:center;justify-content:center;
-    min-height:clamp(140px,18vw,190px);position:relative;
+    height:clamp(160px,22vw,220px);position:relative;
     transition:background var(--t-mid) ease;
     overflow:hidden;
+    background:#ffffff;
   }
 
   .cs-badge{
@@ -311,7 +312,9 @@ const ALL_STYLES = `
   .cs-card:hover .cs-badge{background:rgba(184,154,106,.12);border-color:var(--gold);color:var(--gold)}
 
   .cs-logo-img{
-    width:clamp(72px,11vw,100px);height:clamp(72px,11vw,100px);object-fit:contain;
+    width:100%;height:100%;
+    object-fit:contain;
+    padding:10px;
     transition:transform var(--t-mid) var(--ease-out);
   }
   .cs-card:hover .cs-logo-img{transform:scale(1.06)}

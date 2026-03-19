@@ -55,6 +55,9 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
     const hover = safeSrc(u.hoverImage);
     if (main) imgs.push(main);
     if (hover) imgs.push(hover);
+    if (Array.isArray(u.galleryImages)) {
+      u.galleryImages.forEach((g) => { const s = safeSrc(g); if (s) imgs.push(s); });
+    }
     return imgs;
   };
 
@@ -81,7 +84,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
   };
 
   return (
-    <div style={{ minHeight: "calc(100vh - 64px)", background: "#fafaf9" }}>
+    <div style={{ minHeight: "calc(100vh - 64px)", background: "#fff" }}>
       <style>{`
         @keyframes prodIn {
           from { opacity:0; transform:translateY(16px); }
@@ -315,7 +318,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
 
         .prod-img {
           aspect-ratio: 3 / 4;
-          background: #f5f3f0;
+          background: #fff;
           overflow: hidden;
           position: relative;
         }
@@ -866,7 +869,8 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           )}
 
           {/* Filters */}
-          <nav className="cat-filters" style={hasSections ? { position: "relative", top: "auto" } : {}} aria-label="Filtrar por categoría">
+          {hasSections && (
+          <nav className="cat-filters" style={{ position: "relative", top: "auto" }} aria-label="Filtrar por categoría">
             {cats.map(c => {
               const count = c === "Todos"
                 ? currentUniforms.length
@@ -884,6 +888,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
               );
             })}
           </nav>
+          )}
 
           {/* Grid limpio */}
           <div className="cat-grid" role="list" aria-label="Productos">

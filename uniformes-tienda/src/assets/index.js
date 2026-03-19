@@ -1,23 +1,22 @@
 import imgBusoCierre from "./TheNewSchool/buso-cierre.webp";
-import imgBusoGris from "./TheNewSchool/buso-gris.webp";
 import imgCamiBuso from "./TheNewSchool/camibuso.webp";
 import imgCamisaPolo from "./TheNewSchool/camisa-polo.webp";
 import imgConsciencia from "./TheNewSchool/consciencia.webp";
 import imgSudadera from "./TheNewSchool/sudadera.webp";
+import imgSudaderaModelo from "./TheNewSchool/Sudadera-modelo.webp";
 import imgQrPago from "./TheNewSchool/Codigo QR prueba.webp";
 
 // New School — fotos nuevas
-import imgBusoNS from "./TheNewSchool/Buso New School.webp";
-import imgBusoRevesNS from "./TheNewSchool/buso reves New School.webp";
 import imgBusoKidsNS from "./TheNewSchool/Buso Kids New School.webp";
 import imgBusoRevesKidsNS from "./TheNewSchool/buso reves kid New School.webp";
 import imgCamisaPoloNS from "./TheNewSchool/Camisa Polo New School.webp";
-import imgConcienciaNS from "./TheNewSchool/Camiseta concienia New School.webp";
+import imgConcienciaPrimNS from "./TheNewSchool/camiseta consciensia primaria.webp";
 
 import LOGO_TESSUTI from "./Logo Tessuti.webp";
 import LOGO_CUMBRES from "./Logo Cumbres.webp";
 
 // Liceo Francés
+import LOGO_LICEO_FRANCES from "./LiceoFrances/logo-liceo-frences.png";
 import imgBusoLF from "./LiceoFrances/Buso Liceo Frances.webp";
 import imgBusoRevesLF from "./LiceoFrances/Buso Reves Liceo Frances.webp";
 import imgCamisaPoloLF from "./LiceoFrances/Camisa Polo Liceo Frances.webp";
@@ -38,19 +37,18 @@ import imgJeanReves from "./Dotaciones/Jean 14 onz reves.webp";
 export {
   LOGO_TESSUTI,
   LOGO_CUMBRES,
+  LOGO_LICEO_FRANCES,
   imgQrPago,
   imgBusoCierre,
-  imgBusoGris,
   imgCamiBuso,
   imgCamisaPolo,
   imgConsciencia,
   imgSudadera,
-  imgBusoNS,
-  imgBusoRevesNS,
   imgBusoKidsNS,
   imgBusoRevesKidsNS,
   imgCamisaPoloNS,
-  imgConcienciaNS,
+  imgConcienciaPrimNS,
+  imgSudaderaModelo,
   // Liceo Francés
   imgBusoLF,
   imgBusoRevesLF,
