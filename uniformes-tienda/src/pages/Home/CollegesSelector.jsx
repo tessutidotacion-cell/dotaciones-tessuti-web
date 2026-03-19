@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { LOGO_TESSUTI } from "../../assets";
-import { DEMO_COLLEGES } from "../../data/colleges";
+import { DEMO_COLLEGES, EMPRESARIAL_CATALOG } from "../../data/colleges";
 import fondoHero from "../../assets/TheNewSchool/banner_home.webp";
 
 const getAllUniforms = (col) => col.sections?.length > 0
@@ -342,14 +342,6 @@ const ALL_STYLES = `
   .cs-card:hover .cs-arrow{background:var(--gold);border-color:var(--gold);transform:translateX(2px)}
   .cs-card:hover .cs-arrow svg{stroke:#fff}
 
-  /* ── Empresarial ── */
-  .emp-wrap{
-    min-height:calc(100vh - 64px);background:var(--canvas);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    padding:clamp(40px,8vw,80px) 24px;position:relative;overflow:hidden;
-    animation:fadeUp .4s var(--ease-out) both;
-    font-family:'Helvetica',Arial,sans-serif;
-  }
 `;
 
 export default function CollegeSelector({ onSelect }) {
@@ -397,7 +389,7 @@ export default function CollegeSelector({ onSelect }) {
             <button className="hl-hero-nav-btn" onClick={() => setSection("colegios")}>
               Uniformes Colegio
             </button>
-            <button className="hl-hero-nav-btn" onClick={() => setSection("empresarial")}>
+            <button className="hl-hero-nav-btn" onClick={() => onSelect(EMPRESARIAL_CATALOG)}>
               Dotación Empresarial
             </button>
           </div>
@@ -505,47 +497,6 @@ export default function CollegeSelector({ onSelect }) {
         </div>
       )}
 
-      {/* ── EMPRESARIAL ── */}
-      {section === "empresarial" && (
-        <div className="emp-wrap">
-          <button onClick={goBack}
-            style={{position:"absolute",top:"clamp(20px,4vw,36px)",left:"clamp(16px,5vw,48px)",
-              background:"none",border:"1px solid var(--line-2)",borderRadius:6,
-              width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",
-              cursor:"pointer",color:"var(--ink-3)",transition:"all 160ms ease"}}
-            onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--ink)";e.currentTarget.style.color="var(--ink)"}}
-            onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--line-2)";e.currentTarget.style.color="var(--ink-3)"}}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M19 12H5M12 5l-7 7 7 7"/>
-            </svg>
-          </button>
-
-          <img src={LOGO_TESSUTI} alt="Tessuti"
-            style={{width:"clamp(64px,11vw,90px)",height:"clamp(64px,11vw,90px)",objectFit:"contain",marginBottom:28,opacity:.35}}/>
-          <div style={{fontSize:9,fontWeight:500,color:"var(--gold)",letterSpacing:".24em",textTransform:"uppercase",marginBottom:16}}>
-            Próximamente
-          </div>
-          <h2 style={{fontFamily:"'Helvetica Compressed','Helvetica',Arial,sans-serif",fontSize:"clamp(22px,4vw,32px)",fontWeight:500,
-            color:"var(--ink)",marginBottom:14,textAlign:"center",letterSpacing:".01em",lineHeight:1.2}}>
-            Dotación Empresarial
-          </h2>
-          <p style={{fontSize:13,fontWeight:300,color:"var(--ink-3)",textAlign:"center",maxWidth:320,lineHeight:1.75,marginBottom:32}}>
-            Estamos preparando el catálogo de dotaciones para empresas.<br/>
-            Por ahora contáctanos directamente.
-          </p>
-          <a href="https://wa.me/573122040973" target="_blank" rel="noreferrer"
-            style={{display:"inline-flex",alignItems:"center",gap:10,background:"var(--ink)",color:"#fff",
-              padding:"13px clamp(20px,4vw,32px)",borderRadius:4,fontSize:11,fontWeight:500,
-              textDecoration:"none",letterSpacing:".16em",textTransform:"uppercase",
-              transition:"background 200ms ease,transform 200ms ease",
-              boxShadow:"0 4px 20px rgba(28,24,20,.2)"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="#333";e.currentTarget.style.transform="translateY(-2px)"}}
-            onMouseLeave={e=>{e.currentTarget.style.background="var(--ink)";e.currentTarget.style.transform="none"}}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-            Contactar por WhatsApp
-          </a>
-        </div>
-      )}
     </>
   );
 }

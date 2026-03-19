@@ -6,6 +6,11 @@ import {
   imgBusoGris,
   imgSudadera,
   LOGO_CUMBRES,
+  LOGO_TESSUTI,
+  imgCamisaOxford,
+  imgCamisaDril,
+  imgJeanFrente,
+  imgJeanReves,
 } from "../assets";
 
 export const DEMO_COLLEGES = [
@@ -206,3 +211,17 @@ export const DEMO_COLLEGES = [
     ],
   },
 ];
+
+export const EMPRESARIAL_CATALOG = {
+  id: "empresarial",
+  name: "Dotación Empresarial",
+  logo: LOGO_TESSUTI,
+  primaryColor: "#1c1c1c",
+  accentColor: "#b89a6a",
+  description: "Dotaciones corporativas de alta calidad",
+  uniforms: [
+    { id: 900, name: "Camisa Oxford Manga Larga", price: 0, sizes: ["S", "M", "L", "XL", "XXL"], category: "Camisas", image: imgCamisaOxford },
+    { id: 901, name: "Camisa Dril Caqui", price: 0, sizes: ["S", "M", "L", "XL", "XXL"], category: "Camisas", image: imgCamisaDril },
+    { id: 902, name: "Jean 14 Onz", price: 0, sizes: ["28", "30", "32", "34", "36", "38"], category: "Pantalones", image: imgJeanFrente, hoverImage: imgJeanReves },
+  ],
+};

@@ -9,6 +9,12 @@ import imgQrPago from "./TheNewSchool/Codigo QR prueba.webp";
 import LOGO_TESSUTI from "./Logo Tessuti.webp";
 import LOGO_CUMBRES from "./Logo Cumbres.webp";
 
+// Dotaciones Empresariales
+import imgCamisaOxford from "./Dotaciones/Camisa Oxford manga larga.webp";
+import imgCamisaDril from "./Dotaciones/Camisa dril caqui.webp";
+import imgJeanFrente from "./Dotaciones/Jean 14 onz frente.webp";
+import imgJeanReves from "./Dotaciones/Jean 14 onz reves.webp";
+
 export {
   LOGO_TESSUTI,
   LOGO_CUMBRES,
@@ -19,4 +25,9 @@ export {
   imgCamisaPolo,
   imgConsciencia,
   imgSudadera,
+  // Dotaciones
+  imgCamisaOxford,
+  imgCamisaDril,
+  imgJeanFrente,
+  imgJeanReves,
 };

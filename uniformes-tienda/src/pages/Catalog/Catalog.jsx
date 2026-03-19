@@ -315,9 +315,19 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           width: 100%; height: 100%;
           object-fit: contain;
           padding: 18px;
-          transition: transform .45s cubic-bezier(.22,.68,0,1.2);
+          transition: opacity .35s ease, transform .45s cubic-bezier(.22,.68,0,1.2);
         }
         .prod-card:hover .prod-img img { transform: scale(1.06); }
+        .prod-img .prod-img-hover {
+          position: absolute; inset: 0;
+          width: 100%; height: 100%;
+          object-fit: contain;
+          padding: 18px;
+          opacity: 0;
+          transition: opacity .35s ease, transform .45s cubic-bezier(.22,.68,0,1.2);
+        }
+        .prod-card:hover .prod-img .prod-img-hover { opacity: 1; transform: scale(1.06); }
+        .prod-card:hover .prod-img .prod-img-main { opacity: 0; }
         .prod-img-placeholder {
           width: 64px; height: 64px;
           display: flex; align-items: center; justify-content: center;
@@ -633,6 +643,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           const isAdded    = flash[flashKey];
           const hasSz      = !!sizes[u.id];
           const imgSrc     = safeSrc(u.image);
+          const hoverSrc   = safeSrc(u.hoverImage);
           const pct        = getDiscountPct(u.id);
           const finalPrice = getFinalPrice(u);
 
@@ -660,7 +671,10 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
               {/* Imagen */}
               <div className="prod-img">
                 {imgSrc
-                  ? <img src={imgSrc} alt={u.name} loading="lazy" />
+                  ? <>
+                      <img className={hoverSrc ? "prod-img-main" : ""} src={imgSrc} alt={u.name} loading="lazy" />
+                      {hoverSrc && <img className="prod-img-hover" src={hoverSrc} alt={`${u.name} reverso`} loading="lazy" />}
+                    </>
                   : (
                     <div className="prod-img-placeholder">
                       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="1">
