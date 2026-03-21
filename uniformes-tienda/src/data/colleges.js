@@ -50,15 +50,17 @@ function applyNewSchoolImages(college, imgs) {
 
 function applyLiceoImages(college, imgs) {
   const imageMap = {
-    500: { image: imgs.imgBusoLF, hoverImage: imgs.imgBusoRevesLF },
-    501: { image: imgs.imgCamisaPoloLF },
-    502: { image: imgs.imgPantalonLF },
+    500: { image: imgs.imgBusoLF, hoverImage: imgs.imgBusoFondoLF },
+    501: { image: imgs.imgCamisaPoloLF, hoverImage: imgs.imgCamisaPoloModeloLF },
     503: { image: imgs.imgPantalonetaLF },
-    510: { image: imgs.imgBusoKidsLF },
-    511: { image: imgs.imgCamisetaPoloKidsLF },
-    512: { image: imgs.imgPantalonKidsLF },
-    513: { image: imgs.imgChalecoKidsLF },
-    514: { image: imgs.imgDelantalKidsLF },
+    504: { image: imgs.imgJoggerLF },
+    505: { image: imgs.imgCamisetaDeportivaLF },
+    506: { image: imgs.imgSudaderaLF },
+    510: { image: imgs.imgBusoKidsJpgLF, hoverImage: imgs.imgBusoKidsLF },
+    511: { image: imgs.imgCamisaPoloLF, hoverImage: imgs.imgCamisetaPoloKidsLF },
+    514: { image: imgs.imgChalecoKidsLF, hoverImage: imgs.imgDelantalKidsLF },
+    515: { image: imgs.imgChalecoNegroKidsLF, hoverImage: imgs.imgChalecoKidsModeloLF },
+    516: { image: imgs.imgSudaderaKidsLF, hoverImage: imgs.imgPantalonKidsLF },
   };
 
   return {
@@ -227,13 +229,16 @@ export const DEMO_COLLEGES = [
     description: "Educación francesa de excelencia",
     sections: [
       {
-        id: "lf-adulto",
-        name: "Bachillerato",
+        id: "lf-uniforme",
+        name: "Uniforme",
         uniforms: [
-          { id: 500, name: "Buso", price: 0, sizes: ["S", "M", "L", "XL"], category: "Diario" },
-          { id: 501, name: "Camisa Polo", price: 0, sizes: ["S", "M", "L", "XL"], category: "Diario" },
-          { id: 502, name: "Pantalón", price: 0, sizes: ["28", "30", "32", "34", "36"], category: "Diario" },
-          { id: 503, name: "Pantaloneta", price: 0, sizes: ["S", "M", "L", "XL"], category: "Deportivo" },
+          { id: 500, name: "Chaqueta", price: 130000, sizes: ["12", "14", "16", "S", "M"], category: "Diario", description: "Nuevo diseño, forrada en su interior con capucha" },
+          { id: 501, name: "Camisa Polo", price: 70000, sizes: ["12", "14", "16", "S", "M"], category: "Diario", description: "Talla 16-M: $77.000" },
+          { id: 505, name: "Camiseta Unisex", price: 65000, sizes: ["12", "14", "16", "S", "M"], category: "Deportivo", description: "Talla 16-M: $70.000" },
+          { id: 506, name: "Sudadera Diario", price: 81500, sizes: ["12", "14", "16", "S", "M"], category: "Diario", description: "Pantalón sudadera diario" },
+          { id: 504, name: "Jogger Unisex", price: 70000, sizes: ["12", "14", "16", "S", "M"], category: "Deportivo", description: "Talla 16-M: $75.000" },
+          { id: 503, name: "Pantaloneta Niño", price: 65000, sizes: ["12", "14", "16", "S", "M"], category: "Deportivo", description: "Talla 16-M: $68.000" },
+          { id: 507, name: "Short Niña", price: 65000, sizes: ["12", "14", "16", "S", "M"], category: "Deportivo", description: "Talla 16-M: $68.000" },
         ],
       },
       {
@@ -242,9 +247,9 @@ export const DEMO_COLLEGES = [
         uniforms: [
           { id: 510, name: "Buso Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], category: "Diario" },
           { id: 511, name: "Camiseta Polo Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], category: "Diario" },
-          { id: 512, name: "Pantalón Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], category: "Diario" },
-          { id: 513, name: "Chaleco Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], category: "Diario" },
+          { id: 515, name: "Chaleco Negro Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], category: "Diario" },
           { id: 514, name: "Delantal Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], category: "Complemento" },
+          { id: 516, name: "Sudadera Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], category: "Deportivo" },
         ],
       },
     ],
