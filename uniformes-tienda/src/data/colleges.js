@@ -1,37 +1,93 @@
 import {
-  imgCamisaPolo,
-  imgConsciencia,
-  imgBusoCierre,
-  imgSudadera,
-  imgSudaderaModelo,
-  imgBusoKidsNS,
-  imgBusoRevesKidsNS,
-  imgCamisaPoloNS,
-  imgConcienciaPrimNS,
   LOGO_CUMBRES,
   LOGO_LICEO_FRANCES,
+  LOGO_NEW_SCHOOL,
   LOGO_TESSUTI,
-  imgBusoLF,
-  imgBusoRevesLF,
-  imgCamisaPoloLF,
-  imgPantalonLF,
-  imgPantalonetaLF,
-  imgPantalonKidsLF,
-  imgBusoKidsLF,
-  imgDelantalKidsLF,
-  imgChalecoKidsLF,
-  imgCamisetaPoloKidsLF,
-  imgCamisaOxford,
-  imgCamisaDril,
-  imgJeanFrente,
-  imgJeanReves,
 } from "../assets";
+
+// ── Loaders de imágenes por colegio (dynamic import → code-split) ──
+const imageLoaders = {
+  "1": () => import("../assets/newschool.js"),
+  "liceo-frances": () => import("../assets/liceofrances.js"),
+  "empresarial": () => import("../assets/dotaciones.js"),
+};
+
+/**
+ * Carga las imágenes de un colegio y las inyecta en sus uniformes.
+ * Devuelve el college con las imágenes ya resueltas.
+ */
+export async function loadCollegeImages(college) {
+  const loader = imageLoaders[college.id];
+  if (!loader) return college;
+
+  const imgs = await loader();
+
+  if (college.id === "1") {
+    return applyNewSchoolImages(college, imgs);
+  }
+  if (college.id === "liceo-frances") {
+    return applyLiceoImages(college, imgs);
+  }
+  if (college.id === "empresarial") {
+    return applyEmpresarialImages(college, imgs);
+  }
+  return college;
+}
+
+function applyNewSchoolImages(college, imgs) {
+  const imageMap = {
+    1: { image: imgs.imgCamisaPolo, hoverImage: imgs.imgCamisaPoloNS },
+    2: { image: imgs.imgConsciencia, hoverImage: imgs.imgConcienciaPrimNS },
+    4: { image: imgs.imgBusoCierre, hoverImage: imgs.imgBusoKidsNS, galleryImages: [imgs.imgBusoRevesKidsNS] },
+    6: { image: imgs.imgSudadera, hoverImage: imgs.imgSudaderaModelo },
+  };
+
+  return {
+    ...college,
+    uniforms: college.uniforms.map(u => ({ ...u, ...imageMap[u.id] })),
+  };
+}
+
+function applyLiceoImages(college, imgs) {
+  const imageMap = {
+    500: { image: imgs.imgBusoLF, hoverImage: imgs.imgBusoRevesLF },
+    501: { image: imgs.imgCamisaPoloLF },
+    502: { image: imgs.imgPantalonLF },
+    503: { image: imgs.imgPantalonetaLF },
+    510: { image: imgs.imgBusoKidsLF },
+    511: { image: imgs.imgCamisetaPoloKidsLF },
+    512: { image: imgs.imgPantalonKidsLF },
+    513: { image: imgs.imgChalecoKidsLF },
+    514: { image: imgs.imgDelantalKidsLF },
+  };
+
+  return {
+    ...college,
+    sections: college.sections.map(section => ({
+      ...section,
+      uniforms: section.uniforms.map(u => ({ ...u, ...imageMap[u.id] })),
+    })),
+  };
+}
+
+function applyEmpresarialImages(college, imgs) {
+  const imageMap = {
+    900: { image: imgs.imgCamisaOxford },
+    901: { image: imgs.imgCamisaDril },
+    902: { image: imgs.imgJeanFrente, hoverImage: imgs.imgJeanReves },
+  };
+
+  return {
+    ...college,
+    uniforms: college.uniforms.map(u => ({ ...u, ...imageMap[u.id] })),
+  };
+}
 
 export const DEMO_COLLEGES = [
   {
     id: "1",
     name: "The New School",
-    logo: "https://thenewschool.edu.co/images/logo-vertical.jpeg",
+    logo: LOGO_NEW_SCHOOL,
     primaryColor: "#4a2510",
     accentColor: "#8a4a28",
     description: "Educación innovadora y bilingüe",
@@ -42,8 +98,6 @@ export const DEMO_COLLEGES = [
         price: 60000,
         sizes: ["4", "6"],
         category: "Diario",
-        image: imgCamisaPolo,
-        hoverImage: imgCamisaPoloNS,
         description: "Kinder a Primero",
       },
       {
@@ -52,8 +106,6 @@ export const DEMO_COLLEGES = [
         price: 47000,
         sizes: ["4", "6", "8", "10", "12"],
         category: "Deportivo",
-        image: imgConsciencia,
-        hoverImage: imgConcienciaPrimNS,
         description: "Primaria",
       },
       {
@@ -62,9 +114,6 @@ export const DEMO_COLLEGES = [
         price: 85000,
         sizes: ["4", "6", "8", "10", "12"],
         category: "Deportivo",
-        image: imgBusoCierre,
-        hoverImage: imgBusoKidsNS,
-        galleryImages: [imgBusoRevesKidsNS],
         description: "Primaria",
       },
       {
@@ -73,8 +122,6 @@ export const DEMO_COLLEGES = [
         price: 77000,
         sizes: ["4", "6", "8", "10", "12", "XS", "S", "M", "L", "XL"],
         category: "Deportivo",
-        image: imgSudadera,
-        hoverImage: imgSudaderaModelo,
         description: "Todo el colegio",
       },
     ],
@@ -183,21 +230,21 @@ export const DEMO_COLLEGES = [
         id: "lf-adulto",
         name: "Bachillerato",
         uniforms: [
-          { id: 500, name: "Buso", price: 0, sizes: ["S", "M", "L", "XL"], category: "Diario", image: imgBusoLF, hoverImage: imgBusoRevesLF },
-          { id: 501, name: "Camisa Polo", price: 0, sizes: ["S", "M", "L", "XL"], category: "Diario", image: imgCamisaPoloLF },
-          { id: 502, name: "Pantalón", price: 0, sizes: ["28", "30", "32", "34", "36"], category: "Diario", image: imgPantalonLF },
-          { id: 503, name: "Pantaloneta", price: 0, sizes: ["S", "M", "L", "XL"], category: "Deportivo", image: imgPantalonetaLF },
+          { id: 500, name: "Buso", price: 0, sizes: ["S", "M", "L", "XL"], category: "Diario" },
+          { id: 501, name: "Camisa Polo", price: 0, sizes: ["S", "M", "L", "XL"], category: "Diario" },
+          { id: 502, name: "Pantalón", price: 0, sizes: ["28", "30", "32", "34", "36"], category: "Diario" },
+          { id: 503, name: "Pantaloneta", price: 0, sizes: ["S", "M", "L", "XL"], category: "Deportivo" },
         ],
       },
       {
         id: "lf-kids",
         name: "Primaria",
         uniforms: [
-          { id: 510, name: "Buso Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], category: "Diario", image: imgBusoKidsLF },
-          { id: 511, name: "Camiseta Polo Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], category: "Diario", image: imgCamisetaPoloKidsLF },
-          { id: 512, name: "Pantalón Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], category: "Diario", image: imgPantalonKidsLF },
-          { id: 513, name: "Chaleco Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], category: "Diario", image: imgChalecoKidsLF },
-          { id: 514, name: "Delantal Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], category: "Complemento", image: imgDelantalKidsLF },
+          { id: 510, name: "Buso Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], category: "Diario" },
+          { id: 511, name: "Camiseta Polo Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], category: "Diario" },
+          { id: 512, name: "Pantalón Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], category: "Diario" },
+          { id: 513, name: "Chaleco Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], category: "Diario" },
+          { id: 514, name: "Delantal Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], category: "Complemento" },
         ],
       },
     ],
@@ -213,8 +260,8 @@ export const EMPRESARIAL_CATALOG = {
   accentColor: "#b89a6a",
   description: "Dotaciones corporativas de alta calidad",
   uniforms: [
-    { id: 900, name: "Camisa Oxford Manga Larga", price: 0, sizes: ["S", "M", "L", "XL", "XXL"], category: "Camisas", image: imgCamisaOxford },
-    { id: 901, name: "Camisa Dril Caqui", price: 0, sizes: ["S", "M", "L", "XL", "XXL"], category: "Camisas", image: imgCamisaDril },
-    { id: 902, name: "Jean 14 Onz", price: 0, sizes: ["28", "30", "32", "34", "36", "38"], category: "Pantalones", image: imgJeanFrente, hoverImage: imgJeanReves },
+    { id: 900, name: "Camisa Oxford Manga Larga", price: 0, sizes: ["S", "M", "L", "XL", "XXL"], category: "Camisas" },
+    { id: 901, name: "Camisa Dril Caqui", price: 0, sizes: ["S", "M", "L", "XL", "XXL"], category: "Camisas" },
+    { id: 902, name: "Jean 14 Onz", price: 0, sizes: ["28", "30", "32", "34", "36", "38"], category: "Pantalones" },
   ],
 };

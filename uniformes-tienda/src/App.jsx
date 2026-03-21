@@ -7,7 +7,7 @@ import {
 import GlobalStyles from "./components/ui/GlobalStyles";
 import Toast from "./components/ui/Toast";
 import { LOGO_TESSUTI } from "./assets";
-import { DEMO_COLLEGES } from "./data/colleges";
+import { DEMO_COLLEGES, loadCollegeImages } from "./data/colleges";
 import { COP } from "./utils/money";
 import { useToast } from "./hooks/useToast";
 
@@ -68,13 +68,16 @@ const { toastState, toast, clearToast } = useToast();
   }, [college]);
 
   useEffect(() => {
-    const onPop = (e) => {
+    const onPop = async (e) => {
       const state = e.state;
       const targetView    = state?.view      || decodeHash(window.location.hash).view;
       const targetCollege = state?.collegeId || decodeHash(window.location.hash).collegeId;
       if (targetCollege && ["catalog","checkout"].includes(targetView)) {
         const found = DEMO_COLLEGES.find(c => c.id === targetCollege);
-        if (found) setCollege(found);
+        if (found) {
+          const enriched = await loadCollegeImages(found);
+          setCollege(enriched);
+        }
       }
       const safe = VALID_VIEWS.includes(targetView) ? targetView : "home";
       if (safe === "admin" && !sessionStorage.getItem("ue_admin_token")) setView("adminLogin");
@@ -96,7 +99,13 @@ const { toastState, toast, clearToast } = useToast();
     }
     if (collegeId && ["catalog","checkout"].includes(v)) {
       const found = DEMO_COLLEGES.find(c => c.id === collegeId);
-      if (found) { setCollege(found); setView(v); window.history.replaceState({ view: v, collegeId }, "", window.location.hash); return; }
+      if (found) {
+        loadCollegeImages(found).then(enriched => {
+          setCollege(enriched); setView(v);
+          window.history.replaceState({ view: v, collegeId }, "", window.location.hash);
+        });
+        return;
+      }
     }
     const safe = VALID_VIEWS.includes(v) && v !== "success" ? v : "home";
     setView(safe);
@@ -505,7 +514,10 @@ const { toastState, toast, clearToast } = useToast();
   </div>
 }>
   {view === "home" && (
-    <CollegeSelector onSelect={(c) => { setCollege(c); setCart([]); go("catalog", c); }} />
+    <CollegeSelector onSelect={async (c) => {
+      const enriched = await loadCollegeImages(c);
+      setCollege(enriched); setCart([]); go("catalog", enriched);
+    }} />
   )}
   {view === "catalog" && college && (
     <Catalog

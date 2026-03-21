@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dotaciones-tessuti.vercel.app/sitemap.xml
