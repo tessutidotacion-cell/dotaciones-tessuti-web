@@ -50,7 +50,7 @@ function applyNewSchoolImages(college, imgs) {
 
 function applyLiceoImages(college, imgs) {
   const imageMap = {
-    500: { image: imgs.imgBusoLF, hoverImage: imgs.imgBusoFondoLF },
+    500: { image: imgs.imgBusoFondoLF, hoverImage: imgs.imgBusoLF, galleryImages: [imgs.imgBusoRevesLF] },
     501: { image: imgs.imgCamisaPoloLF, hoverImage: imgs.imgCamisaPoloModeloLF },
     503: { image: imgs.imgPantalonetaLF },
     504: { image: imgs.imgJoggerLF },
