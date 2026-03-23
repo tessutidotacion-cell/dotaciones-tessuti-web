@@ -222,8 +222,12 @@ const { toastState, toast, clearToast } = useToast();
           position: absolute;
           left: 50%; transform: translateX(-50%);
           display: flex; flex-direction: column; align-items: center;
-          line-height: 1; pointer-events: none;
+          line-height: 1;
+          background: none; border: none; padding: 6px 12px;
+          cursor: pointer; border-radius: var(--r);
+          transition: opacity var(--t-sm) var(--ease);
         }
+        .nav-center-name:hover { opacity: .65; }
         .nav-center-name span:first-child {
           font-family: var(--font-display);
           font-size: 22px; font-weight: 500;
@@ -422,10 +426,12 @@ const { toastState, toast, clearToast } = useToast();
             </button>
 
             {/* Nombre centrado */}
-            <div className="nav-center-name">
+            <button className="nav-center-name"
+              onClick={() => { setCart([]); setCollege(null); go("home", null); }}
+              aria-label="Ir al inicio">
               <span>Tessuti</span>
               <span>Dotaciones</span>
-            </div>
+            </button>
 
             <div className="nav-actions">
               {view === "catalog" && cartQty > 0 && (
@@ -523,7 +529,7 @@ const { toastState, toast, clearToast } = useToast();
     <Catalog
       college={college} cart={cart} setCart={setCart}
       onCheckout={() => go("checkout")}
-      onBack={() => { setCollege(null); setCart([]); go("home", null); }}
+      onBack={() => window.history.back()}
       collegeStock={catalogStock}
       discounts={discounts[college?.id] || {}}
     />
@@ -532,15 +538,15 @@ const { toastState, toast, clearToast } = useToast();
     <Checkout
       college={college} cart={cart} setCart={setCart}
       onSuccess={(o) => { setSuccessOrder(o); setCart([]); go("success"); }}
-      onBack={() => go("catalog")}
+      onBack={() => window.history.back()}
       toast={toast}
     />
   )}
   {view === "success" && successOrder && (
     <OrderSuccess order={successOrder} onHome={() => { setCollege(null); go("home", null); }} />
   )}
-  {view === "track"      && <TrackOrder onBack={() => go("home")} />}
-  {view === "adminLogin" && <AdminLogin onLogin={() => { setIsAdmin(true); go("admin"); }} onBack={() => go("home")} />}
+  {view === "track"      && <TrackOrder onBack={() => window.history.back()} />}
+  {view === "adminLogin" && <AdminLogin onLogin={() => { setIsAdmin(true); go("admin"); }} onBack={() => window.history.back()} />}
   {view === "admin" && isAdmin && (
     <AdminPanel onLogout={() => { setIsAdmin(false); clearToken(); go("home"); }} toast={toast} />
   )}

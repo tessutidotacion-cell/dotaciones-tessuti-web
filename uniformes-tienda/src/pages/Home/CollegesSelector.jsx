@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { LOGO_TESSUTI } from "../../assets";
 import { DEMO_COLLEGES, EMPRESARIAL_CATALOG } from "../../data/colleges";
 import fondoHero from "../../assets/TheNewSchool/banner_home.webp";
@@ -380,11 +380,34 @@ export default function CollegeSelector({ onSelect }) {
     return () => clearTimeout(t);
   }, []);
 
+  // Restore section from history state on mount
+  useEffect(() => {
+    const s = window.history.state?.section;
+    if (s) setSection(s);
+  }, []);
+
+  const goToSection = useCallback((s) => {
+    setSection(s);
+    if (s) window.history.pushState({ view: "home", section: s }, "", "#home");
+  }, []);
+
   const goBack = () => {
-    setSection(null);
-    setVisible(false);
-    setTimeout(() => setVisible(true), 60);
+    window.history.back();
   };
+
+  // Handle internal back (colegios → hero) when CollegesSelector stays mounted
+  useEffect(() => {
+    const onPop = () => {
+      const s = window.history.state?.section || null;
+      setSection(s);
+      if (!s) {
+        setVisible(false);
+        setTimeout(() => setVisible(true), 60);
+      }
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
   return (
     <>
@@ -412,7 +435,7 @@ export default function CollegeSelector({ onSelect }) {
 
           {/* Botones inferiores — estilo Undergold */}
           <div className={`hl-hero-btns${visible ? " in" : ""}`}>
-            <button className="hl-hero-nav-btn" onClick={() => setSection("colegios")}>
+            <button className="hl-hero-nav-btn" onClick={() => goToSection("colegios")}>
               Uniformes Colegio
             </button>
             <button className="hl-hero-nav-btn" onClick={() => onSelect(EMPRESARIAL_CATALOG)}>

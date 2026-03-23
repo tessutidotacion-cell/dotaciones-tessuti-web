@@ -92,16 +92,22 @@ function OrderDetailModal({ order, onClose, onOrderUpdate }) {
           maxHeight:"90vh", overflow:"auto", boxShadow:"0 24px 48px rgba(0,0,0,.3)",
           animation:"fadeUp .2s ease" }}>
         {/* Header */}
-        <div style={{ padding:"16px 20px", borderBottom:"1px solid #e5e7eb",
+        <div style={{ padding:"18px 22px", borderBottom:"1px solid #e5e7eb",
           display:"flex", justifyContent:"space-between", alignItems:"center",
-          position:"sticky", top:0, background:"#fff", zIndex:1 }}>
+          position:"sticky", top:0, background:"linear-gradient(135deg, #fafafa 0%, #fff 100%)", zIndex:1, borderRadius:"16px 16px 0 0" }}>
           <div>
-            <div style={{ fontSize:10, fontWeight:700, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".1em", marginBottom:2 }}>Detalle del pedido</div>
-            <div style={{ fontSize:16, fontWeight:700, color:"#111", fontFamily:"monospace", letterSpacing:1 }}>{order.id}</div>
+            <div style={{ fontSize:10, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:".12em", marginBottom:4 }}>Detalle del pedido</div>
+            <div style={{ fontSize:17, fontWeight:700, color:"#111", fontFamily:"monospace", letterSpacing:1, display:"flex", alignItems:"center", gap:8 }}>
+              {order.id}
+              <Badge status={order.status} />
+            </div>
           </div>
-          <button onClick={onClose} style={{ width:32, height:32, borderRadius:8, background:"#f3f4f6",
+          <button onClick={onClose}
+            onMouseEnter={e => { e.currentTarget.style.background="#e5e7eb"; e.currentTarget.style.color="#111"; }}
+            onMouseLeave={e => { e.currentTarget.style.background="#f3f4f6"; e.currentTarget.style.color="#6b7280"; }}
+            style={{ width:34, height:34, borderRadius:8, background:"#f3f4f6",
             border:"1px solid #e5e7eb", fontSize:16, color:"#6b7280", cursor:"pointer",
-            display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
+            display:"flex", alignItems:"center", justifyContent:"center", transition:"all .15s" }}>✕</button>
         </div>
 
         <div style={{ padding:"18px 20px", display:"flex", flexDirection:"column", gap:16 }}>
@@ -249,13 +255,62 @@ function OrderDetailModal({ order, onClose, onOrderUpdate }) {
           {order.paymentProofUrl && (
             <a href={order.paymentProofUrl} target="_blank" rel="noreferrer"
               style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8,
-                padding:10, borderRadius:8, background:"#f0fdf4", border:"1px solid #6ee7b7",
-                color:"#065f46", fontWeight:600, fontSize:13, textDecoration:"none" }}>
+                padding:12, borderRadius:10, background:"#f0fdf4", border:"1px solid #6ee7b7",
+                color:"#065f46", fontWeight:600, fontSize:13, textDecoration:"none", transition:"all .15s" }}
+              onMouseEnter={e => { e.currentTarget.style.background="#dcfce7"; e.currentTarget.style.transform="translateY(-1px)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background="#f0fdf4"; e.currentTarget.style.transform="none"; }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
               Ver comprobante de pago
             </a>
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Discount editor inline (shared) ──────────────────────────
+function DiscountEditor({ pct, setPct, saving, has, onSave, onRemove, onCancel }) {
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap",
+      background:"#f8faff", borderRadius:10, padding:"10px 14px", border:"1px solid #c7d2fe" }}>
+      <div style={{ position:"relative", width:90 }}>
+        <input type="number" min="1" max="90" value={pct} onChange={e=>setPct(e.target.value)} autoFocus
+          style={{ width:"100%", boxSizing:"border-box", padding:"8px 28px 8px 12px",
+            border:"2px solid #818cf8", borderRadius:8, fontSize:15, fontWeight:700,
+            outline:"none", color:"#111", textAlign:"center" }} />
+        <span style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)",
+          fontSize:13, fontWeight:700, color:"#818cf8", pointerEvents:"none" }}>%</span>
+      </div>
+      <button onClick={onSave} disabled={saving}
+        onMouseEnter={e => { if(!saving) e.currentTarget.style.background="#16a34a"; }}
+        onMouseLeave={e => { if(!saving) e.currentTarget.style.background="#111"; }}
+        style={{ padding:"8px 16px", background:"#111", color:"#fff", border:"none",
+          borderRadius:8, fontSize:12, fontWeight:700, cursor: saving?"not-allowed":"pointer",
+          display:"flex", alignItems:"center", gap:5, transition:"background .15s" }}>
+        {saving ? <Spinner size={12} color="#fff" />
+          : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>}
+        Aplicar
+      </button>
+      {has && (
+        <button onClick={onRemove} disabled={saving}
+          onMouseEnter={e => e.currentTarget.style.background="#fef2f2"}
+          onMouseLeave={e => e.currentTarget.style.background="#fff"}
+          style={{ padding:"8px 14px", background:"#fff", color:"#dc2626",
+            border:"1px solid #fca5a5", borderRadius:8, fontSize:12, fontWeight:600,
+            cursor:"pointer", display:"flex", alignItems:"center", gap:5, transition:"background .15s" }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          Quitar
+        </button>
+      )}
+      <button onClick={onCancel}
+        style={{ padding:"8px", background:"transparent", color:"#9ca3af",
+          border:"none", borderRadius:8, cursor:"pointer", display:"flex",
+          alignItems:"center", transition:"color .15s" }}
+        onMouseEnter={e => e.currentTarget.style.color="#374151"}
+        onMouseLeave={e => e.currentTarget.style.color="#9ca3af"}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
     </div>
   );
 }
@@ -277,53 +332,61 @@ function DiscountRow({ uniform, college, currentPct, onSave, onRemove }) {
   };
 
   return (
-    <tr style={{ borderBottom:"1px solid #e5e7eb" }}>
-      <td style={{ padding:"11px 14px" }}>
-        <div style={{ fontWeight:600, fontSize:13, color:"#111" }}>{uniform.name}</div>
-        <div style={{ fontSize:11, color:"#9ca3af" }}>{uniform.category}</div>
-      </td>
-      <td style={{ padding:"11px 14px", fontSize:13, color:"#6b7280" }}>{college.name}</td>
-      <td style={{ padding:"11px 14px" }}>
-        {has
-          ? <span style={{ display:"inline-flex", alignItems:"center", gap:5, background:"#fef3c7", color:"#92400e", padding:"4px 10px", borderRadius:20, fontSize:12, fontWeight:700 }}>
-              {currentPct}% OFF
-            </span>
-          : <span style={{ fontSize:12, color:"#d1d5db" }}>Sin descuento</span>}
-      </td>
-      <td style={{ padding:"11px 14px" }}>
-        {editing ? (
-          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-            <div style={{ position:"relative", width:80 }}>
-              <input type="number" min="1" max="90" value={pct} onChange={e=>setPct(e.target.value)} autoFocus
-                style={{ width:"100%", boxSizing:"border-box", padding:"6px 22px 6px 8px", border:"1px solid #6366f1", borderRadius:6, fontSize:13, fontWeight:600, outline:"none" }} />
-              <span style={{ position:"absolute", right:7, top:"50%", transform:"translateY(-50%)", fontSize:11, color:"#9ca3af", pointerEvents:"none" }}>%</span>
+    <>
+      <tr style={{ borderBottom: editing ? "none" : "1px solid #e5e7eb",
+        background: has ? "#fffbeb" : "transparent", transition:"background .15s" }}>
+        <td style={{ padding:"14px 16px" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+            <div style={{ width:36, height:36, borderRadius:8, background:"#fff", border:"1px solid #e5e7eb",
+              display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, overflow:"hidden" }}>
+              {college.logo
+                ? <img src={college.logo} alt={college.name} style={{ width:28, height:28, objectFit:"contain" }} />
+                : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={college.primaryColor} strokeWidth="2" strokeLinecap="round">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>}
             </div>
-            <button onClick={handleSave} disabled={saving}
-              style={{ padding:"6px 12px", background:"#111", color:"#fff", border:"none", borderRadius:6, fontSize:12, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:5 }}>
-              {saving ? <Spinner size={12} color="#fff" /> : "Guardar"}
-            </button>
-            {has && (
-              <button onClick={handleRemove} disabled={saving}
-                style={{ padding:"6px 10px", background:"#fef2f2", color:"#991b1b", border:"1px solid #fca5a5", borderRadius:6, fontSize:12, fontWeight:600, cursor:"pointer" }}>
-                Quitar
-              </button>
-            )}
-            <button onClick={() => { setEditing(false); setPct(currentPct ?? ""); }}
-              style={{ padding:"6px 10px", background:"#f3f4f6", color:"#6b7280", border:"1px solid #e5e7eb", borderRadius:6, fontSize:12, cursor:"pointer" }}>
-              ✕
-            </button>
+            <div>
+              <div style={{ fontWeight:600, fontSize:14, color:"#111" }}>{uniform.name}</div>
+              <div style={{ fontSize:11, color:"#9ca3af", marginTop:1 }}>{uniform.category} · {college.name}</div>
+            </div>
           </div>
-        ) : (
-          <button onClick={() => { setPct(currentPct ?? ""); setEditing(true); }}
-            style={{ padding:"6px 14px", borderRadius:6, fontSize:12, fontWeight:600, cursor:"pointer",
-              border: has ? "1px solid #6366f1" : "1px solid #d1d5db",
-              background: has ? "#eef2ff" : "#fff",
-              color:      has ? "#4338ca" : "#374151" }}>
-            {has ? "Editar" : "Agregar"}
-          </button>
-        )}
-      </td>
-    </tr>
+        </td>
+        <td style={{ padding:"14px 16px" }}>
+          {has
+            ? <div style={{ display:"inline-flex", alignItems:"center", gap:6,
+                background:"#fef3c7", border:"1px solid #fcd34d", padding:"6px 14px",
+                borderRadius:20, fontSize:14, fontWeight:800, color:"#92400e" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+                {currentPct}% OFF
+              </div>
+            : <span style={{ fontSize:13, color:"#d1d5db", fontStyle:"italic" }}>Sin descuento</span>}
+        </td>
+        <td style={{ padding:"14px 16px", textAlign:"right" }}>
+          {!editing && (
+            <button onClick={() => { setPct(currentPct ?? ""); setEditing(true); }}
+              onMouseEnter={e => { e.currentTarget.style.background = has ? "#4338ca" : "#f3f4f6"; e.currentTarget.style.color = has ? "#fff" : "#111"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = has ? "#eef2ff" : "#fff"; e.currentTarget.style.color = has ? "#4338ca" : "#374151"; }}
+              style={{ padding:"8px 18px", borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer",
+                border: has ? "1px solid #818cf8" : "1px solid #d1d5db",
+                background: has ? "#eef2ff" : "#fff",
+                color: has ? "#4338ca" : "#374151",
+                display:"inline-flex", alignItems:"center", gap:5, transition:"all .15s" }}>
+              {has
+                ? <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar</>
+                : <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>Agregar</>}
+            </button>
+          )}
+        </td>
+      </tr>
+      {editing && (
+        <tr style={{ borderBottom:"2px solid #818cf8" }}>
+          <td colSpan={3} style={{ padding:"0 16px 14px" }}>
+            <DiscountEditor pct={pct} setPct={setPct} saving={saving} has={has}
+              onSave={handleSave} onRemove={handleRemove}
+              onCancel={() => { setEditing(false); setPct(currentPct ?? ""); }} />
+          </td>
+        </tr>
+      )}
+    </>
   );
 }
 
@@ -344,47 +407,48 @@ function DiscountCard({ uniform, college, currentPct, onSave, onRemove }) {
   };
 
   return (
-    <div style={{ border:"1px solid #e5e7eb", borderRadius:10, background:"#fff", padding:"14px 16px", marginBottom:10 }}>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
-        <div>
-          <div style={{ fontSize:13, fontWeight:600, color:"#111" }}>{uniform.name}</div>
-          <div style={{ fontSize:11, color:"#9ca3af" }}>{uniform.category} · {college.name}</div>
+    <div style={{ border: has ? "1px solid #fcd34d" : "1px solid #e5e7eb",
+      borderRadius:12, background: has ? "#fffdf5" : "#fff", padding:"16px 18px", marginBottom:12,
+      transition:"all .15s" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <div style={{ width:32, height:32, borderRadius:8, background:"#fff", border:"1px solid #e5e7eb",
+            display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, overflow:"hidden" }}>
+            {college.logo
+              ? <img src={college.logo} alt={college.name} style={{ width:24, height:24, objectFit:"contain" }} />
+              : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={college.primaryColor} strokeWidth="2" strokeLinecap="round">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>}
+          </div>
+          <div>
+            <div style={{ fontSize:14, fontWeight:600, color:"#111" }}>{uniform.name}</div>
+            <div style={{ fontSize:11, color:"#9ca3af", marginTop:1 }}>{uniform.category} · {college.name}</div>
+          </div>
         </div>
         {has && (
-          <span style={{ background:"#fef3c7", color:"#92400e", padding:"3px 9px", borderRadius:20, fontSize:11, fontWeight:700, flexShrink:0, marginLeft:8 }}>
-            {currentPct}% OFF
+          <span style={{ background:"#fef3c7", border:"1px solid #fcd34d", color:"#92400e",
+            padding:"4px 10px", borderRadius:20, fontSize:12, fontWeight:800, flexShrink:0,
+            display:"inline-flex", alignItems:"center", gap:4 }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+            {currentPct}%
           </span>
         )}
       </div>
       {editing ? (
-        <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-          <div style={{ position:"relative", width:80 }}>
-            <input type="number" min="1" max="90" value={pct} onChange={e=>setPct(e.target.value)} autoFocus
-              style={{ width:"100%", boxSizing:"border-box", padding:"7px 22px 7px 8px", border:"1px solid #6366f1", borderRadius:6, fontSize:13, fontWeight:600, outline:"none" }} />
-            <span style={{ position:"absolute", right:7, top:"50%", transform:"translateY(-50%)", fontSize:11, color:"#9ca3af", pointerEvents:"none" }}>%</span>
-          </div>
-          <button onClick={handleSave} disabled={saving}
-            style={{ padding:"7px 14px", background:"#111", color:"#fff", border:"none", borderRadius:6, fontSize:12, fontWeight:600, cursor:"pointer" }}>
-            {saving ? "..." : "Guardar"}
-          </button>
-          {has && (
-            <button onClick={handleRemove} disabled={saving}
-              style={{ padding:"7px 10px", background:"#fef2f2", color:"#991b1b", border:"1px solid #fca5a5", borderRadius:6, fontSize:12, fontWeight:600, cursor:"pointer" }}>
-              Quitar
-            </button>
-          )}
-          <button onClick={() => { setEditing(false); setPct(currentPct ?? ""); }}
-            style={{ padding:"7px 10px", background:"#f3f4f6", color:"#6b7280", border:"1px solid #e5e7eb", borderRadius:6, fontSize:12, cursor:"pointer" }}>
-            ✕
-          </button>
-        </div>
+        <DiscountEditor pct={pct} setPct={setPct} saving={saving} has={has}
+          onSave={handleSave} onRemove={handleRemove}
+          onCancel={() => { setEditing(false); setPct(currentPct ?? ""); }} />
       ) : (
         <button onClick={() => { setPct(currentPct ?? ""); setEditing(true); }}
-          style={{ width:"100%", padding:"8px", borderRadius:6, fontSize:12, fontWeight:600, cursor:"pointer",
-            border:      has ? "1px solid #6366f1" : "1px solid #d1d5db",
-            background:  has ? "#eef2ff" : "#f9fafb",
-            color:       has ? "#4338ca" : "#374151" }}>
-          {has ? "Editar descuento" : "Agregar descuento"}
+          onMouseEnter={e => e.currentTarget.style.borderColor="#818cf8"}
+          onMouseLeave={e => e.currentTarget.style.borderColor = has ? "#818cf8" : "#d1d5db"}
+          style={{ width:"100%", padding:"10px", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer",
+            border: has ? "1.5px solid #818cf8" : "1px solid #d1d5db",
+            background: has ? "#eef2ff" : "#f9fafb",
+            color: has ? "#4338ca" : "#374151",
+            display:"flex", alignItems:"center", justifyContent:"center", gap:6, transition:"all .15s" }}>
+          {has
+            ? <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar descuento</>
+            : <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>Agregar descuento</>}
         </button>
       )}
     </div>
@@ -394,26 +458,81 @@ function DiscountCard({ uniform, college, currentPct, onSave, onRemove }) {
 // ── SizeStockInput ────────────────────────────────────────────
 function SizeStockInput({ size, currentQty, onSave, saving }) {
   const [input, setInput] = useState("");
+  const [focused, setFocused] = useState(false);
   const q = currentQty ?? null;
   const out = q === 0; const low = q !== null && q > 0 && q <= 3; const ok = q !== null && q > 3;
-  const bg    = out?"#fee2e2":low?"#fef9c3":ok?"#dcfce7":"#f3f4f6";
-  const color = out?"#991b1b":low?"#854d0e":ok?"#065f46":"#9ca3af";
+  const statusBg    = out?"#fee2e2":low?"#fef9c3":ok?"#dcfce7":"#f8f9fa";
+  const statusColor = out?"#dc2626":low?"#d97706":ok?"#16a34a":"#9ca3af";
+  const statusBorder= out?"#fca5a5":low?"#fde68a":ok?"#86efac":"#e5e7eb";
+  const statusLabel = q === null ? "Sin stock" : q === 0 ? "Agotado" : q <= 3 ? "Bajo" : "OK";
+
   return (
-    <div style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 0", borderBottom:"1px solid #f3f4f6" }}>
-      <span style={{ width:32, fontSize:11, fontWeight:700, color:"#6b7280", flexShrink:0 }}>{size}</span>
-      <span style={{ background:bg, color, padding:"2px 8px", borderRadius:4, fontSize:11, fontWeight:700, minWidth:64, textAlign:"center" }}>
-        {q === null ? "—" : q === 0 ? "Agotado" : `${q} uds`}
-      </span>
-      <input type="number" min="0" max="9999" value={input} onChange={e=>setInput(e.target.value)}
-        placeholder={q !== null ? String(q) : "0"}
-        style={{ width:72, padding:"5px 8px", fontSize:12, border:"1px solid #d1d5db", borderRadius:6 }}
-        onKeyDown={e=>{ if(e.key==="Enter" && input!=="") onSave(size, input, ()=>setInput("")); }} />
+    <div style={{
+      display:"flex", alignItems:"center", gap:10, padding:"10px 14px",
+      borderRadius:10, background: focused ? "#f8faff" : "#fff",
+      border: focused ? "1.5px solid #818cf8" : "1px solid #e5e7eb",
+      transition:"all .15s ease", marginBottom:8,
+    }}>
+      {/* Talla */}
+      <div style={{
+        width:42, height:42, borderRadius:10, background:"#f3f4f6",
+        display:"flex", alignItems:"center", justifyContent:"center",
+        fontSize:14, fontWeight:800, color:"#374151", flexShrink:0, letterSpacing:"-0.02em",
+      }}>{size}</div>
+
+      {/* Estado actual */}
+      <div style={{ flex:"0 0 auto", minWidth:80 }}>
+        <div style={{ fontSize:10, fontWeight:600, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".08em", marginBottom:3 }}>Actual</div>
+        <div style={{ display:"flex", alignItems:"center", gap:5 }}>
+          <span style={{ width:8, height:8, borderRadius:"50%", background:statusColor, flexShrink:0 }} />
+          <span style={{ fontSize:15, fontWeight:700, color: q === null ? "#9ca3af" : "#111" }}>
+            {q === null ? "—" : q}
+          </span>
+          <span style={{ fontSize:10, fontWeight:600, color:statusColor, background:statusBg,
+            padding:"1px 6px", borderRadius:4, border:`1px solid ${statusBorder}` }}>
+            {statusLabel}
+          </span>
+        </div>
+      </div>
+
+      {/* Separador */}
+      <div style={{ width:1, height:32, background:"#e5e7eb", flexShrink:0 }} />
+
+      {/* Input nuevo valor */}
+      <div style={{ flex:1, minWidth:0 }}>
+        <div style={{ fontSize:10, fontWeight:600, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".08em", marginBottom:3 }}>Nuevo</div>
+        <input type="number" min="0" max="9999" value={input}
+          onChange={e=>setInput(e.target.value)}
+          onFocus={()=>setFocused(true)}
+          onBlur={()=>setFocused(false)}
+          placeholder="Cantidad"
+          style={{
+            width:"100%", boxSizing:"border-box", padding:"6px 10px",
+            fontSize:14, fontWeight:600, border:"1px solid #d1d5db", borderRadius:8,
+            outline:"none", background:"#fff", color:"#111",
+            transition:"border-color .15s",
+          }}
+          onKeyDown={e=>{ if(e.key==="Enter" && input!=="") onSave(size, input, ()=>setInput("")); }} />
+      </div>
+
+      {/* Botón guardar */}
       <button onClick={()=>{ if(input!=="") onSave(size, input, ()=>setInput("")); }}
         disabled={saving || input===""}
-        style={{ padding:"5px 12px", fontSize:11, fontWeight:600, borderRadius:6, border:"1px solid #d1d5db",
-          background: saving||input===""?"#f9fafb":"#111", color: saving||input===""?"#9ca3af":"#fff",
-          cursor:saving||input===""?"not-allowed":"pointer", whiteSpace:"nowrap" }}>
-        {saving ? "..." : "OK"}
+        style={{
+          padding:"10px 16px", fontSize:12, fontWeight:700, borderRadius:8,
+          border:"none", flexShrink:0,
+          background: saving||input==="" ? "#f3f4f6" : "#111",
+          color: saving||input==="" ? "#9ca3af" : "#fff",
+          cursor: saving||input==="" ? "not-allowed" : "pointer",
+          transition:"all .15s ease",
+          display:"flex", alignItems:"center", gap:5,
+        }}
+        onMouseEnter={e => { if(input) e.currentTarget.style.background="#374151"; }}
+        onMouseLeave={e => { if(input) e.currentTarget.style.background="#111"; }}>
+        {saving
+          ? <Spinner size={12} color="#9ca3af" />
+          : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>}
+        {saving ? "" : "Guardar"}
       </button>
     </div>
   );
@@ -426,8 +545,20 @@ function StockRow({ uniform, college, stockData, onStockUpdated, isEven, toast, 
   const sizeMap  = stockData?.[String(uniform.id)] || {};
   const totalQty = uniform.sizes.reduce((s,sz) => s + (sizeMap[sz] ?? 0), 0);
   const hasStock = Object.keys(sizeMap).length > 0;
-  const bg    = !hasStock?"#f3f4f6":totalQty===0?"#fee2e2":totalQty<=5?"#fef9c3":"#dcfce7";
-  const color = !hasStock?"#9ca3af":totalQty===0?"#991b1b":totalQty<=5?"#854d0e":"#065f46";
+  const outOfStock = hasStock && totalQty === 0;
+  const lowStock = hasStock && totalQty > 0 && totalQty <= 5;
+
+  const statusIcon = !hasStock
+    ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>
+    : outOfStock
+    ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+    : lowStock
+    ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>;
+
+  const bg    = !hasStock?"#f8f9fa":outOfStock?"#fef2f2":lowStock?"#fefce8":"#f0fdf4";
+  const color = !hasStock?"#9ca3af":outOfStock?"#dc2626":lowStock?"#d97706":"#16a34a";
+  const label = !hasStock?"Sin definir":outOfStock?"Agotado":lowStock?`${totalQty} uds (bajo)`:`${totalQty} uds`;
 
   const handleSave = async (size, inputVal, clearInput) => {
     const val = parseInt(inputVal, 10);
@@ -447,19 +578,30 @@ function StockRow({ uniform, college, stockData, onStockUpdated, isEven, toast, 
     return (
       <div>
         <button onClick={()=>setExpanded(e=>!e)}
-          style={{ fontSize:12, padding:"6px 12px", borderRadius:6, border:"1px solid #d1d5db",
-            background:"#fff", cursor:"pointer", fontWeight:500, marginTop:4 }}>
-          {expanded ? "▲ Cerrar" : " Editar tallas"}
+          style={{ width:"100%", fontSize:13, padding:"10px 14px", borderRadius:8,
+            border: expanded ? "1.5px solid #818cf8" : "1px solid #d1d5db",
+            background: expanded ? "#eef2ff" : "#fff", cursor:"pointer", fontWeight:600,
+            marginTop:8, display:"flex", alignItems:"center", justifyContent:"center", gap:6,
+            color: expanded ? "#4338ca" : "#374151", transition:"all .15s" }}>
+          {expanded
+            ? <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 15l-6-6-6 6"/></svg> Cerrar editor</>
+            : <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar stock por talla</>}
         </button>
         {expanded && (
-          <div style={{ marginTop:10, background:"#f8fafc", borderRadius:8, padding:"10px 12px" }}>
-            <div style={{ fontSize:11, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:".1em", marginBottom:8 }}>
-              Stock por talla
+          <div style={{ marginTop:12, borderRadius:12, overflow:"hidden", border:"1px solid #e5e7eb" }}>
+            <div style={{ background:"#f8f9fa", padding:"10px 14px", borderBottom:"1px solid #e5e7eb",
+              display:"flex", alignItems:"center", gap:6 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+              <span style={{ fontSize:11, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:".08em" }}>
+                Stock por talla — {uniform.name}
+              </span>
             </div>
-            {uniform.sizes.map(sz => (
-              <SizeStockInput key={sz} size={sz} currentQty={sizeMap[sz]??null}
-                onSave={handleSave} saving={savingSize===sz} />
-            ))}
+            <div style={{ padding:12, background:"#fff" }}>
+              {uniform.sizes.map(sz => (
+                <SizeStockInput key={sz} size={sz} currentQty={sizeMap[sz]??null}
+                  onSave={handleSave} saving={savingSize===sz} />
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -468,41 +610,68 @@ function StockRow({ uniform, college, stockData, onStockUpdated, isEven, toast, 
 
   return (
     <>
-      <tr style={{ borderBottom:"1px solid #e5e7eb", background:isEven?"#fff":"#f9fafb" }}>
-        <td style={{ padding:"12px 14px", fontSize:13, fontWeight:600, color:"#111" }}>{uniform.name}</td>
-        <td style={{ padding:"12px 14px", fontSize:11, color:"#9ca3af" }}>{uniform.category}</td>
-        <td style={{ padding:"12px 14px" }}>
-          <span style={{ background:bg, color, padding:"3px 9px", borderRadius:4, fontSize:11, fontWeight:700 }}>
-            {!hasStock?"Sin definir":totalQty===0?"Agotado":`${totalQty} uds`}
-          </span>
-          <div style={{ display:"flex", flexWrap:"wrap", gap:4, marginTop:6 }}>
-            {uniform.sizes.map(sz => {
-              const q = sizeMap[sz] ?? null;
-              const c = q===null?"#9ca3af":q===0?"#991b1b":q<=3?"#854d0e":"#065f46";
-              const b = q===null?"#f3f4f6":q===0?"#fee2e2":q<=3?"#fef9c3":"#dcfce7";
-              return <span key={sz} style={{ background:b, color:c, padding:"1px 6px", borderRadius:3, fontSize:10, fontWeight:700 }}>{sz}: {q??"—"}</span>;
-            })}
+      <tr style={{ borderBottom:"1px solid #e5e7eb", background:isEven?"#fff":"#fafafa", cursor:"pointer" }}
+        onClick={()=>setExpanded(e=>!e)}>
+        <td style={{ padding:"14px 16px" }}>
+          <div style={{ fontSize:14, fontWeight:600, color:"#111" }}>{uniform.name}</div>
+          <div style={{ fontSize:11, color:"#9ca3af", marginTop:2 }}>{uniform.category}</div>
+        </td>
+        <td style={{ padding:"14px 16px" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            {statusIcon}
+            <div>
+              <div style={{ fontSize:13, fontWeight:700, color }}>{label}</div>
+              <div style={{ display:"flex", flexWrap:"wrap", gap:4, marginTop:5 }}>
+                {uniform.sizes.map(sz => {
+                  const q = sizeMap[sz] ?? null;
+                  const c = q===null?"#9ca3af":q===0?"#dc2626":q<=3?"#d97706":"#16a34a";
+                  const b = q===null?"#f8f9fa":q===0?"#fef2f2":q<=3?"#fefce8":"#f0fdf4";
+                  const bdr = q===null?"#e5e7eb":q===0?"#fca5a5":q<=3?"#fde68a":"#86efac";
+                  return (
+                    <span key={sz} style={{
+                      background:b, color:c, padding:"2px 8px", borderRadius:6,
+                      fontSize:11, fontWeight:700, border:`1px solid ${bdr}`,
+                      display:"inline-flex", alignItems:"center", gap:3,
+                    }}>
+                      <span style={{ color:"#6b7280", fontWeight:600 }}>{sz}</span>
+                      {q ?? "—"}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </td>
-        <td style={{ padding:"12px 14px" }}>
-          <button onClick={()=>setExpanded(e=>!e)}
-            style={{ padding:"6px 12px", fontSize:12, borderRadius:6, border:"1px solid #d1d5db",
-              background:"#fff", cursor:"pointer", fontWeight:500 }}>
-            {expanded ? "▲ Cerrar" : " Editar tallas"}
+        <td style={{ padding:"14px 16px", textAlign:"right" }}>
+          <button onClick={e=>{e.stopPropagation(); setExpanded(x=>!x);}}
+            style={{ padding:"8px 16px", fontSize:12, borderRadius:8,
+              border: expanded ? "1.5px solid #818cf8" : "1px solid #d1d5db",
+              background: expanded ? "#eef2ff" : "#fff",
+              color: expanded ? "#4338ca" : "#374151",
+              cursor:"pointer", fontWeight:600, transition:"all .15s",
+              display:"inline-flex", alignItems:"center", gap:5 }}>
+            {expanded
+              ? <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 15l-6-6-6 6"/></svg>Cerrar</>
+              : <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar</>}
           </button>
         </td>
       </tr>
       {expanded && (
-        <tr style={{ background:isEven?"#f8fafc":"#f1f5f9", borderBottom:"1px solid #e5e7eb" }}>
-          <td colSpan={4} style={{ padding:"14px 20px" }}>
-            <div style={{ fontSize:11, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:".1em", marginBottom:10 }}>
-              Stock por talla — {uniform.name}
-            </div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:"0 24px" }}>
-              {uniform.sizes.map(sz => (
-                <SizeStockInput key={sz} size={sz} currentQty={sizeMap[sz]??null}
-                  onSave={handleSave} saving={savingSize===sz} />
-              ))}
+        <tr style={{ borderBottom:"2px solid #818cf8" }}>
+          <td colSpan={3} style={{ padding:0 }}>
+            <div style={{ background:"#f8faff", padding:"20px 24px", borderTop:"1px solid #e0e7ff" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:16 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4338ca" strokeWidth="2" strokeLinecap="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+                <span style={{ fontSize:12, fontWeight:700, color:"#4338ca", textTransform:"uppercase", letterSpacing:".08em" }}>
+                  Editar stock — {uniform.name}
+                </span>
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(360px,1fr))", gap:"0 20px" }}>
+                {uniform.sizes.map(sz => (
+                  <SizeStockInput key={sz} size={sz} currentQty={sizeMap[sz]??null}
+                    onSave={handleSave} saving={savingSize===sz} />
+                ))}
+              </div>
             </div>
           </td>
         </tr>
@@ -620,23 +789,27 @@ export default function AdminPanel({ onLogout, toast }) {
   };
 
   const TABS = [
-    { id:"orders",    label:"Pedidos" },
-    { id:"stats",     label:"Estadísticas" },
-    { id:"stock",     label:"Stock" },
-    { id:"discounts", label:"Descuentos" },
+    { id:"orders",    label:"Pedidos",      icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg> },
+    { id:"stats",     label:"Estadísticas", icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg> },
+    { id:"stock",     label:"Stock",        icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg> },
+    { id:"discounts", label:"Descuentos",   icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> },
   ];
 
   const TabBar = () => (
     <>
       {/* Desktop tabs */}
-      <div className="admin-tabs-desktop" style={{ display:"flex", gap:4, marginBottom:24, borderBottom:"1px solid #e5e7eb", paddingBottom:0 }}>
+      <div className="admin-tabs-desktop" style={{ display:"flex", gap:2, marginBottom:24, borderBottom:"1px solid #e5e7eb", paddingBottom:0 }}>
         {TABS.map(t => (
           <button key={t.id} onClick={()=>setTab(t.id)}
-            style={{ padding:"10px 18px", fontSize:13, fontWeight:600, border:"none",
-              borderBottom: tab===t.id ? "2px solid #111" : "2px solid transparent",
+            onMouseEnter={e => { if(tab!==t.id) e.currentTarget.style.color="#374151"; }}
+            onMouseLeave={e => { if(tab!==t.id) e.currentTarget.style.color="#9ca3af"; }}
+            style={{ padding:"10px 20px", fontSize:13, fontWeight:600, border:"none",
+              borderBottom: tab===t.id ? "2.5px solid #111" : "2.5px solid transparent",
               background:"none", cursor:"pointer",
               color: tab===t.id ? "#111" : "#9ca3af",
-              transition:"all .15s", marginBottom:-1 }}>
+              transition:"all .2s ease", marginBottom:-1,
+              display:"flex", alignItems:"center", gap:6 }}>
+            <span style={{ opacity: tab===t.id ? 1 : 0.5, transition:"opacity .2s", display:"flex" }}>{t.icon}</span>
             {t.label}
           </button>
         ))}
@@ -663,14 +836,13 @@ export default function AdminPanel({ onLogout, toast }) {
   const ActionBar = ({ onRefresh }) => (
     <div style={{ display:"flex", gap:8, alignItems:"center" }}>
       <button onClick={onRefresh}
-        style={{ padding:"8px 14px", fontSize:12, fontWeight:600, borderRadius:6,
-          border:"1px solid #d1d5db", background:"#fff", cursor:"pointer", color:"#374151" }}>
+        onMouseEnter={e => { e.currentTarget.style.background="#f3f4f6"; e.currentTarget.style.borderColor="#9ca3af"; }}
+        onMouseLeave={e => { e.currentTarget.style.background="#fff"; e.currentTarget.style.borderColor="#d1d5db"; }}
+        style={{ padding:"8px 16px", fontSize:12, fontWeight:600, borderRadius:8,
+          border:"1px solid #d1d5db", background:"#fff", cursor:"pointer", color:"#374151",
+          display:"flex", alignItems:"center", gap:6, transition:"all .15s ease" }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
         Actualizar
-      </button>
-      <button onClick={onLogout}
-        style={{ padding:"8px 14px", fontSize:12, fontWeight:600, borderRadius:6,
-          border:"1px solid #fca5a5", background:"#fef2f2", cursor:"pointer", color:"#991b1b" }}>
-        Cerrar sesión
       </button>
     </div>
   );
@@ -681,19 +853,24 @@ export default function AdminPanel({ onLogout, toast }) {
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
         @keyframes slideIn{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
         .tbl-wrap{overflow-x:auto}
         table{width:100%;border-collapse:collapse}
-        th{padding:10px 13px;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;text-align:left}
-        .sidebar{width:220px;background:#0f0e0c;flex-shrink:0;display:flex;flex-direction:column;transition:transform .25s ease}
+        th{padding:12px 14px;font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;text-align:left;background:#f8f9fa}
+        tbody tr{transition:background .15s ease}
+        tbody tr:hover{background:#f0f4ff!important}
+        .sidebar{width:240px;background:#0f0e0c;flex-shrink:0;display:flex;flex-direction:column;transition:transform .25s ease}
         .mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:998}
         .mobile-topbar{display:none;align-items:center;justify-content:space-between;padding:12px 16px;background:#0f0e0c;position:sticky;top:0;z-index:50}
-        .order-card{display:none;border:1px solid #e5e7eb;border-radius:10px;background:#fff;padding:14px 16px;margin-bottom:10px;cursor:pointer}
-        .order-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
-        .order-card-body{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-        .order-card-field{font-size:11px;color:#9ca3af;margin-bottom:2px}
+        .order-card{display:none;border:1px solid #e5e7eb;border-radius:12px;background:#fff;padding:16px 18px;margin-bottom:12px;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}
+        .order-card:active{transform:scale(.98)}
+        .order-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+        .order-card-body{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+        .order-card-field{font-size:10px;color:#9ca3af;margin-bottom:3px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
         .order-card-value{font-size:13px;color:#111;font-weight:500}
-        .order-card-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid #f3f4f6}
-        .stock-card{border:1px solid #e5e7eb;border-radius:10px;background:#fff;padding:14px 16px;margin-bottom:10px}
+        .order-card-footer{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid #f0f0f0;gap:8px}
+        .stock-card{border:1px solid #e5e7eb;border-radius:12px;background:#fff;padding:16px 18px;margin-bottom:12px;transition:border-color .15s}
+        .stock-card:hover{border-color:#c7d2fe}
         .mobile-stock-cards{display:none}
         @media(max-width:768px){
           .admin-tabs-desktop{display:none!important}
@@ -760,11 +937,17 @@ export default function AdminPanel({ onLogout, toast }) {
           <nav style={{ padding:"16px 12px", flex:1 }}>
             {TABS.map(t => (
               <button key={t.id} onClick={()=>{ setTab(t.id); setSidebarOpen(false); }}
-                style={{ width:"100%", textAlign:"left", padding:"10px 12px",
+                onMouseEnter={e => { if(tab!==t.id) { e.currentTarget.style.background="rgba(255,255,255,.06)"; e.currentTarget.style.color="rgba(255,255,255,.7)"; }}}
+                onMouseLeave={e => { if(tab!==t.id) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color="rgba(255,255,255,.4)"; }}}
+                style={{ width:"100%", textAlign:"left", padding:"10px 14px",
                   borderRadius:8, border:"none", cursor:"pointer", fontSize:13, fontWeight:500,
-                  marginBottom:2, transition:"all .15s",
-                  background: tab===t.id ? "rgba(255,255,255,.1)" : "transparent",
-                  color: tab===t.id ? "#fff" : "rgba(255,255,255,.4)" }}>
+                  marginBottom:4, transition:"all .2s ease",
+                  display:"flex", alignItems:"center", gap:10,
+                  background: tab===t.id ? "rgba(255,255,255,.12)" : "transparent",
+                  color: tab===t.id ? "#fff" : "rgba(255,255,255,.4)",
+                  borderLeft: tab===t.id ? "3px solid #fff" : "3px solid transparent",
+                  paddingLeft: 11 }}>
+                {t.icon}
                 {t.label}
               </button>
             ))}
@@ -801,21 +984,38 @@ export default function AdminPanel({ onLogout, toast }) {
                 <TabBar />
 
                 {/* Filtros */}
-                <div style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:10, padding:"14px 16px", marginBottom:16, display:"flex", gap:12, flexWrap:"wrap" }}>
-                  <div style={{ flex:"1 1 200px" }}>
-                    <label style={{ display:"block", fontSize:11, fontWeight:600, color:"#6b7280", textTransform:"uppercase", letterSpacing:".08em", marginBottom:6 }}>Buscar</label>
-                    <input value={search} onChange={e=>setSearch(e.target.value)}
-                      placeholder="N° pedido, estudiante, institución..."
-                      style={{ width:"100%", boxSizing:"border-box", padding:"8px 10px", border:"1px solid #d1d5db", borderRadius:6, fontSize:13 }} />
+                <div style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:12, padding:"16px 18px", marginBottom:16, display:"flex", gap:14, flexWrap:"wrap", alignItems:"flex-end" }}>
+                  <div style={{ flex:"1 1 240px" }}>
+                    <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:".1em", marginBottom:6 }}>Buscar</label>
+                    <div style={{ position:"relative" }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5" strokeLinecap="round"
+                        style={{ position:"absolute", left:10, top:"50%", transform:"translateY(-50%)", pointerEvents:"none" }}>
+                        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                      </svg>
+                      <input value={search} onChange={e=>setSearch(e.target.value)}
+                        placeholder="N° pedido, estudiante, institución..."
+                        style={{ width:"100%", boxSizing:"border-box", padding:"9px 12px 9px 32px", border:"1px solid #d1d5db", borderRadius:8, fontSize:13,
+                          outline:"none", transition:"border-color .15s" }}
+                        onFocus={e => e.target.style.borderColor="#6366f1"}
+                        onBlur={e => e.target.style.borderColor="#d1d5db"} />
+                    </div>
                   </div>
                   <div style={{ flex:"0 1 200px" }}>
-                    <label style={{ display:"block", fontSize:11, fontWeight:600, color:"#6b7280", textTransform:"uppercase", letterSpacing:".08em", marginBottom:6 }}>Estado</label>
+                    <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:".1em", marginBottom:6 }}>Estado</label>
                     <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}
-                      style={{ width:"100%", padding:"8px 10px", border:"1px solid #d1d5db", borderRadius:6, fontSize:13 }}>
-                      <option value="">Todos</option>
+                      style={{ width:"100%", padding:"9px 12px", border:"1px solid #d1d5db", borderRadius:8, fontSize:13,
+                        outline:"none", cursor:"pointer", background:"#fff" }}>
+                      <option value="">Todos los estados</option>
                       {STATUS_ORDER.map(s=><option key={s}>{s}</option>)}
                     </select>
                   </div>
+                  {(search || filterStatus) && (
+                    <button onClick={()=>{ setSearch(""); setFilterStatus(""); }}
+                      style={{ padding:"9px 14px", fontSize:12, fontWeight:600, borderRadius:8, border:"1px solid #e5e7eb",
+                        background:"#f9fafb", color:"#6b7280", cursor:"pointer", whiteSpace:"nowrap", transition:"all .15s" }}>
+                      Limpiar filtros
+                    </button>
+                  )}
                 </div>
 
                 {/* Tabla - desktop */}
@@ -836,10 +1036,14 @@ export default function AdminPanel({ onLogout, toast }) {
                           <tbody>
                             {filtered.map((o,i) => (
                               <tr key={o.id} style={{ borderBottom:"1px solid #e5e7eb", background:i%2===0?"#fff":"#f9fafb" }}>
-                                <td style={{ padding:"8px 10px" }}>
+                                <td style={{ padding:"10px 12px" }}>
                                   <button onClick={()=>setSelectedOrder(o)}
+                                    onMouseEnter={e => e.currentTarget.style.background="#374151"}
+                                    onMouseLeave={e => e.currentTarget.style.background="#111"}
                                     style={{ background:"#111", color:"#fff", border:"none", borderRadius:6,
-                                      padding:"5px 10px", fontSize:11, fontWeight:600, cursor:"pointer" }}>
+                                      padding:"6px 14px", fontSize:11, fontWeight:600, cursor:"pointer",
+                                      display:"inline-flex", alignItems:"center", gap:4, transition:"background .15s" }}>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                     Ver
                                   </button>
                                 </td>
@@ -964,35 +1168,46 @@ export default function AdminPanel({ onLogout, toast }) {
                 {!statsData
                   ? <div style={{ display:"flex", justifyContent:"center", padding:52 }}><Spinner size={28} color="#9ca3af" /></div>
                   : <>
-                      <div className="stats-grid" style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))", gap:16, marginBottom:24 }}>
+                      <div className="stats-grid" style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))", gap:16, marginBottom:24 }}>
                         {[
-                          ["Total pedidos", statsData.total || 0, "#111"],
-                          ["Ingresos", COP(statsData.totalRevenue || 0), "#065f46"],
-                          ["Entregados", statsData.byStatus?.["Entregado"] || 0, "#1e3a8a"],
-                          ["Preparando pedido", (statsData.byStatus?.["Preparando pedido"] || 0) + (statsData.byStatus?.["En producción"] || 0), "#581c87"],
-                        ].map(([label, value, color]) => (
-                          <div key={label} style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:10, padding:"20px 18px" }}>
-                            <div style={{ fontSize:11, fontWeight:600, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".1em", marginBottom:8 }}>{label}</div>
-                            <div style={{ fontSize:26, fontWeight:700, color }}>{value}</div>
+                          ["Total pedidos", statsData.total || 0, "#111", "#f3f4f6",
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>],
+                          ["Ingresos", COP(statsData.totalRevenue || 0), "#065f46", "#dcfce7",
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#065f46" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>],
+                          ["Entregados", statsData.byStatus?.["Entregado"] || 0, "#1e3a8a", "#dbeafe",
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" strokeWidth="2" strokeLinecap="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>],
+                          ["Preparando", (statsData.byStatus?.["Preparando pedido"] || 0) + (statsData.byStatus?.["En producción"] || 0), "#581c87", "#f3e8ff",
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#581c87" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>],
+                        ].map(([label, value, color, bg, icon]) => (
+                          <div key={label} style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:12, padding:"22px 20px",
+                            transition:"transform .15s ease, box-shadow .15s ease" }}
+                            onMouseEnter={e => { e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 4px 12px rgba(0,0,0,.08)"; }}
+                            onMouseLeave={e => { e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="none"; }}>
+                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
+                              <div style={{ fontSize:11, fontWeight:600, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".1em" }}>{label}</div>
+                              <div style={{ width:40, height:40, borderRadius:10, background:bg, display:"flex", alignItems:"center", justifyContent:"center" }}>{icon}</div>
+                            </div>
+                            <div style={{ fontSize:28, fontWeight:700, color, letterSpacing:"-0.02em" }}>{value}</div>
                           </div>
                         ))}
                       </div>
 
-                      <div style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:10, padding:"20px" }}>
-                        <div style={{ fontSize:12, fontWeight:700, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".1em", marginBottom:16 }}>Por estado</div>
+                      <div style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:12, padding:"24px" }}>
+                        <div style={{ fontSize:12, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:".1em", marginBottom:20 }}>Pedidos por estado</div>
                         {STATUS_ORDER.map(s => {
-                          // Compatibilidad: sumar pedidos con estado renombrado
                           const legacy = s === "Preparando pedido" ? (statsData.byStatus?.["En producción"] || 0) : 0;
                           const count = (statsData.byStatus?.[s] || 0) + legacy;
                           const pct = statsData.total ? Math.round(count/statsData.total*100) : 0;
                           const m = STATUS_META[s];
                           return (
-                            <div key={s} style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12 }}>
-                              <span className="stat-bar-label" style={{ width:160, fontSize:12, color:"#374151", flexShrink:0 }}>{s}</span>
-                              <div style={{ flex:1, background:"#f3f4f6", borderRadius:4, height:8, overflow:"hidden" }}>
-                                <div style={{ width:`${pct}%`, height:"100%", background:m?.dot || "#9ca3af", borderRadius:4, transition:"width .5s" }} />
+                            <div key={s} style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14, padding:"6px 0" }}>
+                              <span style={{ width:8, height:8, borderRadius:"50%", background:m?.dot || "#9ca3af", flexShrink:0 }} />
+                              <span className="stat-bar-label" style={{ width:160, fontSize:13, color:"#374151", flexShrink:0, fontWeight:500 }}>{s}</span>
+                              <div style={{ flex:1, background:"#f3f4f6", borderRadius:6, height:10, overflow:"hidden" }}>
+                                <div style={{ width:`${pct}%`, height:"100%", background:m?.dot || "#9ca3af", borderRadius:6, transition:"width .6s ease" }} />
                               </div>
-                              <span style={{ width:36, fontSize:12, fontWeight:600, color:"#374151", textAlign:"right" }}>{count}</span>
+                              <span style={{ width:44, fontSize:13, fontWeight:700, color:"#374151", textAlign:"right" }}>{count}</span>
+                              <span style={{ width:36, fontSize:11, color:"#9ca3af", textAlign:"right" }}>{pct}%</span>
                             </div>
                           );
                         })}
@@ -1028,12 +1243,19 @@ export default function AdminPanel({ onLogout, toast }) {
                       : allSections.filter(s => s.id === currentFilter);
 
                     return (
-                    <div key={col.id} style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:10, overflow:"hidden", marginBottom:20 }}>
-                      <div style={{ padding:"14px 18px", borderBottom:"1px solid #e5e7eb", background:"#f9fafb",
-                        display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" }}>
-                        <div style={{ width:10, height:10, borderRadius:"50%", background:col.primaryColor }} />
-                        <span style={{ fontWeight:700, fontSize:14, color:"#111" }}>{col.name}</span>
-                        <span style={{ fontSize:12, color:"#9ca3af" }}>· {allUnis.length} productos</span>
+                    <div key={col.id} style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:14, overflow:"hidden", marginBottom:24, boxShadow:"0 1px 3px rgba(0,0,0,.04)" }}>
+                      <div style={{ padding:"16px 20px", borderBottom:"1px solid #e5e7eb", background:"linear-gradient(135deg, #fafafa 0%, #fff 100%)",
+                        display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
+                        <div style={{ width:38, height:38, borderRadius:10, background:"#fff", border:"1px solid #e5e7eb",
+                          display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden", flexShrink:0 }}>
+                          {col.logo
+                            ? <img src={col.logo} alt={col.name} style={{ width:30, height:30, objectFit:"contain" }} />
+                            : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={col.primaryColor} strokeWidth="2" strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>}
+                        </div>
+                        <div>
+                          <span style={{ fontWeight:700, fontSize:15, color:"#111", display:"block" }}>{col.name}</span>
+                          <span style={{ fontSize:12, color:"#9ca3af" }}>{allUnis.length} productos</span>
+                        </div>
                         {hasSections && (
                           <select
                             value={currentFilter}
@@ -1057,8 +1279,8 @@ export default function AdminPanel({ onLogout, toast }) {
                           <div className="desktop-table">
                             <table style={{ width:"100%", borderCollapse:"collapse" }}>
                               <thead>
-                                <tr style={{ background:"#f9fafb", borderBottom:"1px solid #e5e7eb" }}>
-                                  {["Producto","Categoría","Stock actual","Editar"].map(h=><th key={h}>{h}</th>)}
+                                <tr style={{ background:"#f8f9fa", borderBottom:"1px solid #e5e7eb" }}>
+                                  {["Producto","Stock por talla",""].map(h=><th key={h}>{h}</th>)}
                                 </tr>
                               </thead>
                               <tbody>
@@ -1074,23 +1296,42 @@ export default function AdminPanel({ onLogout, toast }) {
                             </table>
                           </div>
                           {/* Mobile stock cards */}
-                          <div style={{ padding:"0 0 8px" }} className="mobile-stock-cards">
+                          <div style={{ padding:"12px" }} className="mobile-stock-cards">
                             {section.uniforms.map((u,i) => {
                               const sizeMap = stockData[col.id]?.[String(u.id)] || {};
                               const totalQty = u.sizes.reduce((s,sz) => s + (sizeMap[sz] ?? 0), 0);
                               const hasStock = Object.keys(sizeMap).length > 0;
-                              const bg    = !hasStock?"#f3f4f6":totalQty===0?"#fee2e2":totalQty<=5?"#fef9c3":"#dcfce7";
-                              const color = !hasStock?"#9ca3af":totalQty===0?"#991b1b":totalQty<=5?"#854d0e":"#065f46";
+                              const outOfStock = hasStock && totalQty === 0;
+                              const lowStock = hasStock && totalQty > 0 && totalQty <= 5;
+                              const bg    = !hasStock?"#f8f9fa":outOfStock?"#fef2f2":lowStock?"#fefce8":"#f0fdf4";
+                              const color = !hasStock?"#9ca3af":outOfStock?"#dc2626":lowStock?"#d97706":"#16a34a";
+                              const bdr   = !hasStock?"#e5e7eb":outOfStock?"#fca5a5":lowStock?"#fde68a":"#86efac";
+                              const label = !hasStock?"Sin definir":outOfStock?"Agotado":lowStock?`${totalQty} uds (bajo)`:`${totalQty} uds`;
                               return (
                                 <div key={u.id} className="stock-card">
-                                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+                                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
                                     <div>
-                                      <div style={{ fontSize:13, fontWeight:600, color:"#111" }}>{u.name}</div>
-                                      <div style={{ fontSize:11, color:"#9ca3af" }}>{u.category}</div>
+                                      <div style={{ fontSize:14, fontWeight:600, color:"#111" }}>{u.name}</div>
+                                      <div style={{ fontSize:11, color:"#9ca3af", marginTop:2 }}>{u.category}</div>
                                     </div>
-                                    <span style={{ background:bg, color, padding:"3px 9px", borderRadius:4, fontSize:11, fontWeight:700, flexShrink:0 }}>
-                                      {!hasStock?"Sin definir":totalQty===0?"Agotado":`${totalQty} uds`}
+                                    <span style={{ background:bg, color, padding:"4px 10px", borderRadius:6, fontSize:11,
+                                      fontWeight:700, flexShrink:0, border:`1px solid ${bdr}` }}>
+                                      {label}
                                     </span>
+                                  </div>
+                                  {/* Mini resumen de tallas */}
+                                  <div style={{ display:"flex", flexWrap:"wrap", gap:4, marginBottom:4 }}>
+                                    {u.sizes.map(sz => {
+                                      const q = sizeMap[sz] ?? null;
+                                      const c = q===null?"#9ca3af":q===0?"#dc2626":q<=3?"#d97706":"#16a34a";
+                                      const b = q===null?"#f8f9fa":q===0?"#fef2f2":q<=3?"#fefce8":"#f0fdf4";
+                                      return (
+                                        <span key={sz} style={{ background:b, color:c, padding:"2px 7px", borderRadius:5,
+                                          fontSize:10, fontWeight:700 }}>
+                                          {sz}: {q ?? "—"}
+                                        </span>
+                                      );
+                                    })}
                                   </div>
                                   <StockRow uniform={u} college={col}
                                     stockData={stockData[col.id]}
@@ -1141,44 +1382,69 @@ export default function AdminPanel({ onLogout, toast }) {
 
                   {/* Resumen activos */}
                   {activeItems.length > 0 && (
-                    <div style={{ background:"#fffbeb", border:"1px solid #fde68a", borderRadius:10,
-                      padding:"12px 16px", marginBottom:20, display:"flex", flexWrap:"wrap", gap:8, alignItems:"center" }}>
-                      <span style={{ fontSize:12, fontWeight:700, color:"#92400e", marginRight:4 }}>Activos:</span>
-                      {activeItems.map(d => (
-                        <span key={`${d.college.id}-${d.uniform.id}`} style={{
-                          background:"#fff", border:"1px solid #fcd34d", borderRadius:20,
-                          padding:"3px 10px", fontSize:11, fontWeight:600, color:"#92400e",
-                          display:"inline-flex", alignItems:"center", gap:5 }}>
-                          <span style={{ width:7, height:7, borderRadius:"50%", background:d.college.primaryColor, display:"inline-block" }} />
-                          {d.uniform.name} — {d.pct}% OFF
+                    <div style={{ background:"linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)", border:"1px solid #c7d2fe", borderRadius:12,
+                      padding:"14px 18px", marginBottom:20 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
+                        <span style={{ width:28, height:28, borderRadius:8, background:"#4f46e5", display:"inline-flex", alignItems:"center", justifyContent:"center" }}>
+                          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#fff" strokeWidth="2.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
                         </span>
-                      ))}
+                        <span style={{ fontSize:13, fontWeight:700, color:"#312e81" }}>{activeItems.length} descuento{activeItems.length !== 1 ? "s" : ""} activo{activeItems.length !== 1 ? "s" : ""}</span>
+                      </div>
+                      <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+                        {activeItems.map(d => (
+                          <span key={`${d.college.id}-${d.uniform.id}`} style={{
+                            background:"#fff", border:"1px solid #a5b4fc", borderRadius:20,
+                            padding:"4px 12px", fontSize:11, fontWeight:600, color:"#3730a3",
+                            display:"inline-flex", alignItems:"center", gap:6, boxShadow:"0 1px 2px rgba(79,70,229,.08)" }}>
+                            <span style={{ width:8, height:8, borderRadius:"50%", background:d.college.primaryColor, display:"inline-block", border:"1px solid rgba(0,0,0,.1)" }} />
+                            {d.uniform.name} <span style={{ color:"#4f46e5", fontWeight:700 }}>—{d.pct}%</span>
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   )}
 
                   {/* Filtro */}
-                  <div style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:10,
-                    padding:"12px 16px", marginBottom:16 }}>
-                    <label style={{ display:"block", fontSize:11, fontWeight:600, color:"#6b7280",
-                      textTransform:"uppercase", letterSpacing:".08em", marginBottom:6 }}>Filtrar por institución</label>
-                    <select value={discountColFilter} onChange={e => setDiscountColFilter(e.target.value)}
-                      style={{ padding:"8px 10px", border:"1px solid #d1d5db", borderRadius:6, fontSize:13, minWidth:220 }}>
-                      <option value="all">Todas las instituciones</option>
-                      {DEMO_COLLEGES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
+                  <div style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:12,
+                    padding:"14px 18px", marginBottom:18, display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
+                    <div style={{ width:32, height:32, borderRadius:8, background:"#f0f0ff", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#4f46e5" strokeWidth="2"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                    </div>
+                    <div style={{ flex:1 }}>
+                      <label style={{ display:"block", fontSize:10, fontWeight:700, color:"#6b7280",
+                        textTransform:"uppercase", letterSpacing:".1em", marginBottom:4 }}>Filtrar por institución</label>
+                      <select value={discountColFilter} onChange={e => setDiscountColFilter(e.target.value)}
+                        style={{ padding:"8px 12px", border:"1px solid #d1d5db", borderRadius:8, fontSize:13, minWidth:220,
+                          background:"#fafafa", cursor:"pointer", outline:"none", transition:"border .15s",
+                          ...(discountColFilter !== "all" ? { borderColor:"#818cf8", background:"#eef2ff" } : {}) }}>
+                        <option value="all">Todas las instituciones</option>
+                        {DEMO_COLLEGES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                    </div>
+                    {discountColFilter !== "all" && (
+                      <button onClick={() => setDiscountColFilter("all")}
+                        style={{ padding:"6px 14px", border:"1px solid #c7d2fe", borderRadius:8, background:"#eef2ff",
+                          color:"#4338ca", fontSize:12, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:5,
+                          transition:"all .15s" }}
+                        onMouseEnter={e => { e.currentTarget.style.background = "#e0e7ff"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "#eef2ff"; }}>
+                        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                        Limpiar
+                      </button>
+                    )}
                   </div>
 
                   {loadingDiscounts
                     ? <div style={{ display:"flex", justifyContent:"center", padding:52 }}><Spinner size={28} color="#9ca3af" /></div>
                     : <>
                         {/* Desktop */}
-                        <div className="desktop-table" style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:10, overflow:"hidden" }}>
+                        <div className="desktop-table" style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:12, overflow:"hidden", boxShadow:"0 1px 3px rgba(0,0,0,.04)" }}>
                           <table style={{ width:"100%", borderCollapse:"collapse" }}>
                             <thead>
-                              <tr style={{ background:"#f3f4f6", borderBottom:"1px solid #e5e7eb" }}>
+                              <tr style={{ background:"linear-gradient(135deg, #f8fafc 0%, #f0f0ff 100%)", borderBottom:"2px solid #e0e7ff" }}>
                                 {["Prenda","Institución","Descuento actual","Acción"].map(h => (
-                                  <th key={h} style={{ padding:"10px 14px", textAlign:"left", fontSize:11,
-                                    fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:".08em" }}>{h}</th>
+                                  <th key={h} style={{ padding:"12px 14px", textAlign:"left", fontSize:10,
+                                    fontWeight:700, color:"#4f46e5", textTransform:"uppercase", letterSpacing:".1em" }}>{h}</th>
                                 ))}
                               </tr>
                             </thead>
