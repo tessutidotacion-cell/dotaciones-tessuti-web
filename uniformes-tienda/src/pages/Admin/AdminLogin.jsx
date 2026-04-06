@@ -140,7 +140,7 @@ export default function AdminLogin({ onLogin, onBack }) {
               <div style={{ position: "relative" }}>
                 <input
                   type={showPass ? "text" : "password"}
-                  placeholder="•••••••••"
+                  placeholder="••••"
                   value={pass}
                   onChange={e => setPass(e.target.value)}
                   required
