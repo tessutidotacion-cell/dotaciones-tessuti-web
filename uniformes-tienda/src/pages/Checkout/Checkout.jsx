@@ -469,6 +469,24 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                     onChange={e=>set("notes",e.target.value)}/>
                 </Field>
 
+                {/* Métodos de pago aceptados */}
+                <div style={{ display:"flex", flexWrap:"wrap", gap:6, alignItems:"center", padding:"10px 0 2px" }}>
+                  <span style={{ fontSize:10, color:"#9ca3af", marginRight:4 }}>Pagos aceptados:</span>
+                  {[
+                    { label:"Nequi",       bg:"#7b1fa2", color:"#fff" },
+                    { label:"Daviplata",   bg:"#e53935", color:"#fff" },
+                    { label:"Bancolombia", bg:"#ffc107", color:"#111" },
+                    { label:"Transferencia", bg:"#f3f4f6", color:"#374151" },
+                    { label:"PSE",         bg:"#f3f4f6", color:"#374151" },
+                  ].map(({ label, bg, color }) => (
+                    <span key={label} style={{
+                      background:bg, color,
+                      fontSize:9, fontWeight:700, letterSpacing:".04em",
+                      padding:"3px 8px", borderRadius:3,
+                    }}>{label}</span>
+                  ))}
+                </div>
+
                 <button className="btn-pri"
                   disabled={!step1Valid}
                   title={!step1Valid ? "Completa los datos del acudiente (nombre, teléfono y correo)" : undefined}
@@ -512,7 +530,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                     {[
                       "Abre tu app bancaria",
                       "Selecciona la opción Pagar con QR",
-                      "Agrega el numero de documento del estudiante en la descripción del pago",
+                      "Agrega el número de documento del estudiante en la descripción del pago",
                       `Transfiere exactamente ${COP(total)}`,
                       "Adjunta el comprobante abajo",
                     ].map((t,i) => (

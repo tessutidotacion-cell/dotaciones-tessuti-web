@@ -646,6 +646,29 @@ const { toastState, toast, clearToast } = useToast();
             </div>
           </div>
 
+          {/* Métodos de pago */}
+          <div style={{
+            borderBottom:"1px solid rgba(255,255,255,.06)",
+            padding:"16px clamp(16px,4vw,48px)",
+            display:"flex", flexWrap:"wrap", gap:16,
+            alignItems:"center", justifyContent:"space-between",
+          }}>
+            <div style={{ fontSize:9, fontWeight:500, textTransform:"uppercase", letterSpacing:".18em", color:"rgba(255,255,255,.2)" }}>
+              Métodos de pago aceptados
+            </div>
+            <div style={{ display:"flex", flexWrap:"wrap", gap:8, alignItems:"center" }}>
+              {["Nequi","Daviplata","Bancolombia","Transferencia","PSE"].map(label => (
+                <span key={label} style={{
+                  background:"rgba(255,255,255,.06)",
+                  color:"rgba(255,255,255,.35)",
+                  fontSize:9, fontWeight:700, letterSpacing:".06em",
+                  padding:"4px 10px", borderRadius:4,
+                  border:"1px solid rgba(255,255,255,.08)",
+                }}>{label}</span>
+              ))}
+            </div>
+          </div>
+
           {/* Copyright */}
           <div style={{ padding:"14px clamp(16px,4vw,48px)",
             display:"flex", flexWrap:"wrap", gap:8,

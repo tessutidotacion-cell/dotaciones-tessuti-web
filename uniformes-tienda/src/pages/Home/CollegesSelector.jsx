@@ -498,46 +498,56 @@ export default function CollegeSelector({ onSelect }) {
                     <div className="cs-no-results-sub">No encontramos una institución con ese nombre.<br/>Intenta con otro término.</div>
                   </div>
                 );
-                return filtered.map((col, i) => (
-                <button key={col.id} className="cs-card"
-                  onClick={()=>onSelect(col)}
-                  onMouseEnter={()=>setHovered(col.id)}
-                  onMouseLeave={()=>setHovered(null)}
-                  style={{animationDelay:`${i*80}ms`}}>
+                return filtered.map((col, i) => {
+                  const disabled = col.id === "2";
+                  return (
+                  <button key={col.id} className="cs-card"
+                    onClick={()=>{ if(!disabled) onSelect(col); }}
+                    onMouseEnter={()=>{ if(!disabled) setHovered(col.id); }}
+                    onMouseLeave={()=>setHovered(null)}
+                    disabled={disabled}
+                    style={{
+                      animationDelay:`${i*80}ms`,
+                      opacity: disabled ? 0.5 : 1,
+                      cursor: disabled ? "not-allowed" : "pointer",
+                    }}>
 
-                  <div className="cs-banner"
-                    style={{background: hovered===col.id
-                      ? `linear-gradient(135deg,${col.primaryColor}18 0%,${col.primaryColor}08 100%)`
-                      : "var(--canvas)"}}>
-                    {col.logo
-                      ? <img src={col.logo} alt={col.name} className="cs-logo-img"/>
-                      : <div className="cs-logo-placeholder">
-                          {col.name.split(" ").slice(0,2).map(w=>w[0]).join("").toUpperCase()}
-                        </div>
-                    }
-                    <span className="cs-badge">{countItems(col)} prendas</span>
-                  </div>
-
-                  <div className="cs-body">
-                    <div className="cs-name">{col.name}</div>
-                    <div className="cs-desc">{col.description}</div>
-                    <div className="cs-cats">
-                      {getCategories(col).map(cat=>(
-                        <span key={cat} className="cs-cat">{cat}</span>
-                      ))}
+                    <div className="cs-banner"
+                      style={{background: hovered===col.id
+                        ? `linear-gradient(135deg,${col.primaryColor}18 0%,${col.primaryColor}08 100%)`
+                        : "var(--canvas)"}}>
+                      {col.logo
+                        ? <img src={col.logo} alt={col.name} className="cs-logo-img"/>
+                        : <div className="cs-logo-placeholder">
+                            {col.name.split(" ").slice(0,2).map(w=>w[0]).join("").toUpperCase()}
+                          </div>
+                      }
+                      <span className="cs-badge">{disabled ? "Próximamente" : `${countItems(col)} prendas`}</span>
                     </div>
-                    <div className="cs-footer">
-                      <span className="cs-cta">Ver catálogo</span>
-                      <div className="cs-arrow">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-                          stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                          <path d="M5 12h14M12 5l7 7-7 7"/>
-                        </svg>
+
+                    <div className="cs-body">
+                      <div className="cs-name">{col.name}</div>
+                      <div className="cs-desc">{col.description}</div>
+                      <div className="cs-cats">
+                        {getCategories(col).map(cat=>(
+                          <span key={cat} className="cs-cat">{cat}</span>
+                        ))}
+                      </div>
+                      <div className="cs-footer">
+                        <span className="cs-cta">{disabled ? "Próximamente" : "Ver catálogo"}</span>
+                        {!disabled && (
+                          <div className="cs-arrow">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                              stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                              <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
-                </button>
-              ));
+                  </button>
+                  );
+                });
               })()}
             </div>
           </div>

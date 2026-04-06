@@ -44,9 +44,12 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
   const P = safeCSSColor(college.primaryColor);
 
   const getDiscountPct = (uid) => Math.max(0, Math.min(90, Number(discounts?.[String(uid)]) || 0));
-  const getFinalPrice  = (u)   => {
-    const pct = getDiscountPct(u.id);
-    return pct > 0 ? Math.round(u.price * (1 - pct / 100)) : u.price;
+  const getBasePrice   = (u, selectedSize) =>
+    (selectedSize && u.sizePrices?.[selectedSize]) ? u.sizePrices[selectedSize] : u.price;
+  const getFinalPrice  = (u, selectedSize) => {
+    const base = getBasePrice(u, selectedSize);
+    const pct  = getDiscountPct(u.id);
+    return pct > 0 ? Math.round(base * (1 - pct / 100)) : base;
   };
 
   const getImages = (u) => {
@@ -71,7 +74,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
     if (!size || !Array.isArray(u.sizes) || !u.sizes.includes(size)) return;
     const stockQty = collegeStock?.[String(u.id)]?.[size] ?? null;
     if (stockQty === 0) return;
-    const finalPrice = getFinalPrice(u);
+    const finalPrice = getFinalPrice(u, size);
     setCart(prev => {
       const ex = prev.find(i => i.id === u.id && i.size === size);
       if (ex) return prev.map(i => i.id === u.id && i.size === size ? { ...i, qty: i.qty + 1 } : i);
@@ -713,7 +716,8 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
         const u = selected;
         const images = getImages(u);
         const pct = getDiscountPct(u.id);
-        const finalPrice = getFinalPrice(u);
+        const selectedSize = sizes[u.id];
+        const finalPrice = getFinalPrice(u, selectedSize);
         const flashKey = `${u.id}-${sizes[u.id]}`;
         const isAdded = flash[flashKey];
         const hasSz = !!sizes[u.id];
@@ -773,7 +777,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
                 <div className="pd-name">{u.name}</div>
                 <div className="pd-price">
                   {COP(finalPrice)}
-                  {pct > 0 && <span className="pd-price-original">{COP(u.price)}</span>}
+                  {pct > 0 && <span className="pd-price-original">{COP(getBasePrice(u, selectedSize))}</span>}
                 </div>
 
                 {u.description && (
