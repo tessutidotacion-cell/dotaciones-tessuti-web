@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"=$\" \"c:/Users/Samu/Desktop/portafolio-samuel-mesa/dotaciones-tessuti-web/backend/.env\")"
+    ]
+  }
+}

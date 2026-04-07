@@ -1,5 +1,6 @@
 import { db } from "../config/firebase.js";
 import { randomBytes } from "crypto";
+import { createBoldPaymentLink } from "./boldService.js";
 
 const ORDERS_COL = "pedidos";
 const STOCK_COL  = "stock";
@@ -33,6 +34,15 @@ export const createOrder = async (orderData) => {
   const isDelivery = orderData.delivery?.type === "domicilio";
   const itemsTotal = orderData.items.reduce((s, i) => s + i.price * i.qty, 0);
 
+  const total = itemsTotal + (isDelivery ? 15000 : 0);
+
+  // Genera link de pago Bold con monto exacto
+  const boldPaymentUrl = await createBoldPaymentLink({
+    orderId,
+    amount:      total,
+    description: `Pedido ${orderId} — Tessuti Dotaciones`,
+  }).catch(() => null);
+
   const newOrder = {
     id:          orderId,
     collegeId:   orderData.collegeId,
@@ -49,11 +59,12 @@ export const createOrder = async (orderData) => {
       email: orderData.guardian.email,
     },
     delivery:        orderData.delivery || { type: "recogida" },
-    total:           itemsTotal + (isDelivery ? 15000 : 0),
+    total,
     itemCount:       orderData.items.reduce((s, i) => s + i.qty, 0),
     status:          "Pago en validación",
     statusHistory:   [{ status: "Pago en validación", changedAt: new Date().toISOString(), changedBy: "sistema" }],
     paymentProofUrl: null,
+    boldPaymentUrl:  boldPaymentUrl || null,
     createdAt:       new Date().toISOString(),
     updatedAt:       new Date().toISOString(),
   };

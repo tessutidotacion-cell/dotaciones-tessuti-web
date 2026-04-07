@@ -27,10 +27,11 @@ function Field({ label, required, hint, children }) {
 }
 
 export default function Checkout({ college, cart, setCart, onSuccess, onBack, toast }) {
-  const [step,         setStep]        = useState(1);
-  const [loading,      setLoading]     = useState(false);
-  const [proofFile,    setProofFile]   = useState(null);
-  const [proofPreview, setProofPreview]= useState(null);
+  const [step,           setStep]          = useState(1);
+  const [loading,        setLoading]       = useState(false);
+  const [proofFile,      setProofFile]     = useState(null);
+  const [proofPreview,   setProofPreview]  = useState(null);
+  const [boldPaymentUrl, setBoldPaymentUrl]= useState(null);
 
   const [form, setForm] = useState({
     studentName:"", grade:"", studentDoc:"",
@@ -85,6 +86,10 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
 
       const orderResult = await createOrder(orderPayload);
       const orderId = orderResult.data?.id || orderResult.data?.orderId;
+
+      if (orderResult.data?.boldPaymentUrl) {
+        setBoldPaymentUrl(orderResult.data.boldPaymentUrl);
+      }
 
       if (orderId && proofFile) {
         try { await uploadPaymentProof(orderId, proofFile); }
@@ -548,23 +553,23 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                   </div>
                 </div>
 
-                {/* Wompi — siempre visible */}
+                {/* Bold — pago con tarjeta, Nequi, PSE */}
                 <div className="wompi-strip">
                   <div>
                     <div className="wompi-badge">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
-                      Pagar con tarjeta o PSE
+                      Pagar con tarjeta, Nequi o PSE
                     </div>
                     <div style={{ fontSize:11, color:"#9ca3af", marginTop:2 }}>
-                      Procesado de forma segura por Wompi
+                      Procesado de forma segura por Bold
                     </div>
                   </div>
-                  {import.meta.env.VITE_WOMPI_LINK ? (
-                    <a href={import.meta.env.VITE_WOMPI_LINK} target="_blank" rel="noreferrer" className="wompi-btn">
-                      Pagar con Wompi
+                  {boldPaymentUrl ? (
+                    <a href={boldPaymentUrl} target="_blank" rel="noreferrer" className="wompi-btn">
+                      Pagar con Bold
                     </a>
                   ) : (
-                    <span style={{ fontSize:11, color:"#9ca3af", fontStyle:"italic" }}>Próximamente</span>
+                    <span style={{ fontSize:11, color:"#9ca3af", fontStyle:"italic" }}>Disponible al confirmar</span>
                   )}
                 </div>
               </div>
