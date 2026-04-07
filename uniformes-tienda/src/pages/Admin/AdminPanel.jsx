@@ -798,7 +798,7 @@ export default function AdminPanel({ onLogout, toast }) {
   const TabBar = () => (
     <>
       {/* Desktop tabs */}
-      <div className="admin-tabs-desktop" style={{ display:"flex", gap:2, marginBottom:24, borderBottom:"1px solid #e5e7eb", paddingBottom:0 }}>
+      <div className="admin-tabs-desktop" style={{ display:"flex", gap:2, marginBottom:24, borderBottom:"1px solid #e5e7eb", paddingBottom:0, alignItems:"center" }}>
         {TABS.map(t => (
           <button key={t.id} onClick={()=>setTab(t.id)}
             onMouseEnter={e => { if(tab!==t.id) e.currentTarget.style.color="#374151"; }}
@@ -813,6 +813,19 @@ export default function AdminPanel({ onLogout, toast }) {
             {t.label}
           </button>
         ))}
+        <div style={{ flex:1 }} />
+        <button onClick={onLogout}
+          onMouseEnter={e => { e.currentTarget.style.background="#fef2f2"; e.currentTarget.style.color="#dc2626"; e.currentTarget.style.borderColor="#fca5a5"; }}
+          onMouseLeave={e => { e.currentTarget.style.background="#fff"; e.currentTarget.style.color="#9ca3af"; e.currentTarget.style.borderColor="#e5e7eb"; }}
+          style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 14px",
+            fontSize:12, fontWeight:600, borderRadius:7, marginBottom:3,
+            border:"1px solid #e5e7eb", background:"#fff", color:"#9ca3af",
+            cursor:"pointer", transition:"all .15s", flexShrink:0 }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+          </svg>
+          Cerrar sesión
+        </button>
       </div>
       {/* Mobile select */}
       <div className="admin-tabs-mobile" style={{ display:"none", marginBottom:16 }}>
