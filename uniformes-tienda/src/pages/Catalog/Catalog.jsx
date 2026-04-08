@@ -602,6 +602,97 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           animation: addedPop .35s cubic-bezier(.22,.68,0,1.2) both;
         }
 
+        /* ── Editorial Page Header ─── */
+        @keyframes headerIn {
+          from { opacity:0; transform:translateY(10px); }
+          to   { opacity:1; transform:none; }
+        }
+        .cat-page-header {
+          position: relative;
+          background: #f7f4f0;
+          border-bottom: 1px solid #e8e4df;
+          overflow: hidden;
+          animation: headerIn .4s ease both;
+        }
+        .cat-page-header-inner {
+          max-width: 1400px;
+          margin: 0 auto;
+          padding: clamp(14px,2.5vw,28px) clamp(10px,4vw,40px) clamp(12px,2vw,22px);
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 16px;
+          position: relative;
+          z-index: 1;
+        }
+        /* número fantasma de fondo */
+        .cat-ghost-num {
+          position: absolute;
+          right: clamp(24px,6vw,80px);
+          bottom: -6px;
+          font-family: var(--font-display, 'Cormorant Garamond', serif);
+          font-size: clamp(70px,12vw,130px);
+          font-weight: 700;
+          font-style: italic;
+          color: ${P};
+          opacity: .055;
+          line-height: 1;
+          pointer-events: none;
+          user-select: none;
+          letter-spacing: -.04em;
+        }
+        /* barra acento izquierda */
+        .cat-page-accent {
+          width: 2.5px;
+          height: clamp(32px,4vw,50px);
+          background: ${P};
+          border-radius: 2px;
+          flex-shrink: 0;
+          margin-bottom: 2px;
+          opacity: .85;
+        }
+        .cat-page-left { display: flex; align-items: flex-end; gap: 12px; }
+        .cat-page-titles { display: flex; flex-direction: column; gap: 5px; }
+        .cat-breadcrumb {
+          display: flex; align-items: center; gap: 5px;
+          font-size: 9px; font-weight: 700; color: #b0a89f;
+          letter-spacing: .2em; text-transform: uppercase;
+        }
+        .cat-breadcrumb-link {
+          background: none; border: none; cursor: pointer;
+          font-family: var(--font); font-size: 9px; font-weight: 700;
+          color: #b0a89f; padding: 0; letter-spacing: .2em; text-transform: uppercase;
+          transition: color .15s;
+        }
+        .cat-breadcrumb-link:hover { color: #3d3a36; }
+        .cat-breadcrumb-sep { color: #d4cfc9; letter-spacing: 0; }
+        .cat-breadcrumb-current { color: #6b6560; }
+        .cat-page-title {
+          font-family: var(--font-display, 'Cormorant Garamond', serif);
+          font-size: clamp(22px, 3.5vw, 38px);
+          font-weight: 500;
+          font-style: italic;
+          color: #1c1c1c;
+          letter-spacing: .01em;
+          line-height: 1;
+        }
+        /* contador en esquina derecha */
+        .cat-page-right { flex-shrink: 0; text-align: right; padding-bottom: 2px; }
+        .cat-count-num {
+          font-family: var(--font-display, 'Cormorant Garamond', serif);
+          font-size: clamp(20px,3vw,30px);
+          font-weight: 400;
+          font-style: italic;
+          color: ${P};
+          line-height: 1;
+          opacity: .7;
+        }
+        .cat-count-label {
+          font-size: 8px; font-weight: 700;
+          letter-spacing: .18em; text-transform: uppercase;
+          color: #b0a89f; margin-top: 2px;
+        }
+
         /* Empty */
         .cat-empty {
           grid-column: 1/-1;
@@ -665,6 +756,19 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           .pd-add-btn { padding: 14px 16px; font-size: 10px; }
           .pd-thumb { width: 56px; height: 70px; }
           .pd-desc { font-size: 12px; margin-top: 16px; padding-top: 16px; }
+        }
+
+        /* ── Mobile page header ── */
+        @media (max-width: 640px) {
+          .cat-page-header-inner { padding: 12px 12px 10px; gap: 10px; }
+          .cat-page-title { font-size: 20px; }
+          .cat-page-accent { height: 28px; }
+          .cat-ghost-num { font-size: 60px; }
+          .cat-count-num { font-size: 18px; }
+        }
+        @media (max-width: 420px) {
+          .cat-page-right { display: none; }
+          .cat-ghost-num { display: none; }
         }
 
         /* ── Small mobile ── */
@@ -893,6 +997,51 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
             })}
           </nav>
           )}
+
+          {/* Editorial page header */}
+          {(() => {
+            const activeSecName = hasSections
+              ? college.sections.find(s => s.id === activeSection)?.name
+              : null;
+            const pageTitle = activeSecName || college.name;
+            const resultCount = items.length;
+            const countStr = String(resultCount).padStart(2, "0");
+            return (
+              <div className="cat-page-header" role="region" aria-label="Encabezado de catálogo">
+                {/* número fantasma decorativo */}
+                <div className="cat-ghost-num" aria-hidden="true">{countStr}</div>
+
+                <div className="cat-page-header-inner">
+                  <div className="cat-page-left">
+                    <div className="cat-page-accent" aria-hidden="true" />
+                    <div className="cat-page-titles">
+                      <nav className="cat-breadcrumb" aria-label="Ruta de navegación">
+                        <button className="cat-breadcrumb-link" onClick={onBack}>Inicio</button>
+                        <span className="cat-breadcrumb-sep">·</span>
+                        <button className="cat-breadcrumb-link" onClick={onBack}>Uniformes</button>
+                        {hasSections && (
+                          <>
+                            <span className="cat-breadcrumb-sep">·</span>
+                            <button className="cat-breadcrumb-link" onClick={() => setActiveSection(college.sections[0].id)}>
+                              {college.name}
+                            </button>
+                          </>
+                        )}
+                        <span className="cat-breadcrumb-sep">·</span>
+                        <span className="cat-breadcrumb-current">{pageTitle}</span>
+                      </nav>
+                      <h1 className="cat-page-title">{pageTitle}</h1>
+                    </div>
+                  </div>
+
+                  <div className="cat-page-right">
+                    <div className="cat-count-num">{countStr}</div>
+                    <div className="cat-count-label">prendas</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Grid limpio */}
           <div className="cat-grid" role="list" aria-label="Productos">

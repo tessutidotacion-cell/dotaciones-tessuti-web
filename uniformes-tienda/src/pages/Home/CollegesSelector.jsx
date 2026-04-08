@@ -302,12 +302,12 @@ const ALL_STYLES = `
   }
 
   .cs-badge{
-    position:absolute;top:12px;right:12px;
     background:var(--canvas);border:1px solid var(--line-2);
     border-radius:20px;padding:3px 10px;
     font-family:'Helvetica',Arial,sans-serif;font-size:9px;font-weight:500;
     color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase;
     transition:all var(--t-mid) ease;
+    white-space:nowrap;
   }
   .cs-card:hover .cs-badge{background:rgba(184,154,106,.12);border-color:var(--gold);color:var(--gold)}
 
@@ -515,18 +515,20 @@ export default function CollegeSelector({ onSelect }) {
                     <div className="cs-banner"
                       style={{background: hovered===col.id
                         ? `linear-gradient(135deg,${col.primaryColor}18 0%,${col.primaryColor}08 100%)`
-                        : "var(--canvas)"}}>
+                        : "#ffffff"}}>
                       {col.logo
                         ? <img src={col.logo} alt={col.name} className="cs-logo-img"/>
                         : <div className="cs-logo-placeholder">
                             {col.name.split(" ").slice(0,2).map(w=>w[0]).join("").toUpperCase()}
                           </div>
                       }
-                      <span className="cs-badge">{disabled ? "Próximamente" : `${countItems(col)} prendas`}</span>
                     </div>
 
                     <div className="cs-body">
-                      <div className="cs-name">{col.name}</div>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+                        <div className="cs-name" style={{margin:0}}>{col.name}</div>
+                        <span className="cs-badge">{disabled ? "Próximamente" : `${countItems(col)} prendas`}</span>
+                      </div>
                       <div className="cs-desc">{col.description}</div>
                       <div className="cs-cats">
                         {getCategories(col).map(cat=>(

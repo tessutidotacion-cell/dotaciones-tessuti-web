@@ -41,6 +41,7 @@ function applyNewSchoolImages(college, imgs) {
     4: { image: imgs.imgBusoCierre, hoverImage: imgs.imgBusoKidsNS, galleryImages: [imgs.imgBusoRevesKidsNS] },
     5: { image: imgs.imgCamibusoBlanco },
     6: { image: imgs.imgSudadera, hoverImage: imgs.imgSudaderaModelo },
+    7: { image: imgs.imgBusoGris },
   };
 
   return {
@@ -123,6 +124,14 @@ export const DEMO_COLLEGES = [
         id: 5,
         name: "Camibuso Blanco",
         price: 40000,
+        sizes: ["4", "6", "8", "10", "12"],
+        category: "Diario",
+        description: "Primaria",
+      },
+      {
+        id: 7,
+        name: "Buso Gris",
+        price: 70000,
         sizes: ["4", "6", "8", "10", "12"],
         category: "Diario",
         description: "Primaria",
@@ -234,8 +243,8 @@ export const DEMO_COLLEGES = [
     id: "liceo-frances",
     name: "Liceo Francés",
     logo: LOGO_LICEO_FRANCES,
-    primaryColor: "#1a2e5a",
-    accentColor: "#2d4a8a",
+    primaryColor: "#c0152a",
+    accentColor: "#e01f38",
     description: "",
     sections: [
       {
