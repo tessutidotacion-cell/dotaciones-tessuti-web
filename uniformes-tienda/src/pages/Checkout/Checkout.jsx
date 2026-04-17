@@ -4,6 +4,8 @@ import { COP } from "../../utils/money";
 import { imgQrPago } from "../../assets";
 
 const DELIVERY_FEE = 15000;
+const ACCENT = "#b89a6a";
+const INK    = "#1c1c1c";
 
 function Spinner({ size = 16 }) {
   return (
@@ -14,14 +16,27 @@ function Spinner({ size = 16 }) {
   );
 }
 
-function Field({ label, required, hint, children }) {
+function Field({ label, required, hint, error, children }) {
   return (
-    <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
-      <label style={{ fontSize:10, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:".12em", fontFamily:"var(--font,'DM Sans',sans-serif)" }}>
+    <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+      <label style={{
+        fontSize:10, fontWeight:700, color: error ? "#dc2626" : "#6b6560",
+        textTransform:"uppercase", letterSpacing:".12em",
+        fontFamily:"var(--font,'Jost',sans-serif)",
+      }}>
         {label}{required && <span style={{ color:"#dc2626", marginLeft:2 }}>*</span>}
       </label>
       {children}
-      {hint && <span style={{ fontSize:11, color: hint.startsWith("⚠") ? "#dc2626" : "#9ca3af" }}>{hint}</span>}
+      {(hint || error) && (
+        <span style={{ fontSize:11, color: error ? "#dc2626" : "#9b9591", display:"flex", alignItems:"center", gap:4 }}>
+          {error && (
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+            </svg>
+          )}
+          {error || hint}
+        </span>
+      )}
     </div>
   );
 }
@@ -32,6 +47,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
   const [proofFile,      setProofFile]     = useState(null);
   const [proofPreview,   setProofPreview]  = useState(null);
   const [boldPaymentUrl, setBoldPaymentUrl]= useState(null);
+  const [dragOver,       setDragOver]      = useState(false);
 
   const [form, setForm] = useState({
     studentName:"", grade:"", studentDoc:"",
@@ -54,9 +70,9 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
 
   const goStep = (n) => { setStep(n); window.scrollTo(0, 0); };
 
-  const handleProof = (e) => {
-    const file = e.target.files?.[0];
+  const handleProof = (file) => {
     if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast("El archivo supera los 5 MB", "error"); return; }
     setProofFile(file);
     const reader = new FileReader();
     reader.onload = ev => setProofPreview(ev.target.result);
@@ -93,7 +109,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
 
       if (orderId && proofFile) {
         try { await uploadPaymentProof(orderId, proofFile); }
-        catch (e) { toast("Pedido creado. Envía el comprobante por WhatsApp.", "warning"); }
+        catch { toast("Pedido creado. Envía el comprobante por WhatsApp.", "warning"); }
       }
       onSuccess(orderResult.data);
     } catch (err) {
@@ -103,159 +119,360 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
     }
   };
 
-  const S = { fontFamily:"var(--font,'DM Sans',sans-serif)" };
+  const deliveryOptions = [
+    {
+      value: "recogida",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      ),
+      label: "Recoger en tienda",
+      sub:   "Sin costo adicional",
+      color: "#16a34a",
+    },
+    {
+      value: "domicilio",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <path d="M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h11a2 2 0 012 2v3M9 21H6a2 2 0 01-2-2v-6"/><rect x="9" y="11" width="14" height="10" rx="2"/><path d="M12 21v-6"/>
+        </svg>
+      ),
+      label: "Domicilio",
+      sub:   `+ ${COP(DELIVERY_FEE)} · Envigado / El Poblado`,
+      color: "#2563eb",
+    },
+    {
+      value: "domicilio_coordinado",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      ),
+      label: "Fuera de zona",
+      sub:   "El admin coordina el envío",
+      color: "#d97706",
+    },
+  ];
 
   return (
-    <div style={{ minHeight:"calc(100vh - 56px)", background:"var(--bg,#faf9f7)", ...S }}>
+    <div style={{ minHeight:"calc(100vh - 56px)", background:"#faf9f7", fontFamily:"var(--font,'Jost',sans-serif)" }}>
       <style>{`
+        @keyframes fadeUp {
+          from { opacity:0; transform:translateY(12px); }
+          to   { opacity:1; transform:none; }
+        }
+        @keyframes spin { to { transform:rotate(360deg); } }
+
+        /* ── Layout ── */
         .co-wrap {
-          max-width:900px; margin:0 auto;
-          padding:clamp(16px,3vw,28px) clamp(14px,4vw,24px);
-          display:grid;
-          grid-template-columns:1fr clamp(260px,32%,320px);
-          gap:clamp(14px,2.5vw,22px);
-          align-items:start;
+          max-width: 960px;
+          margin: 0 auto;
+          padding: clamp(20px,3vw,36px) clamp(14px,4vw,24px);
+          display: grid;
+          grid-template-columns: 1fr clamp(270px,30%,320px);
+          gap: clamp(16px,2.5vw,28px);
+          align-items: start;
         }
-        @media(max-width:700px){ .co-wrap{grid-template-columns:1fr} }
+        @media(max-width:720px) {
+          .co-wrap { grid-template-columns:1fr; }
+        }
+        .co-summary {
+          position: sticky;
+          top: 116px;
+        }
+        @media(max-width:720px) {
+          .co-summary { position:static; order:-1; }
+        }
 
-        .co-summary { position:sticky; top:108px; }
-        @media(max-width:700px){ .co-summary{position:static;order:-1} }
-
+        /* ── Card ── */
         .co-card {
-          background:#fff; border:1px solid #e5e7eb; border-radius:10px;
-          overflow:hidden; animation:fadeUp .2s ease;
+          background: #fff;
+          border: 1px solid #e8e5e1;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 2px 12px rgba(28,28,28,.05);
         }
-        .co-card-head { padding:13px 18px; border-bottom:1px solid #e5e7eb; background:#fafafa; }
-
-        .co-section-label {
-          font-size:9px; font-weight:700; color:#9ca3af;
-          text-transform:uppercase; letter-spacing:.14em;
-          margin-bottom:14px; padding-bottom:9px;
-          border-bottom:1px solid #f3f4f6;
+        .co-card-head {
+          padding: 16px 20px;
+          border-bottom: 1px solid #f0ede9;
+          background: #faf9f7;
         }
-        .co-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-        @media(max-width:440px){ .co-grid-2{grid-template-columns:1fr} }
-        .co-full { grid-column:1/-1; }
+        .co-section-title {
+          font-size: 9px;
+          font-weight: 700;
+          color: #9b9591;
+          text-transform: uppercase;
+          letter-spacing: .16em;
+          margin-bottom: 16px;
+          padding-bottom: 10px;
+          border-bottom: 1px solid #f0ede9;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
 
-        .del-opts { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+        /* ── Grid campos ── */
+        .co-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .co-full  { grid-column: 1 / -1; }
+        @media(max-width:440px) { .co-grid { grid-template-columns:1fr; } }
+
+        /* ── Inputs ── */
+        .co-wrap input,
+        .co-wrap textarea,
+        .co-wrap select {
+          width: 100%;
+          box-sizing: border-box;
+          padding: 11px 13px;
+          border: 1.5px solid #e8e5e1;
+          border-radius: 8px;
+          font-family: var(--font,'Jost',sans-serif);
+          font-size: 13px;
+          color: #1c1c1c;
+          background: #fff;
+          outline: none;
+          transition: border-color .15s, box-shadow .15s;
+          -webkit-appearance: none;
+        }
+        .co-wrap input::placeholder,
+        .co-wrap textarea::placeholder { color: #c4bfba; }
+        .co-wrap input:focus,
+        .co-wrap textarea:focus,
+        .co-wrap select:focus {
+          border-color: ${INK};
+          box-shadow: 0 0 0 3px rgba(28,28,28,.07);
+        }
+        .co-wrap textarea { resize: vertical; min-height: 72px; }
+
+        /* ── Delivery options ── */
+        .del-opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+        @media(max-width:500px) { .del-opts { grid-template-columns: 1fr; } }
         .del-opt {
-          flex:1; min-width:140px; padding:11px 14px;
-          border-radius:8px; cursor:pointer; text-align:left;
-          border:1.5px solid #e5e7eb; background:#fff;
-          transition:all .15s; font-family:inherit;
+          padding: 12px 14px;
+          border-radius: 10px;
+          cursor: pointer;
+          text-align: left;
+          border: 2px solid #e8e5e1;
+          background: #fff;
+          transition: all .18s;
+          font-family: inherit;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
         }
-        .del-opt.on { border-color:#111; background:#fafafa; }
-
-        .steps { display:flex; align-items:center; gap:6px; }
-        .step-dot {
-          width:22px; height:22px; border-radius:50%;
-          font-size:10px; font-weight:700;
-          display:flex; align-items:center; justify-content:center; flex-shrink:0;
+        .del-opt:hover { border-color: #c4bfba; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(28,28,28,.07); }
+        .del-opt.on {
+          border-color: ${INK};
+          background: #faf9f7;
+          box-shadow: 0 4px 16px rgba(28,28,28,.1);
         }
-        .step-line { width:20px; height:2px; border-radius:1px; }
+        .del-opt-icon {
+          width: 36px; height: 36px;
+          border-radius: 8px;
+          display: flex; align-items: center; justify-content: center;
+          margin-bottom: 2px;
+          background: #f5f3f0;
+          color: #6b6560;
+          transition: all .18s;
+          flex-shrink: 0;
+        }
+        .del-opt.on .del-opt-icon { background: ${INK}; color: #fff; }
 
+        /* ── Info boxes ── */
+        .info-box {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          border-radius: 10px;
+          padding: 13px 15px;
+          margin-bottom: 4px;
+          animation: fadeUp .2s ease;
+        }
+
+        /* ── Step nav ── */
+        .btn-ghost {
+          display: flex; align-items: center; gap: 6px;
+          background: none; border: none; cursor: pointer;
+          color: #9b9591; font-size: 12px; font-family: inherit;
+          padding: 0; transition: color .15s; letter-spacing: .04em;
+        }
+        .btn-ghost:hover { color: #1c1c1c; }
+
+        /* ── Primary button ── */
         .btn-pri {
-          width:100%; padding:12px; border-radius:7px; border:none;
-          background:#111; color:#fff; font-size:13px; font-weight:600;
-          cursor:pointer; letter-spacing:.04em;
-          display:flex; align-items:center; justify-content:center; gap:8px;
-          font-family:inherit; transition:background .15s;
+          width: 100%;
+          padding: 14px 20px;
+          border-radius: 10px;
+          border: none;
+          background: ${INK};
+          color: #fff;
+          font-size: 13px;
+          font-weight: 700;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          font-family: inherit;
+          transition: all .18s;
+          box-shadow: 0 4px 20px rgba(28,28,28,.18);
         }
-        .btn-pri:hover:not(:disabled) { background:#2d2d2d; }
-        .btn-pri:disabled { background:#f3f4f6; color:#9ca3af; cursor:not-allowed; }
-
-        .btn-ghost-sm {
-          display:flex; align-items:center; gap:5px;
-          background:none; border:none; cursor:pointer;
-          color:#9ca3af; font-size:12px; padding:0;
-          font-family:inherit; transition:color .15s;
-          margin-bottom:12px;
+        .btn-pri:hover:not(:disabled) {
+          background: #2d2d2d;
+          transform: translateY(-1px);
+          box-shadow: 0 6px 28px rgba(28,28,28,.24);
         }
-        .btn-ghost-sm:hover { color:#374151; }
+        .btn-pri:disabled { background: #e8e5e1; color: #b0a89f; cursor:not-allowed; box-shadow:none; }
 
+        /* ── Upload zone ── */
         .upload-zone {
-          display:flex; flex-direction:column; align-items:center;
-          gap:8px; padding:clamp(20px,4vw,30px) 16px;
-          border:1.5px dashed #d1d5db; border-radius:8px; cursor:pointer;
-          transition:border-color .15s;
+          display: flex; flex-direction: column; align-items: center;
+          gap: 10px;
+          padding: clamp(28px,5vw,40px) 16px;
+          border: 2px dashed #d4cfc9;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all .18s;
+          text-align: center;
         }
-        .upload-zone:hover { border-color:#111; }
+        .upload-zone:hover,
+        .upload-zone.drag { border-color: ${INK}; background: #f7f5f2; }
 
-        /* QR section */
+        /* ── QR ── */
         .qr-block {
-          display:flex; gap:clamp(16px,3vw,24px);
-          flex-wrap:wrap; align-items:flex-start;
-          padding:clamp(16px,3vw,22px);
+          display: flex;
+          gap: clamp(20px,4vw,32px);
+          flex-wrap: wrap;
+          align-items: flex-start;
+          padding: clamp(18px,3vw,26px);
         }
         .qr-img {
-          width:clamp(200px,50vw,260px);
-          height:clamp(200px,50vw,260px);
-          object-fit:contain;
-          border-radius:8px;
-          border:1px solid #e5e7eb;
-          flex-shrink:0;
+          width: clamp(160px,45vw,220px);
+          height: clamp(160px,45vw,220px);
+          object-fit: contain;
+          border-radius: 10px;
+          border: 1px solid #e8e5e1;
+          flex-shrink: 0;
         }
-        @media(max-width:500px) {
+        @media(max-width:480px) {
           .qr-block { flex-direction:column; align-items:center; }
-          .qr-img { width:min(280px, 80vw); height:min(280px, 80vw); }
+          .qr-img { width: min(240px, 75vw); height: min(240px, 75vw); }
         }
 
-        /* Wompi strip */
-        .wompi-strip {
-          border-top:1px solid #e5e7eb;
-          padding:12px 16px;
-          display:flex; align-items:center;
-          justify-content:space-between;
-          gap:12px; flex-wrap:wrap;
-          background:#fafafa;
+        /* ── Payment step number ── */
+        .pay-step {
+          display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px;
         }
-        .wompi-badge {
-          display:inline-flex; align-items:center; gap:6px;
-          font-size:11px; font-weight:600; color:#5b21b6;
-          letter-spacing:.02em;
+        .pay-step-num {
+          width: 24px; height: 24px; border-radius: 50%;
+          background: #f0ede9;
+          font-size: 10px; font-weight: 700; color: #6b6560;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0; margin-top: 1px;
         }
-        .wompi-btn {
-          padding:8px 16px; border-radius:6px;
-          background:#7c3aed; color:#fff;
-          font-size:12px; font-weight:600;
-          text-decoration:none; white-space:nowrap;
-          transition:background .15s; flex-shrink:0;
+
+        /* ── Cart item qty controls ── */
+        .qty-ctrl {
+          display: flex; align-items: center;
         }
-        .wompi-btn:hover { background:#6d28d9; }
+        .qty-btn {
+          width: 28px; height: 28px;
+          border: 1.5px solid #e8e5e1;
+          background: #faf9f7;
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 14px; font-weight: 700; color: #6b6560;
+          transition: all .12s;
+        }
+        .qty-btn:hover { background: #f0ede9; color: #1c1c1c; }
+        .qty-btn:first-child { border-radius: 6px 0 0 6px; }
+        .qty-btn:last-child  { border-radius: 0 6px 6px 0; }
+        .qty-val {
+          width: 34px; height: 28px;
+          display: flex; align-items: center; justify-content: center;
+          border-top: 1.5px solid #e8e5e1;
+          border-bottom: 1.5px solid #e8e5e1;
+          font-size: 12px; font-weight: 700; color: #1c1c1c;
+          background: #fff;
+        }
+
+        /* ── Bold strip ── */
+        .bold-strip {
+          border-top: 1px solid #f0ede9;
+          padding: 14px 20px;
+          display: flex; align-items: center;
+          justify-content: space-between;
+          gap: 12px; flex-wrap: wrap;
+          background: #faf9f7;
+        }
+        .bold-btn {
+          padding: 9px 18px;
+          border-radius: 8px;
+          background: #7c3aed;
+          color: #fff;
+          font-size: 12px; font-weight: 700;
+          text-decoration: none;
+          white-space: nowrap;
+          letter-spacing: .04em;
+          transition: all .15s;
+          flex-shrink: 0;
+          box-shadow: 0 2px 10px rgba(124,58,237,.3);
+        }
+        .bold-btn:hover { background: #6d28d9; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(124,58,237,.35); }
       `}</style>
 
-      {/* ── Sub-header sticky ── */}
-      <div style={{ background:"#fff", borderBottom:"1px solid #e5e7eb",
-        padding:"9px clamp(14px,4vw,24px)",
-        position:"sticky", top:56, zIndex:50,
-        display:"flex", alignItems:"center", justifyContent:"space-between", gap:12 }}>
-
-        <button className="btn-ghost-sm" style={{ marginBottom:0 }} onClick={onBack}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      {/* ── Sub-header ── */}
+      <div style={{
+        background: "#fff",
+        borderBottom: "1px solid #e8e5e1",
+        padding: "0 clamp(14px,4vw,24px)",
+        position: "sticky", top: 56, zIndex: 50,
+        height: 56,
+        display: "flex", alignItems: "center",
+        justifyContent: "space-between", gap: 12,
+        boxShadow: "0 2px 12px rgba(28,28,28,.05)",
+      }}>
+        <button className="btn-ghost" onClick={onBack}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
             <path d="M19 12H5M12 5l-7 7 7 7"/>
           </svg>
           Volver
         </button>
 
         <div style={{ flex:1, textAlign:"center" }}>
-          <div style={{ fontSize:13, fontWeight:600, color:"#111", letterSpacing:".02em" }}>Finalizar pedido</div>
-          <div style={{ fontSize:10, color:"#9ca3af", letterSpacing:".04em" }}>{college.name} · {cartQty} prenda{cartQty!==1?"s":""}</div>
+          <div style={{
+            fontFamily: "var(--font-display,'Cormorant Garamond',serif)",
+            fontSize: 17, fontWeight: 500, fontStyle: "italic", color: INK, lineHeight:1,
+          }}>
+            Finalizar pedido
+          </div>
+          <div style={{ fontSize:10, color:"#9b9591", letterSpacing:".06em", marginTop:2 }}>
+            {college.name} · {cartQty} prenda{cartQty!==1?"s":""}
+          </div>
         </div>
 
-        <div className="steps">
+        {/* Step indicator */}
+        <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
           {[1,2].map((n,i) => {
-            const done = step > n, active = step === n;
+            const done   = step > n;
+            const active = step === n;
             return (
               <React.Fragment key={n}>
-                <div className="step-dot" style={{
-                  background: done?"#059669":active?"#111":"#f3f4f6",
-                  color: done||active?"#fff":"#9ca3af",
+                <div style={{
+                  width:28, height:28, borderRadius:"50%",
+                  background: done ? "#16a34a" : active ? INK : "#f0ede9",
+                  color: done||active ? "#fff" : "#9b9591",
+                  fontSize: 10, fontWeight: 700,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  transition: "all .2s",
+                  boxShadow: active ? `0 2px 10px rgba(28,28,28,.2)` : "none",
                 }}>
                   {done
-                    ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>
+                    ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>
                     : n}
                 </div>
-                {i===0 && <div className="step-line" style={{ background:step>1?"#059669":"#e5e7eb" }}/>}
+                {i === 0 && (
+                  <div style={{ width:24, height:2, borderRadius:1, background: step>1 ? "#16a34a" : "#e8e5e1", transition:"background .3s" }}/>
+                )}
               </React.Fragment>
             );
           })}
@@ -265,48 +482,36 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
       <div className="co-wrap">
 
         {/* ── Columna principal ── */}
-        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+        <div style={{ display:"flex", flexDirection:"column", gap:16, animation:"fadeUp .25s ease" }}>
 
-          {/* PASO 1 — Datos */}
+          {/* ═══════ PASO 1 ═══════ */}
           {step === 1 && (
-            <div className="co-card">
-              <div className="co-card-head">
-                <div style={{ fontSize:9, fontWeight:700, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".14em", marginBottom:3 }}>Paso 1 de 2</div>
-                <div style={{ fontSize:16, fontWeight:600, color:"#111", fontFamily:"var(--font-display,'Cormorant Garamond',serif)", letterSpacing:".02em" }}>Información del pedido</div>
-              </div>
-
-              <div style={{ padding:"clamp(14px,3vw,20px)", display:"flex", flexDirection:"column", gap:20 }}>
-
-                {/* Estudiante */}
-                <div>
-                  <div className="co-section-label" style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                    <span>Estudiante</span>
-                    <span style={{ fontSize:9, fontWeight:500, color:"#9ca3af", textTransform:"none", letterSpacing:".04em", fontStyle:"italic" }}>
-                      Opcional
-                    </span>
+            <>
+              {/* Estudiante */}
+              <div className="co-card">
+                <div className="co-card-head">
+                  <div style={{ fontSize:10, fontWeight:600, color:ACCENT, letterSpacing:".12em", textTransform:"uppercase", marginBottom:2 }}>Opcional</div>
+                  <div style={{ fontSize:16, fontWeight:600, color:INK, fontFamily:"var(--font-display,'Cormorant Garamond',serif)", letterSpacing:".02em" }}>
+                    Datos del estudiante
                   </div>
-                  <div className="co-grid-2">
+                </div>
+                <div style={{ padding:"clamp(16px,3vw,22px)", display:"flex", flexDirection:"column", gap:14 }}>
+                  <div className="co-grid">
                     <div className="co-full">
                       <Field label="Nombre completo">
                         <input
                           value={form.studentName}
                           placeholder="Nombre del estudiante"
                           autoComplete="name"
-                          onChange={e => {
-                            const v = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s'-]/g, "");
-                            set("studentName", v);
-                          }}
+                          onChange={e => set("studentName", e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s'-]/g, ""))}
                         />
                       </Field>
                     </div>
-                    <Field label="Curso">
+                    <Field label="Curso / Grado">
                       <input
                         value={form.grade}
                         placeholder="Ej: 5° A"
-                        onChange={e => {
-                          const v = e.target.value.replace(/[^a-zA-Z0-9°\s]/g, "");
-                          set("grade", v);
-                        }}
+                        onChange={e => set("grade", e.target.value.replace(/[^a-zA-Z0-9°\s]/g, ""))}
                       />
                     </Field>
                     <Field label="Documento">
@@ -314,29 +519,30 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                         value={form.studentDoc}
                         placeholder="N° documento"
                         inputMode="numeric"
-                        onChange={e => {
-                          const v = e.target.value.replace(/\D/g, "");
-                          set("studentDoc", v);
-                        }}
+                        onChange={e => set("studentDoc", e.target.value.replace(/\D/g, ""))}
                       />
                     </Field>
                   </div>
                 </div>
+              </div>
 
-                {/* Acudiente */}
-                <div>
-                  <div className="co-section-label">Acudiente</div>
-                  <div className="co-grid-2">
+              {/* Acudiente */}
+              <div className="co-card">
+                <div className="co-card-head">
+                  <div style={{ fontSize:10, fontWeight:600, color:"#dc2626", letterSpacing:".12em", textTransform:"uppercase", marginBottom:2 }}>Requerido</div>
+                  <div style={{ fontSize:16, fontWeight:600, color:INK, fontFamily:"var(--font-display,'Cormorant Garamond',serif)", letterSpacing:".02em" }}>
+                    Datos de contacto
+                  </div>
+                </div>
+                <div style={{ padding:"clamp(16px,3vw,22px)", display:"flex", flexDirection:"column", gap:14 }}>
+                  <div className="co-grid">
                     <div className="co-full">
                       <Field label="Nombre completo" required>
                         <input
                           value={form.guardianName}
-                          placeholder="Nombre del acudiente"
+                          placeholder="Tu nombre completo"
                           autoComplete="name"
-                          onChange={e => {
-                            const v = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s'-]/g, "");
-                            set("guardianName", v);
-                          }}
+                          onChange={e => set("guardianName", e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s'-]/g, ""))}
                         />
                       </Field>
                     </div>
@@ -347,13 +553,15 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                         placeholder="+57 312 000 0000"
                         autoComplete="tel"
                         inputMode="tel"
-                        onChange={e => {
-                          const v = e.target.value.replace(/[^0-9+\s]/g, "");
-                          set("phone", v);
-                        }}
+                        onChange={e => set("phone", e.target.value.replace(/[^0-9+\s]/g, ""))}
                       />
                     </Field>
-                    <Field label="Correo electrónico" required hint={form.email.trim() && !emailValid ? "⚠ Ingresa un correo válido con @ y dominio" : "Recibirás la confirmación aquí"}>
+                    <Field
+                      label="Correo electrónico"
+                      required
+                      error={form.email.trim() && !emailValid ? "Ingresa un correo válido (ej: nombre@correo.com)" : ""}
+                      hint={!form.email.trim() || emailValid ? "Recibirás la confirmación aquí" : ""}
+                    >
                       <input
                         type="email"
                         value={form.email}
@@ -361,275 +569,298 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                         autoComplete="email"
                         inputMode="email"
                         onChange={e => set("email", e.target.value)}
+                        style={{ borderColor: form.email.trim() && !emailValid ? "#dc2626" : undefined }}
                       />
                     </Field>
                   </div>
                 </div>
+              </div>
 
-                {/* Entrega */}
-                <div>
-                  <div className="co-section-label">Tipo de entrega</div>
+              {/* Entrega */}
+              <div className="co-card">
+                <div className="co-card-head">
+                  <div style={{ fontSize:10, fontWeight:600, color:ACCENT, letterSpacing:".12em", textTransform:"uppercase", marginBottom:2 }}>Entrega</div>
+                  <div style={{ fontSize:16, fontWeight:600, color:INK, fontFamily:"var(--font-display,'Cormorant Garamond',serif)", letterSpacing:".02em" }}>
+                    ¿Cómo recibes tu pedido?
+                  </div>
+                </div>
+                <div style={{ padding:"clamp(16px,3vw,22px)", display:"flex", flexDirection:"column", gap:14 }}>
                   <div className="del-opts">
-                    {[
-                      { value:"domicilio",             label:"Domicilio",               sub:`+ ${COP(DELIVERY_FEE)} · Envigado / El Poblado` },
-                      { value:"domicilio_coordinado",  label:"Domicilio fuera de zona", sub:"El admin te contacta para el cobro" },
-                      { value:"recogida",              label:"Recoger en tienda",       sub:"Sin costo adicional" },
-                    ].map(opt => (
-                      <button key={opt.value} type="button"
+                    {deliveryOptions.map(opt => (
+                      <button
+                        key={opt.value}
+                        type="button"
                         className={`del-opt${form.deliveryType===opt.value?" on":""}`}
-                        onClick={()=>set("deliveryType",opt.value)}>
-                        <div style={{ fontSize:13, fontWeight:600, color:"#111", marginBottom:2 }}>{opt.label}</div>
-                        <div style={{ fontSize:11, color:"#9ca3af" }}>{opt.sub}</div>
+                        onClick={() => set("deliveryType", opt.value)}
+                      >
+                        <div className="del-opt-icon">{opt.icon}</div>
+                        <div style={{ fontSize:12, fontWeight:700, color:INK, letterSpacing:".02em" }}>{opt.label}</div>
+                        <div style={{ fontSize:10, color:"#9b9591", lineHeight:1.4 }}>{opt.sub}</div>
                       </button>
                     ))}
                   </div>
 
-                  {form.deliveryType==="domicilio_coordinado" && (
-                    <div style={{ animation:"fadeUp .2s ease" }}>
-                      <div style={{
-                        display:"flex", alignItems:"flex-start", gap:10,
-                        background:"#eff6ff", border:"1px solid #93c5fd",
-                        borderRadius:8, padding:"11px 14px",
-                      }}>
-                        <svg style={{ flexShrink:0, marginTop:1 }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-                        </svg>
-                        <div>
-                          <div style={{ fontSize:11, fontWeight:700, color:"#1d4ed8", letterSpacing:".04em", textTransform:"uppercase", marginBottom:3 }}>
-                            Soporte te contactará
-                          </div>
-                          <div style={{ fontSize:11, fontWeight:400, color:"#1e40af", lineHeight:1.55 }}>
-                            Completa tu pedido normalmente. Una vez confirmado, te contactaremos al teléfono o correo registrado para coordinar el costo y la fecha de envío.
-                          </div>
+                  {/* Info según entrega */}
+                  {form.deliveryType === "recogida" && (
+                    <div className="info-box" style={{ background:"#f0fdf4", border:"1px solid #bbf7d0" }}>
+                      <svg style={{ flexShrink:0, marginTop:1 }} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.2" strokeLinecap="round">
+                        <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                      </svg>
+                      <div>
+                        <div style={{ fontSize:11, fontWeight:700, color:"#15803d", letterSpacing:".06em", textTransform:"uppercase", marginBottom:3 }}>Sin costo extra</div>
+                        <div style={{ fontSize:12, color:"#166534", lineHeight:1.6 }}>
+                          Te avisaremos por correo cuando tu pedido esté <strong>listo para recoger</strong>. Solo preséntate con el número de pedido.
                         </div>
                       </div>
                     </div>
                   )}
-
-                  {form.deliveryType==="recogida" && (
-                    <div style={{ animation:"fadeUp .2s ease" }}>
-                      <div style={{
-                        display:"flex", alignItems:"flex-start", gap:10,
-                        background:"#f0fdf4", border:"1px solid #86efac",
-                        borderRadius:8, padding:"11px 14px",
-                      }}>
-                        <svg style={{ flexShrink:0, marginTop:1 }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-                        </svg>
-                        <div>
-                          <div style={{ fontSize:11, fontWeight:700, color:"#15803d", letterSpacing:".04em", textTransform:"uppercase", marginBottom:3 }}>
-                            ¿Cuándo puedo recoger mi pedido?
-                          </div>
-                          <div style={{ fontSize:11, fontWeight:400, color:"#166534", lineHeight:1.55 }}>
-                            Te notificaremos por correo cuando tu pedido esté <strong>listo para recoger</strong>. Solo preséntate en tienda con el número de pedido.
-                          </div>
+                  {form.deliveryType === "domicilio_coordinado" && (
+                    <div className="info-box" style={{ background:"#eff6ff", border:"1px solid #bfdbfe" }}>
+                      <svg style={{ flexShrink:0, marginTop:1 }} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round">
+                        <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.14 9.81 19.79 19.79 0 01.07 1.18 2 2 0 012.05 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91A16 16 0 0014 15.82l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+                      </svg>
+                      <div>
+                        <div style={{ fontSize:11, fontWeight:700, color:"#1d4ed8", letterSpacing:".06em", textTransform:"uppercase", marginBottom:3 }}>Te contactamos</div>
+                        <div style={{ fontSize:12, color:"#1e40af", lineHeight:1.6 }}>
+                          Completa tu pedido normalmente. Te contactaremos al teléfono o correo registrado para coordinar costo y fecha de envío.
                         </div>
                       </div>
                     </div>
                   )}
-
-                  {form.deliveryType==="domicilio" && (
-                    <div style={{ animation:"fadeUp .2s ease", display:"flex", flexDirection:"column", gap:14 }}>
-                      {/* Aviso zona de cobertura */}
-                      <div style={{
-                        display:"flex", alignItems:"flex-start", gap:10,
-                        background:"#fffbeb", border:"1px solid #fcd34d",
-                        borderRadius:8, padding:"11px 14px",
-                      }}>
-                        <svg style={{ flexShrink:0, marginTop:1 }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  {form.deliveryType === "domicilio" && (
+                    <div style={{ display:"flex", flexDirection:"column", gap:14, animation:"fadeUp .2s ease" }}>
+                      <div className="info-box" style={{ background:"#fffbeb", border:"1px solid #fde68a", marginBottom:0 }}>
+                        <svg style={{ flexShrink:0, marginTop:1 }} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.2" strokeLinecap="round">
                           <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
                         </svg>
-                        <div>
-                          <div style={{ fontSize:11, fontWeight:700, color:"#92400e", letterSpacing:".04em", textTransform:"uppercase", marginBottom:3 }}>
-                            Cobertura: Envigado y El Poblado
-                          </div>
-                          <div style={{ fontSize:11, fontWeight:400, color:"#b45309", lineHeight:1.55 }}>
-                            Si estás fuera de esta zona, selecciona la opción <strong>"Domicilio fuera de zona"</strong> para que te contactemos y coordinemos el envío.
-                          </div>
+                        <div style={{ fontSize:12, color:"#92400e", lineHeight:1.6 }}>
+                          Cobertura: <strong>Envigado y El Poblado</strong>. Si estás fuera de esta zona, usa la opción <strong>"Fuera de zona"</strong>.
                         </div>
                       </div>
-
-                      <div className="co-grid-2">
+                      <div className="co-grid">
                         <div className="co-full">
                           <Field label="Dirección" required>
                             <input value={form.street} placeholder="Calle / Carrera y número"
-                              onChange={e=>set("street",e.target.value)}/>
+                              onChange={e => set("street", e.target.value)}/>
                           </Field>
                         </div>
                         <Field label="Barrio">
                           <input value={form.neighborhood} placeholder="Barrio"
-                            onChange={e=>set("neighborhood",e.target.value)}/>
+                            onChange={e => set("neighborhood", e.target.value)}/>
                         </Field>
                         <Field label="Ciudad">
-                          <input value={form.city} onChange={e=>set("city",e.target.value)}/>
+                          <input value={form.city} onChange={e => set("city", e.target.value)}/>
                         </Field>
                       </div>
                     </div>
                   )}
                 </div>
-
-                <Field label="Observaciones" hint="Opcional — instrucciones especiales, tallas, etc.">
-                  <textarea style={{ resize:"vertical", minHeight:64 }}
-                    value={form.notes} placeholder="Cualquier detalle adicional..."
-                    onChange={e=>set("notes",e.target.value)}/>
-                </Field>
-
-                {/* Métodos de pago aceptados */}
-                <div style={{ display:"flex", flexWrap:"wrap", gap:6, alignItems:"center", padding:"10px 0 2px" }}>
-                  <span style={{ fontSize:10, color:"#9ca3af", marginRight:4 }}>Pagos aceptados:</span>
-                  {[
-                    { label:"Nequi",       bg:"#7b1fa2", color:"#fff" },
-                    { label:"Daviplata",   bg:"#e53935", color:"#fff" },
-                    { label:"Bancolombia", bg:"#ffc107", color:"#111" },
-                    { label:"Transferencia", bg:"#f3f4f6", color:"#374151" },
-                    { label:"PSE",         bg:"#f3f4f6", color:"#374151" },
-                  ].map(({ label, bg, color }) => (
-                    <span key={label} style={{
-                      background:bg, color,
-                      fontSize:9, fontWeight:700, letterSpacing:".04em",
-                      padding:"3px 8px", borderRadius:3,
-                    }}>{label}</span>
-                  ))}
-                </div>
-
-                <button className="btn-pri"
-                  disabled={!step1Valid}
-                  title={!step1Valid ? "Completa los datos del acudiente (nombre, teléfono y correo)" : undefined}
-                  onClick={()=>{ if(!step1Valid){toast("Completa los datos del acudiente","error");return;} goStep(2); }}>
-                  Continuar al pago
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                  </svg>
-                </button>
               </div>
-            </div>
+
+              {/* Observaciones */}
+              <div className="co-card">
+                <div style={{ padding:"clamp(16px,3vw,22px)" }}>
+                  <Field label="Observaciones" hint="Opcional — instrucciones especiales, notas del pedido, etc.">
+                    <textarea
+                      value={form.notes}
+                      placeholder="¿Algo más que debamos saber?"
+                      onChange={e => set("notes", e.target.value)}
+                    />
+                  </Field>
+                </div>
+              </div>
+
+              {/* Botón continuar */}
+              <button
+                className="btn-pri"
+                disabled={!step1Valid}
+                onClick={() => { if(!step1Valid){ toast("Completa nombre, teléfono y correo del acudiente","error"); return; } goStep(2); }}
+              >
+                Continuar al pago
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </>
           )}
 
-          {/* PASO 2 — Pago */}
+          {/* ═══════ PASO 2 ═══════ */}
           {step === 2 && (
-            <div style={{ display:"flex", flexDirection:"column", gap:14, animation:"fadeUp .2s ease" }}>
-              <button className="btn-ghost-sm" onClick={()=>goStep(1)}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <div style={{ display:"flex", flexDirection:"column", gap:16, animation:"fadeUp .25s ease" }}>
+
+              <button className="btn-ghost" onClick={() => goStep(1)}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                   <path d="M19 12H5M12 5l-7 7 7 7"/>
                 </svg>
                 Volver a datos
               </button>
 
-              {/* Bloque QR + Wompi */}
-              <div className="co-card" style={{ border:"1.5px solid #111" }}>
-                {/* Header */}
-                <div style={{ background:"#111", padding:"11px 16px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                  <div style={{ color:"#fff", fontWeight:600, fontSize:13, letterSpacing:".04em" }}>Pago por transferencia</div>
-                  <span style={{ background:"rgba(255,255,255,.12)", color:"rgba(255,255,255,.8)", fontSize:9, fontWeight:700, padding:"2px 9px", borderRadius:20, letterSpacing:".1em", textTransform:"uppercase" }}>
+              {/* Total destacado */}
+              <div style={{
+                background: INK,
+                borderRadius: 12,
+                padding: "clamp(18px,3vw,26px)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 16,
+                flexWrap: "wrap",
+                boxShadow: "0 6px 28px rgba(28,28,28,.2)",
+              }}>
+                <div>
+                  <div style={{ fontSize:10, fontWeight:600, color:"rgba(255,255,255,.45)", letterSpacing:".16em", textTransform:"uppercase", marginBottom:4 }}>
+                    Total a pagar
+                  </div>
+                  <div style={{
+                    fontFamily:"var(--font-display,'Cormorant Garamond',serif)",
+                    fontSize:"clamp(28px,5vw,36px)", fontWeight:500, color:"#fff",
+                    letterSpacing:".02em", lineHeight:1,
+                  }}>
+                    {COP(total)}
+                  </div>
+                  {form.deliveryType === "domicilio" && (
+                    <div style={{ fontSize:11, color:"rgba(255,255,255,.4)", marginTop:6 }}>
+                      Incluye domicilio {COP(DELIVERY_FEE)}
+                    </div>
+                  )}
+                </div>
+                <div style={{
+                  background: ACCENT,
+                  borderRadius: 8,
+                  padding: "8px 16px",
+                  fontSize: 11, fontWeight: 700,
+                  color: "#fff", letterSpacing: ".08em", textTransform: "uppercase",
+                }}>
+                  {cartQty} prenda{cartQty!==1?"s":""}
+                </div>
+              </div>
+
+              {/* Pago QR + transferencia */}
+              <div className="co-card" style={{ border:`2px solid ${INK}` }}>
+                <div style={{ background:INK, padding:"13px 20px", display:"flex", alignItems:"center", gap:10 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" strokeWidth="2">
+                    <rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/>
+                    <path d="M14 14h.01M18 14h.01M14 18h.01M18 18h.01M14 22h.01M22 14h.01M22 18h.01M22 22h.01"/>
+                  </svg>
+                  <div style={{ flex:1, color:"#fff", fontWeight:600, fontSize:13, letterSpacing:".04em" }}>
+                    Pagar con transferencia / QR
+                  </div>
+                  <span style={{ background:"rgba(184,154,106,.25)", color:ACCENT, fontSize:9, fontWeight:700, padding:"3px 10px", borderRadius:20, letterSpacing:".12em", textTransform:"uppercase", border:`1px solid ${ACCENT}40` }}>
                     Recomendado
                   </span>
                 </div>
 
-                {/* QR */}
                 <div className="qr-block">
                   <img src={imgQrPago} alt="Código QR de pago" className="qr-img"/>
                   <div style={{ flex:1, minWidth:140 }}>
-                    <div style={{ fontSize:11, fontWeight:700, color:"#374151", letterSpacing:".08em", textTransform:"uppercase", marginBottom:12 }}>
-                      Instrucciones
+                    <div style={{ fontSize:10, fontWeight:700, color:"#9b9591", letterSpacing:".14em", textTransform:"uppercase", marginBottom:16 }}>
+                      Instrucciones paso a paso
                     </div>
                     {[
-                      "Abre tu app bancaria",
-                      "Selecciona la opción Pagar con QR",
-                      "Agrega el número de documento del estudiante en la descripción del pago",
-                      `Transfiere exactamente ${COP(total)}`,
-                      "Adjunta el comprobante abajo",
+                      "Abre tu aplicación bancaria",
+                      "Selecciona la opción «Pagar con QR»",
+                      "Agrega el documento del estudiante en la descripción",
+                      <span>Transfiere exactamente <strong style={{ color:INK }}>{COP(total)}</strong></span>,
+                      "Descarga o captura el comprobante",
                     ].map((t,i) => (
-                      <div key={i} style={{ display:"flex", gap:10, alignItems:"flex-start", marginBottom:9 }}>
-                        <span style={{ width:20, height:20, borderRadius:"50%", background:"#f3f4f6", fontSize:9, fontWeight:700, color:"#374151", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                          {i+1}
-                        </span>
-                        <span style={{ fontSize:13, color:"#374151", lineHeight:1.5 }}>{t}</span>
+                      <div key={i} className="pay-step">
+                        <div className="pay-step-num">{i+1}</div>
+                        <div style={{ fontSize:13, color:"#4b4844", lineHeight:1.55, paddingTop:2 }}>{t}</div>
                       </div>
                     ))}
-                    <div style={{ marginTop:14, background:"#f0fdf4", border:"1px solid #86efac", borderRadius:7, padding:"10px 13px", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:8 }}>
-                      <span style={{ fontSize:11, color:"#065f46", fontWeight:600 }}>Total a transferir</span>
-                      <span style={{ fontSize:18, fontWeight:700, color:"#065f46", fontFamily:"var(--font-mono,'DM Mono',monospace)" }}>{COP(total)}</span>
-                    </div>
                   </div>
                 </div>
 
-                {/* Bold — pago con tarjeta, Nequi, PSE */}
-                <div className="wompi-strip">
+                {/* Bold */}
+                <div className="bold-strip">
                   <div>
-                    <div className="wompi-badge">
+                    <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:700, color:"#5b21b6" }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
-                      Pagar con tarjeta, Nequi o PSE
+                      Tarjeta, Nequi o PSE
                     </div>
-                    <div style={{ fontSize:11, color:"#9ca3af", marginTop:2 }}>
-                      Procesado de forma segura por Bold
-                    </div>
+                    <div style={{ fontSize:11, color:"#9b9591", marginTop:2 }}>Procesado de forma segura por Bold</div>
                   </div>
-                  {boldPaymentUrl ? (
-                    <a href={boldPaymentUrl} target="_blank" rel="noreferrer" className="wompi-btn">
-                      Pagar con Bold
-                    </a>
-                  ) : (
-                    <span style={{ fontSize:11, color:"#9ca3af", fontStyle:"italic" }}>Disponible al confirmar</span>
-                  )}
+                  {boldPaymentUrl
+                    ? <a href={boldPaymentUrl} target="_blank" rel="noreferrer" className="bold-btn">Pagar con Bold</a>
+                    : <span style={{ fontSize:11, color:"#b0a89f", fontStyle:"italic" }}>Disponible al confirmar</span>
+                  }
                 </div>
               </div>
 
               {/* Comprobante */}
-              <div className="co-card" style={{ border: !proofFile ? "1.5px solid #fca5a5" : "1px solid #e5e7eb" }}>
-                <div className="co-card-head">
-                  <div style={{ fontSize:13, fontWeight:600, color:"#111", marginBottom:2 }}>
-                    Comprobante de pago <span style={{ color:"#dc2626" }}>*</span>
-                  </div>
-                  <div style={{ fontSize:11, color:"#9ca3af" }}>
-                    Adjunta la captura de pantalla o foto del pago
+              <div className="co-card" style={{ border: proofFile ? "2px solid #86efac" : "2px dashed #fca5a5" }}>
+                <div className="co-card-head" style={{ background: proofFile ? "#f0fdf4" : "#fff5f5" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                    {proofFile
+                      ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                      : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    }
+                    <div>
+                      <div style={{ fontSize:14, fontWeight:700, color: proofFile ? "#15803d" : "#dc2626" }}>
+                        Comprobante de pago <span style={{ color:"#dc2626" }}>*</span>
+                      </div>
+                      <div style={{ fontSize:11, color: proofFile ? "#166534" : "#9b9591", marginTop:1 }}>
+                        {proofFile ? "Archivo adjunto correctamente" : "Adjunta la captura de pantalla o foto del pago"}
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div style={{ padding:"clamp(14px,3vw,18px)" }}>
+
+                <div style={{ padding:"clamp(16px,3vw,20px)" }}>
                   {proofPreview ? (
-                    <div style={{ display:"flex", gap:14, alignItems:"center", flexWrap:"wrap" }}>
+                    <div style={{ display:"flex", gap:16, alignItems:"center", flexWrap:"wrap" }}>
                       <img src={proofPreview} alt="Comprobante"
-                        style={{ width:90, height:90, objectFit:"cover", borderRadius:8, border:"1px solid #e5e7eb", flexShrink:0 }}/>
-                      <div>
-                        <div style={{ fontSize:13, fontWeight:600, color:"#065f46", marginBottom:4 }}>Comprobante adjunto</div>
-                        <div style={{ fontSize:11, color:"#9ca3af", marginBottom:9, wordBreak:"break-all" }}>{proofFile?.name}</div>
-                        <button onClick={()=>{setProofFile(null);setProofPreview(null);}}
-                          style={{ fontSize:11, color:"#dc2626", background:"#fef2f2", border:"1px solid #fca5a5", borderRadius:5, padding:"4px 10px" }}>
+                        style={{ width:96, height:96, objectFit:"cover", borderRadius:10, border:"1.5px solid #e8e5e1", flexShrink:0, boxShadow:"0 2px 10px rgba(28,28,28,.08)" }}
+                      />
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:13, fontWeight:700, color:"#15803d", marginBottom:3 }}>¡Listo!</div>
+                        <div style={{ fontSize:11, color:"#9b9591", marginBottom:12, wordBreak:"break-all" }}>{proofFile?.name}</div>
+                        <button
+                          onClick={() => { setProofFile(null); setProofPreview(null); }}
+                          style={{ fontSize:11, color:"#dc2626", background:"#fef2f2", border:"1px solid #fca5a5", borderRadius:6, padding:"5px 12px", cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}
+                        >
                           Cambiar archivo
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <label className="upload-zone">
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
-                      </svg>
-                      <div style={{ fontSize:13, fontWeight:600, color:"#374151" }}>Seleccionar archivo</div>
-                      <div style={{ fontSize:11, color:"#9ca3af" }}>JPG, PNG o PDF — máx. 5 MB</div>
-                      <input type="file" accept="image/*,application/pdf" style={{ display:"none" }} onChange={handleProof}/>
+                    <label
+                      className={`upload-zone${dragOver?" drag":""}`}
+                      onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                      onDragLeave={() => setDragOver(false)}
+                      onDrop={e => { e.preventDefault(); setDragOver(false); handleProof(e.dataTransfer.files?.[0]); }}
+                    >
+                      <div style={{
+                        width:52, height:52, borderRadius:12,
+                        background:"#f5f3f0",
+                        display:"flex", alignItems:"center", justifyContent:"center",
+                      }}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9b9591" strokeWidth="1.6">
+                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                        </svg>
+                      </div>
+                      <div style={{ fontSize:13, fontWeight:700, color:"#4b4844" }}>
+                        {dragOver ? "Suelta aquí" : "Arrastra o selecciona el comprobante"}
+                      </div>
+                      <div style={{ fontSize:11, color:"#9b9591" }}>JPG, PNG o PDF · máx. 5 MB</div>
+                      <input type="file" accept="image/*,application/pdf" style={{ display:"none" }}
+                        onChange={e => handleProof(e.target.files?.[0])}/>
                     </label>
                   )}
                 </div>
               </div>
-              {!proofFile && (
-  <div style={{
-    background:"#fef2f2", border:"1px solid #fca5a5", borderRadius:7,
-    padding:"10px 14px", display:"flex", alignItems:"center", gap:8,
-    fontSize:12, color:"#dc2626", fontWeight:500
-  }}>
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-      <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
-    </svg>
-    Debes adjuntar el comprobante de pago para continuar
-  </div>
-)}
 
-{/* Botón confirmar */}
-<button className="btn-pri" onClick={handleSubmit} disabled={loading || !proofFile}></button>
               {/* Botón confirmar */}
               <button className="btn-pri" onClick={handleSubmit} disabled={loading || !proofFile}>
                 {loading
                   ? <><Spinner size={15}/> Enviando pedido...</>
-                  : <>Confirmar pedido · {COP(total)}</>}
+                  : <>
+                      {proofFile
+                        ? <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Confirmar pedido · {COP(total)}</>
+                        : "Adjunta el comprobante para continuar"
+                      }
+                    </>
+                }
               </button>
             </div>
           )}
@@ -639,72 +870,79 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
         <div className="co-summary">
           <div className="co-card">
             <div className="co-card-head">
-              <div style={{ fontSize:9, fontWeight:700, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".14em" }}>Resumen del pedido</div>
+              <div style={{ fontSize:9, fontWeight:700, color:"#9b9591", textTransform:"uppercase", letterSpacing:".16em" }}>
+                Resumen del pedido
+              </div>
             </div>
-            <div style={{ padding:"clamp(12px,2vw,16px)" }}>
-              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:13, paddingBottom:13, borderBottom:"1px solid #f3f4f6" }}>
-                <div style={{ width:8, height:8, borderRadius:"50%", background:college.primaryColor, flexShrink:0 }}/>
-                <span style={{ fontSize:12, fontWeight:600, color:"#374151" }}>{college.name}</span>
+            <div style={{ padding:"clamp(14px,2vw,18px)" }}>
+
+              {/* Colegio */}
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14, paddingBottom:14, borderBottom:"1px solid #f0ede9" }}>
+                <div style={{ width:8, height:8, borderRadius:"50%", background:college.primaryColor, flexShrink:0, boxShadow:`0 0 0 3px ${college.primaryColor}22` }}/>
+                <span style={{ fontSize:12, fontWeight:600, color:"#4b4844" }}>{college.name}</span>
               </div>
 
-              <div style={{ display:"flex", flexDirection:"column", gap:9, marginBottom:12 }}>
+              {/* Items */}
+              <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:14 }}>
                 {cart.map(item => (
-                  <div key={item.id+item.size} style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:8 }}>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontSize:12, fontWeight:500, color:"#111", lineHeight:1.3, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.name}</div>
-                      <div style={{ fontSize:10, color:"#9ca3af", marginTop:1 }}>
-                        T.{item.size} · {COP(item.price)} c/u
+                  <div key={item.id+item.size}>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:8, marginBottom:6 }}>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontSize:12, fontWeight:600, color:INK, lineHeight:1.35, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.name}</div>
+                        <div style={{ fontSize:10, color:"#9b9591", marginTop:2 }}>Talla {item.size} · {COP(item.price)} c/u</div>
                       </div>
-                      <div style={{ display:"flex", alignItems:"center", gap:0, marginTop:6 }}>
-                        <button
-                          onClick={() => setCart(prev => {
-                            if (item.qty <= 1) return prev.filter(i => !(i.id === item.id && i.size === item.size));
-                            return prev.map(i => i.id === item.id && i.size === item.size ? { ...i, qty: i.qty - 1 } : i);
-                          })}
-                          style={{ width:28, height:28, borderRadius:"4px 0 0 4px", border:"1px solid #e5e7eb", background:"#f9fafb", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:700, color:"#374151" }}
-                        >
-                          {item.qty <= 1 ? (
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.5" strokeLinecap="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-                          ) : "−"}
-                        </button>
-                        <span style={{ width:32, height:28, display:"flex", alignItems:"center", justifyContent:"center", border:"1px solid #e5e7eb", borderLeft:"none", borderRight:"none", fontSize:12, fontWeight:700, color:"#111", background:"#fff" }}>
-                          {item.qty}
-                        </span>
-                        <button
-                          onClick={() => setCart(prev => prev.map(i => i.id === item.id && i.size === item.size ? { ...i, qty: i.qty + 1 } : i))}
-                          style={{ width:28, height:28, borderRadius:"0 4px 4px 0", border:"1px solid #e5e7eb", background:"#f9fafb", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:700, color:"#374151" }}
-                        >+</button>
-                      </div>
+                      <div style={{ fontSize:12, fontWeight:700, color:INK, flexShrink:0 }}>{COP(item.price*item.qty)}</div>
                     </div>
-                    <div style={{ fontSize:12, fontWeight:600, color:"#111", flexShrink:0 }}>{COP(item.price*item.qty)}</div>
+                    <div className="qty-ctrl">
+                      <button className="qty-btn"
+                        onClick={() => setCart(prev => {
+                          if (item.qty <= 1) return prev.filter(i => !(i.id===item.id && i.size===item.size));
+                          return prev.map(i => i.id===item.id && i.size===item.size ? {...i, qty:i.qty-1} : i);
+                        })}
+                      >
+                        {item.qty <= 1
+                          ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.5" strokeLinecap="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                          : "−"
+                        }
+                      </button>
+                      <div className="qty-val">{item.qty}</div>
+                      <button className="qty-btn"
+                        onClick={() => setCart(prev => prev.map(i => i.id===item.id && i.size===item.size ? {...i, qty:i.qty+1} : i))}
+                      >+</button>
+                    </div>
                   </div>
                 ))}
               </div>
 
-              <div style={{ borderTop:"1px solid #e5e7eb", paddingTop:10, display:"flex", flexDirection:"column", gap:6 }}>
-                <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#6b7280" }}>
+              {/* Totales */}
+              <div style={{ borderTop:"1px solid #e8e5e1", paddingTop:12, display:"flex", flexDirection:"column", gap:7 }}>
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#6b6560" }}>
                   <span>Subtotal</span><span>{COP(subtotal)}</span>
                 </div>
                 {form.deliveryType==="domicilio" && (
-                  <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#6b7280" }}>
-                    <span>Envío a domicilio</span><span>+ {COP(DELIVERY_FEE)}</span>
+                  <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#6b6560" }}>
+                    <span>Domicilio</span><span>+ {COP(DELIVERY_FEE)}</span>
                   </div>
                 )}
                 {form.deliveryType==="domicilio_coordinado" && (
                   <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#2563eb" }}>
-                    <span>Envío por coordinar</span>
-                    <span style={{ fontWeight:600 }}>Te contactamos</span>
+                    <span>Envío</span><span style={{ fontWeight:600 }}>Por coordinar</span>
                   </div>
                 )}
                 {form.deliveryType==="recogida" && (
                   <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#16a34a" }}>
-                    <span>Recogida en tienda</span>
-                    <span style={{ fontWeight:600 }}>Te avisamos cuando esté listo</span>
+                    <span>Envío</span><span style={{ fontWeight:600 }}>Recogida en tienda</span>
                   </div>
                 )}
-                <div style={{ display:"flex", justifyContent:"space-between", paddingTop:8, borderTop:"1px solid #e5e7eb", fontSize:15, fontWeight:700, color:"#111" }}>
+                <div style={{
+                  display:"flex", justifyContent:"space-between",
+                  paddingTop:10, marginTop:3, borderTop:"1px solid #e8e5e1",
+                  fontSize:16, fontWeight:700, color:INK,
+                }}>
                   <span>Total</span>
-                  <span style={{ fontFamily:"var(--font-mono,'DM Mono',monospace)" }}>{COP(total)}</span>
+                  <span style={{ fontFamily:"var(--font-display,'Cormorant Garamond',serif)", fontSize:20, fontWeight:500 }}>
+                    {COP(total)}
+                  </span>
                 </div>
               </div>
             </div>
