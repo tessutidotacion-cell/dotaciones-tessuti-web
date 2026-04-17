@@ -42,6 +42,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
   const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
 
   const P = safeCSSColor(college.primaryColor);
+  const isEmpresarial = college.id === "empresarial";
 
   const getDiscountPct = (uid) => Math.max(0, Math.min(90, Number(discounts?.[String(uid)]) || 0));
   const getBasePrice   = (u, selectedSize) =>
@@ -879,13 +880,22 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
               <div className="pd-info">
                 <div className="pd-category">{u.category}</div>
                 <div className="pd-name">{u.name}</div>
-                <div className="pd-price">
-                  {COP(finalPrice)}
-                  {pct > 0 && <span className="pd-price-original">{COP(getBasePrice(u, selectedSize))}</span>}
-                </div>
+                {!isEmpresarial && (
+                  <div className="pd-price">
+                    {COP(finalPrice)}
+                    {pct > 0 && <span className="pd-price-original">{COP(getBasePrice(u, selectedSize))}</span>}
+                  </div>
+                )}
 
-                {u.description && (
-                  <div className="pd-desc">{u.description}</div>
+                {(u.description || isEmpresarial) && (
+                  <div className="pd-desc">
+                    {u.description}
+                    {isEmpresarial && (
+                      <span style={{ display: "block", marginTop: u.description ? 12 : 0 }}>
+                        Cada prenda puede personalizarse según las necesidades de tu empresa: estampado, bordado, serigrafía, sublimación y más. Si deseas personalización, contáctanos directamente. Si prefieres la prenda tal como es, puedes comprarla en la página.
+                      </span>
+                    )}
+                  </div>
                 )}
 
                 {/* Tallas */}
@@ -926,23 +936,66 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
                 )}
 
                 {/* Agregar */}
-                <button
-                  className={`pd-add-btn ${btnClass}`}
-                  onClick={() => addToCart(u)}
-                  disabled={!hasSz}
-                >
-                  {isAdded
-                    ? <>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" style={{ marginRight: 8, verticalAlign: "middle" }}>
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                        Agregado
-                      </>
-                    : hasSz
-                      ? "Añadir al carrito"
-                      : "Selecciona una talla"
-                  }
-                </button>
+                {isEmpresarial ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 20 }}>
+                    <a
+                      href={`https://wa.me/573122040973?text=${encodeURIComponent(`Hola, me interesa personalizar la prenda: ${u.name}${sizes[u.id] ? `, talla ${sizes[u.id]}` : ""}. Quisiera consultar opciones de estampado / bordado.`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                        width: "100%", padding: "16px 20px", boxSizing: "border-box",
+                        fontFamily: "var(--font)", fontSize: 11, fontWeight: 700,
+                        letterSpacing: ".16em", textTransform: "uppercase",
+                        textDecoration: "none", cursor: "pointer",
+                        background: "#25d366", color: "#fff", border: "none",
+                        transition: "all .2s",
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(37,211,102,.4)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                      </svg>
+                      Contactar proveedor
+                    </a>
+                    <button
+                      className={`pd-add-btn ${btnClass}`}
+                      onClick={() => addToCart(u)}
+                      disabled={!hasSz}
+                    >
+                      {isAdded
+                        ? <>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" style={{ marginRight: 8, verticalAlign: "middle" }}>
+                              <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            Agregado
+                          </>
+                        : hasSz
+                          ? "Comprar sin personalización"
+                          : "Selecciona una talla"
+                      }
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    className={`pd-add-btn ${btnClass}`}
+                    onClick={() => addToCart(u)}
+                    disabled={!hasSz}
+                  >
+                    {isAdded
+                      ? <>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" style={{ marginRight: 8, verticalAlign: "middle" }}>
+                            <polyline points="20 6 9 17 4 12"/>
+                          </svg>
+                          Agregado
+                        </>
+                      : hasSz
+                        ? "Añadir al carrito"
+                        : "Selecciona una talla"
+                    }
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -1087,10 +1140,13 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
                   </div>
                   <div className="prod-info">
                     <div className="prod-name">{u.name}</div>
-                    <div className="prod-price">
-                      {COP(finalPrice)}
-                      {pct > 0 && <span style={{ textDecoration: "line-through", color: "#b0a89f", marginLeft: 8, fontSize: 11 }}>{COP(u.price)}</span>}
-                    </div>
+                    {isEmpresarial
+                      ? <div className="prod-price">Precio a consultar</div>
+                      : <div className="prod-price">
+                          {COP(finalPrice)}
+                          {pct > 0 && <span style={{ textDecoration: "line-through", color: "#b0a89f", marginLeft: 8, fontSize: 11 }}>{COP(u.price)}</span>}
+                        </div>
+                    }
                   </div>
                 </article>
               );
