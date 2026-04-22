@@ -1623,7 +1623,7 @@ export default function AdminPanel({ onLogout, toast }) {
                   <div style={{ fontSize:11, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:".1em", marginBottom:14 }}>Nuevo cupón</div>
                   <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 2fr auto", gap:10, alignItems:"end" }}>
                     <div>
-                      <div style={{ fontSize:11, fontWeight:600, color:"#6b7280", marginBottom:5 }}>Código *</div>
+                      <div style={{ fontSize:11, fontWeight:600, color:"#6b7280", marginBottom:5 }}>Código</div>
                       <input
                         value={couponForm.code}
                         onChange={e => setCouponForm(f => ({ ...f, code: e.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g,"") }))}
