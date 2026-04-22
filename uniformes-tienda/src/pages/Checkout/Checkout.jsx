@@ -52,6 +52,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
   const [couponInput,    setCouponInput]   = useState("");
   const [coupon,         setCoupon]        = useState(null);   // { code, pct } cuando válido
   const [couponLoading,  setCouponLoading] = useState(false);
+  const [paymentMethod,  setPaymentMethod] = useState("transfer"); // "transfer" | "cash"
 
   const [form, setForm] = useState({
     guardianName:"", guardianDoc:"", phone:"", email:"",
@@ -109,7 +110,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
   };
 
   const handleSubmit = async () => {
-    if (!proofFile) { toast("Adjunta el comprobante de pago", "error"); return; }
+    if (paymentMethod === "transfer" && !proofFile) { toast("Adjunta el comprobante de pago", "error"); return; }
     setLoading(true);
     try {
       const orderPayload = {
@@ -135,6 +136,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
         },
         notes: form.notes.trim(),
         coupon: coupon ? { code: coupon.code, pct: coupon.pct, discount } : null,
+        paymentMethod,
       };
 
       const orderResult = await createOrder(orderPayload);
@@ -144,7 +146,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
         setBoldPaymentUrl(orderResult.data.boldPaymentUrl);
       }
 
-      if (orderId && proofFile) {
+      if (paymentMethod === "transfer" && orderId && proofFile) {
         try { await uploadPaymentProof(orderId, proofFile); }
         catch { toast("Pedido creado. Envía el comprobante por WhatsApp.", "warning"); }
       }
@@ -833,8 +835,64 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                 </div>
               </div>
 
+              {/* Selector método de pago */}
+              <div className="co-card">
+                <div className="co-card-head">
+                  <div style={{ fontSize:10, fontWeight:600, color:"#dc2626", letterSpacing:".12em", textTransform:"uppercase", marginBottom:2 }}>Método de pago</div>
+                  <div style={{ fontSize:16, fontWeight:600, color:INK, fontFamily:"var(--font-display,'Cormorant Garamond',serif)" }}>¿Cómo vas a pagar?</div>
+                </div>
+                <div style={{ padding:"clamp(14px,2.5vw,20px)", display:"flex", gap:10 }}>
+                  {[
+                    {
+                      value: "transfer",
+                      label: "Transferencia / QR",
+                      sub: "Nequi, Bancolombia, PSE",
+                      icon: (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                          <rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/>
+                          <path d="M14 14h.01M18 14h.01M14 18h.01M18 18h.01M14 22h.01M22 14h.01M22 18h.01M22 22h.01"/>
+                        </svg>
+                      ),
+                    },
+                    {
+                      value: "cash",
+                      label: "Efectivo",
+                      sub: "Al recoger o al recibir",
+                      icon: (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                          <rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/>
+                        </svg>
+                      ),
+                    },
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setPaymentMethod(opt.value)}
+                      style={{
+                        flex:1, padding:"14px 12px", borderRadius:10, cursor:"pointer", textAlign:"left",
+                        border: paymentMethod === opt.value ? `2px solid ${INK}` : "2px solid #e8e5e1",
+                        background: paymentMethod === opt.value ? "#faf9f7" : "#fff",
+                        boxShadow: paymentMethod === opt.value ? `0 4px 16px rgba(28,28,28,.1)` : "none",
+                        transition:"all .18s", fontFamily:"inherit",
+                        display:"flex", flexDirection:"column", gap:6,
+                      }}
+                    >
+                      <div style={{
+                        width:36, height:36, borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center",
+                        background: paymentMethod === opt.value ? INK : "#f5f3f0",
+                        color: paymentMethod === opt.value ? "#fff" : "#6b6560",
+                        transition:"all .18s", flexShrink:0,
+                      }}>{opt.icon}</div>
+                      <div style={{ fontSize:12, fontWeight:700, color:INK, letterSpacing:".02em" }}>{opt.label}</div>
+                      <div style={{ fontSize:10, color:"#9b9591", lineHeight:1.4 }}>{opt.sub}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Pago QR + transferencia */}
-              <div className="co-card" style={{ border:`2px solid ${INK}` }}>
+              {paymentMethod === "transfer" && <div className="co-card" style={{ border:`2px solid ${INK}` }}>
                 <div style={{ background:INK, padding:"13px 20px", display:"flex", alignItems:"center", gap:10 }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" strokeWidth="2">
                     <rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/>
@@ -885,8 +943,25 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                 </div>
               </div>
 
-              {/* Comprobante */}
-              <div className="co-card" style={{ border: proofFile ? "2px solid #86efac" : "2px dashed #fca5a5" }}>
+              }
+
+              {/* Info efectivo */}
+              {paymentMethod === "cash" && (
+                <div className="info-box" style={{ background:"#f0fdf4", border:"1.5px solid #86efac", borderRadius:12, padding:"18px 20px" }}>
+                  <svg style={{ flexShrink:0, marginTop:1 }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.2" strokeLinecap="round">
+                    <rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/>
+                  </svg>
+                  <div>
+                    <div style={{ fontSize:12, fontWeight:700, color:"#15803d", letterSpacing:".06em", textTransform:"uppercase", marginBottom:4 }}>Pago en efectivo</div>
+                    <div style={{ fontSize:13, color:"#166534", lineHeight:1.6 }}>
+                      Pagarás <strong>{COP(total)}</strong> en efectivo al momento de recoger o recibir tu pedido. No necesitas adjuntar comprobante.
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Comprobante — solo transferencia */}
+              {paymentMethod === "transfer" && <div className="co-card" style={{ border: proofFile ? "2px solid #86efac" : "2px dashed #fca5a5" }}>
                 <div className="co-card-head" style={{ background: proofFile ? "#f0fdf4" : "#fff5f5" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                     {proofFile
@@ -948,12 +1023,18 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                 </div>
               </div>
 
+              }
+
               {/* Botón confirmar */}
-              <button className="btn-pri" onClick={handleSubmit} disabled={loading || !proofFile}>
+              <button
+                className="btn-pri"
+                onClick={handleSubmit}
+                disabled={loading || (paymentMethod === "transfer" && !proofFile)}
+              >
                 {loading
                   ? <><Spinner size={15}/> Enviando pedido...</>
                   : <>
-                      {proofFile
+                      {paymentMethod === "cash" || proofFile
                         ? <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Confirmar pedido · {COP(total)}</>
                         : "Adjunta el comprobante para continuar"
                       }
