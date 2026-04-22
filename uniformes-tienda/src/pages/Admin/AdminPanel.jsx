@@ -3,6 +3,7 @@ import {
   getOrders, updateOrderStatus, updateDeliveryNote,
   getStats, getStock, updateStock, clearToken,
   getDiscounts, setDiscount, removeDiscount,
+  getCoupons, createCoupon, toggleCoupon, deleteCoupon,
 } from "../../services/api";
 import { LOGO_TESSUTI } from "../../assets";
 import { COP } from "../../utils/money";
@@ -842,11 +843,57 @@ export default function AdminPanel({ onLogout, toast }) {
     } catch(err) { toast(err.message, "error"); }
   };
 
+  // ── Cupones ───────────────────────────────────────────────────
+  const [coupons,        setCoupons]       = useState([]);
+  const [couponForm,     setCouponForm]    = useState({ code:"", pct:"5", description:"" });
+  const [couponSaving,   setCouponSaving]  = useState(false);
+  const [loadingCoupons, setLoadingCoupons]= useState(false);
+
+  const loadCoupons = useCallback(async () => {
+    setLoadingCoupons(true);
+    try {
+      const { data } = await getCoupons();
+      setCoupons(data || []);
+    } catch(err) { toast(err.message, "error"); }
+    finally { setLoadingCoupons(false); }
+  }, [toast]);
+
+  useEffect(() => { if(tab === "coupons") loadCoupons(); }, [tab, loadCoupons]);
+
+  const handleCreateCoupon = async () => {
+    if (!couponForm.code.trim() || !couponForm.pct) return;
+    setCouponSaving(true);
+    try {
+      await createCoupon(couponForm.code.trim(), Number(couponForm.pct), couponForm.description.trim());
+      toast(`Cupón ${couponForm.code.trim().toUpperCase()} creado`, "success");
+      setCouponForm({ code:"", pct:"5", description:"" });
+      loadCoupons();
+    } catch(err) { toast(err.message, "error"); }
+    finally { setCouponSaving(false); }
+  };
+
+  const handleToggleCoupon = async (code) => {
+    try {
+      const { data } = await toggleCoupon(code);
+      setCoupons(prev => prev.map(c => c.code === code ? { ...c, active: data.active } : c));
+    } catch(err) { toast(err.message, "error"); }
+  };
+
+  const handleDeleteCoupon = async (code) => {
+    if (!window.confirm(`¿Eliminar cupón ${code}?`)) return;
+    try {
+      await deleteCoupon(code);
+      setCoupons(prev => prev.filter(c => c.code !== code));
+      toast("Cupón eliminado", "success");
+    } catch(err) { toast(err.message, "error"); }
+  };
+
   const TABS = [
     { id:"orders",    label:"Pedidos",      icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg> },
     { id:"stats",     label:"Estadísticas", icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg> },
     { id:"stock",     label:"Stock",        icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg> },
     { id:"discounts", label:"Descuentos",   icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> },
+    { id:"coupons",   label:"Cupones",      icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg> },
   ];
 
   const TabBar = () => (
@@ -1560,6 +1607,120 @@ export default function AdminPanel({ onLogout, toast }) {
                 </>
               );
             })()}
+
+            {/* ── CUPONES ── */}
+            {tab === "coupons" && (
+              <>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20, flexWrap:"wrap", gap:12 }}>
+                  <div>
+                    <h2 style={{ fontSize:22, fontWeight:700, color:"#111", marginBottom:2 }}>Cupones de descuento</h2>
+                    <p style={{ fontSize:13, color:"#9ca3af" }}>Crea códigos reutilizables para enviar a clientes específicos</p>
+                  </div>
+                </div>
+
+                {/* Formulario crear */}
+                <div style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:12, padding:20, marginBottom:24 }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:".1em", marginBottom:14 }}>Nuevo cupón</div>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 2fr auto", gap:10, alignItems:"end" }}>
+                    <div>
+                      <div style={{ fontSize:11, fontWeight:600, color:"#6b7280", marginBottom:5 }}>Código *</div>
+                      <input
+                        value={couponForm.code}
+                        onChange={e => setCouponForm(f => ({ ...f, code: e.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g,"") }))}
+                        placeholder="Ej: TESSUTI5"
+                        style={{ width:"100%", boxSizing:"border-box", padding:"9px 12px", border:"1px solid #d1d5db", borderRadius:8, fontSize:13, fontWeight:700, fontFamily:"inherit", outline:"none", letterSpacing:".06em" }}
+                      />
+                    </div>
+                    <div>
+                      <div style={{ fontSize:11, fontWeight:600, color:"#6b7280", marginBottom:5 }}>Descuento % *</div>
+                      <input
+                        type="number" min="1" max="90"
+                        value={couponForm.pct}
+                        onChange={e => setCouponForm(f => ({ ...f, pct: e.target.value }))}
+                        style={{ width:"100%", boxSizing:"border-box", padding:"9px 12px", border:"1px solid #d1d5db", borderRadius:8, fontSize:13, fontWeight:700, fontFamily:"inherit", outline:"none" }}
+                      />
+                    </div>
+                    <div>
+                      <div style={{ fontSize:11, fontWeight:600, color:"#6b7280", marginBottom:5 }}>Descripción (opcional)</div>
+                      <input
+                        value={couponForm.description}
+                        onChange={e => setCouponForm(f => ({ ...f, description: e.target.value }))}
+                        placeholder="Ej: Cliente especial"
+                        style={{ width:"100%", boxSizing:"border-box", padding:"9px 12px", border:"1px solid #d1d5db", borderRadius:8, fontSize:13, fontFamily:"inherit", outline:"none" }}
+                      />
+                    </div>
+                    <button
+                      onClick={handleCreateCoupon}
+                      disabled={couponSaving || !couponForm.code.trim() || !couponForm.pct}
+                      style={{
+                        padding:"9px 18px", borderRadius:8, border:"none",
+                        background: couponSaving||!couponForm.code.trim()||!couponForm.pct ? "#f3f4f6" : "#111",
+                        color: couponSaving||!couponForm.code.trim()||!couponForm.pct ? "#9ca3af" : "#fff",
+                        fontSize:12, fontWeight:700, cursor: couponSaving ? "not-allowed" : "pointer",
+                        fontFamily:"inherit", whiteSpace:"nowrap",
+                      }}
+                    >
+                      {couponSaving ? "Creando…" : "Crear cupón"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Lista cupones */}
+                {loadingCoupons
+                  ? <div style={{ display:"flex", justifyContent:"center", padding:40 }}><Spinner size={24} color="#9ca3af"/></div>
+                  : coupons.length === 0
+                  ? <div style={{ textAlign:"center", padding:40, color:"#9ca3af", fontSize:14 }}>No hay cupones creados</div>
+                  : (
+                    <div style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:12, overflow:"hidden" }}>
+                      <table style={{ width:"100%", borderCollapse:"collapse" }}>
+                        <thead>
+                          <tr style={{ background:"#f9fafb" }}>
+                            {["Código","Descuento","Descripción","Estado","Acciones"].map(h => (
+                              <th key={h} style={{ padding:"10px 16px", fontSize:11, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:".08em", textAlign:"left", borderBottom:"1px solid #e5e7eb" }}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {coupons.map((c, i) => (
+                            <tr key={c.code} style={{ borderBottom: i < coupons.length-1 ? "1px solid #f3f4f6" : "none" }}>
+                              <td style={{ padding:"12px 16px", fontSize:13, fontWeight:800, color:"#111", letterSpacing:".06em" }}>{c.code}</td>
+                              <td style={{ padding:"12px 16px" }}>
+                                <span style={{ background:"#eff6ff", color:"#1d4ed8", fontSize:12, fontWeight:700, padding:"3px 10px", borderRadius:20 }}>{c.pct}%</span>
+                              </td>
+                              <td style={{ padding:"12px 16px", fontSize:13, color:"#6b7280" }}>{c.description || "—"}</td>
+                              <td style={{ padding:"12px 16px" }}>
+                                <span style={{
+                                  background: c.active ? "#f0fdf4" : "#fef2f2",
+                                  color: c.active ? "#15803d" : "#dc2626",
+                                  border: `1px solid ${c.active ? "#86efac" : "#fca5a5"}`,
+                                  fontSize:11, fontWeight:700, padding:"3px 10px", borderRadius:20,
+                                }}>
+                                  {c.active ? "Activo" : "Inactivo"}
+                                </span>
+                              </td>
+                              <td style={{ padding:"12px 16px", display:"flex", gap:8 }}>
+                                <button
+                                  onClick={() => handleToggleCoupon(c.code)}
+                                  style={{ padding:"5px 12px", borderRadius:6, border:"1px solid #d1d5db", background:"#fff", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", color:"#374151" }}
+                                >
+                                  {c.active ? "Desactivar" : "Activar"}
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteCoupon(c.code)}
+                                  style={{ padding:"5px 12px", borderRadius:6, border:"1px solid #fca5a5", background:"#fef2f2", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit", color:"#dc2626" }}
+                                >
+                                  Eliminar
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )
+                }
+              </>
+            )}
 
           </div>
         </main>
