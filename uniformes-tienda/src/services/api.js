@@ -162,3 +162,44 @@ export const removeDiscount = async (collegeId, uniformId) => {
   return handleResponse(res);
 };
 
+// ── CUPONES — PÚBLICO ─────────────────────────────────────────
+export const validateCoupon = async (code) => {
+  const res = await fetch(`${BASE_URL}/coupons/validate`, {
+    method:  "POST",
+    headers: publicHeaders,
+    body:    JSON.stringify({ code }),
+  });
+  return handleResponse(res);
+};
+
+// ── CUPONES — ADMIN ───────────────────────────────────────────
+export const getCoupons = async () => {
+  const res = await fetch(`${BASE_URL}/coupons`, { headers: adminHeaders() });
+  return handleResponse(res);
+};
+
+export const createCoupon = async (code, pct, description = "") => {
+  const res = await fetch(`${BASE_URL}/coupons`, {
+    method:  "POST",
+    headers: adminHeaders(),
+    body:    JSON.stringify({ code, pct, description }),
+  });
+  return handleResponse(res);
+};
+
+export const toggleCoupon = async (code) => {
+  const res = await fetch(`${BASE_URL}/coupons/${code}/toggle`, {
+    method:  "PATCH",
+    headers: adminHeaders(),
+  });
+  return handleResponse(res);
+};
+
+export const deleteCoupon = async (code) => {
+  const res = await fetch(`${BASE_URL}/coupons/${code}`, {
+    method:  "DELETE",
+    headers: adminHeaders(),
+  });
+  return handleResponse(res);
+};
+

@@ -9,6 +9,7 @@ import ordersRouter from "./routes/orders.js";
 import authRouter from "./routes/auth.js";
 import discountsRouter from "./routes/discounts.js";
 import emailRouter from "./routes/email.js";
+import couponsRouter from "./routes/coupons.js";
 import { bootstrapSuperAdmin } from "./services/authService.js";
 import { verifyEmailConnection } from "./services/emailService.js";
 
@@ -142,6 +143,7 @@ app.use("/api/auth", authLimiter, authRouter);
 app.use("/api/orders", unauthorizedLimiter, ordersRouter);
 app.use("/api/discounts", unauthorizedLimiter, discountsRouter);
 app.use("/api/email", unauthorizedLimiter, emailRouter);
+app.use("/api/coupons", unauthorizedLimiter, couponsRouter);
 
 // ─── MANEJO DE ERRORES ────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {

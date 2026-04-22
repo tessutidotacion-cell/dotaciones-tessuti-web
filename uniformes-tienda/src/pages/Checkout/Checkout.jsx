@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { createOrder, uploadPaymentProof } from "../../services/api";
+import { createOrder, uploadPaymentProof, validateCoupon } from "../../services/api";
 import { COP } from "../../utils/money";
 import { imgQrPago } from "../../assets";
 
@@ -49,11 +49,16 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
   const [boldPaymentUrl, setBoldPaymentUrl]= useState(null);
   const [dragOver,       setDragOver]      = useState(false);
 
+  const [couponInput,    setCouponInput]   = useState("");
+  const [coupon,         setCoupon]        = useState(null);   // { code, pct } cuando válido
+  const [couponLoading,  setCouponLoading] = useState(false);
+
   const [form, setForm] = useState({
-    studentName:"", grade:"", studentDoc:"",
-    guardianName:"", phone:"", email:"",
+    guardianName:"", guardianDoc:"", phone:"", email:"",
+    billingAddress:"",
     deliveryType:"recogida",
     street:"", neighborhood:"", city:"Medellín",
+    shippingStreet:"", shippingNeighborhood:"", shippingCity:"Medellín",
     notes:"",
   });
 
@@ -61,12 +66,36 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
 
   const subtotal    = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const deliveryFee = form.deliveryType === "domicilio" ? DELIVERY_FEE : 0;
-  const total       = subtotal + deliveryFee;
+  const discount    = coupon ? Math.round(subtotal * coupon.pct / 100) : 0;
+  const total       = subtotal + deliveryFee - discount;
+
+  const handleApplyCoupon = async () => {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    setCouponLoading(true);
+    try {
+      const res = await validateCoupon(code);
+      if (res.data?.valid) {
+        setCoupon({ code, pct: res.data.pct });
+        toast(`Cupón aplicado: ${res.data.pct}% de descuento`, "success");
+      } else {
+        toast("Código inválido o expirado", "error");
+        setCoupon(null);
+      }
+    } catch {
+      toast("No se pudo validar el cupón", "error");
+    } finally {
+      setCouponLoading(false);
+    }
+  };
   const cartQty     = cart.reduce((s, i) => s + i.qty, 0);
-  const emailValid  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
-  const needsStreet = form.deliveryType === "domicilio";
-  const step1Valid  = form.guardianName.trim() && form.phone.trim() && emailValid &&
-    (!needsStreet || form.street.trim());
+  const emailValid       = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
+  const needsStreet      = form.deliveryType === "domicilio";
+  const needsShipCoord   = form.deliveryType === "domicilio_coordinado";
+  const step1Valid  = form.guardianName.trim() && form.guardianDoc.trim() &&
+    form.phone.trim() && emailValid && form.billingAddress.trim() &&
+    (!needsStreet    || form.street.trim()) &&
+    (!needsShipCoord || form.shippingStreet.trim());
 
   const goStep = (n) => { setStep(n); window.scrollTo(0, 0); };
 
@@ -89,15 +118,23 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
         items: cart.map(i => ({
           id:i.id, name:i.name, size:i.size, qty:i.qty, price:i.price, category:i.category,
         })),
-        student:  { name:form.studentName.trim(), grade:form.grade.trim(), document:form.studentDoc.trim() },
-        guardian: { name:form.guardianName.trim(), phone:form.phone.trim(), email:form.email.trim() },
+        guardian: {
+          name:           form.guardianName.trim(),
+          document:       form.guardianDoc.trim(),
+          phone:          form.phone.trim(),
+          email:          form.email.trim(),
+          billingAddress: form.billingAddress.trim(),
+        },
         delivery: {
           type: form.deliveryType,
           address: needsStreet
             ? { street:form.street.trim(), neighborhood:form.neighborhood.trim(), city:form.city.trim() }
+            : needsShipCoord
+            ? { street:form.shippingStreet.trim(), neighborhood:form.shippingNeighborhood.trim(), city:form.shippingCity.trim() }
             : null,
         },
         notes: form.notes.trim(),
+        coupon: coupon ? { code: coupon.code, pct: coupon.pct, discount } : null,
       };
 
       const orderResult = await createOrder(orderPayload);
@@ -487,46 +524,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
           {/* ═══════ PASO 1 ═══════ */}
           {step === 1 && (
             <>
-              {/* Estudiante */}
-              <div className="co-card">
-                <div className="co-card-head">
-                  <div style={{ fontSize:10, fontWeight:600, color:ACCENT, letterSpacing:".12em", textTransform:"uppercase", marginBottom:2 }}>Opcional</div>
-                  <div style={{ fontSize:16, fontWeight:600, color:INK, fontFamily:"var(--font-display,'Cormorant Garamond',serif)", letterSpacing:".02em" }}>
-                    Datos del estudiante
-                  </div>
-                </div>
-                <div style={{ padding:"clamp(16px,3vw,22px)", display:"flex", flexDirection:"column", gap:14 }}>
-                  <div className="co-grid">
-                    <div className="co-full">
-                      <Field label="Nombre completo">
-                        <input
-                          value={form.studentName}
-                          placeholder="Nombre del estudiante"
-                          autoComplete="name"
-                          onChange={e => set("studentName", e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s'-]/g, ""))}
-                        />
-                      </Field>
-                    </div>
-                    <Field label="Curso / Grado">
-                      <input
-                        value={form.grade}
-                        placeholder="Ej: 5° A"
-                        onChange={e => set("grade", e.target.value.replace(/[^a-zA-Z0-9°\s]/g, ""))}
-                      />
-                    </Field>
-                    <Field label="Documento">
-                      <input
-                        value={form.studentDoc}
-                        placeholder="N° documento"
-                        inputMode="numeric"
-                        onChange={e => set("studentDoc", e.target.value.replace(/\D/g, ""))}
-                      />
-                    </Field>
-                  </div>
-                </div>
-              </div>
-
-              {/* Acudiente */}
+                  {/* Acudiente */}
               <div className="co-card">
                 <div className="co-card-head">
                   <div style={{ fontSize:10, fontWeight:600, color:"#dc2626", letterSpacing:".12em", textTransform:"uppercase", marginBottom:2 }}>Requerido</div>
@@ -546,6 +544,14 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                         />
                       </Field>
                     </div>
+                    <Field label="Cédula / NIT" required>
+                      <input
+                        value={form.guardianDoc}
+                        placeholder="N° cédula o NIT"
+                        inputMode="numeric"
+                        onChange={e => set("guardianDoc", e.target.value.replace(/[^0-9\-]/g, ""))}
+                      />
+                    </Field>
                     <Field label="Teléfono" required>
                       <input
                         type="tel"
@@ -556,22 +562,34 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                         onChange={e => set("phone", e.target.value.replace(/[^0-9+\s]/g, ""))}
                       />
                     </Field>
-                    <Field
-                      label="Correo electrónico"
-                      required
-                      error={form.email.trim() && !emailValid ? "Ingresa un correo válido (ej: nombre@correo.com)" : ""}
-                      hint={!form.email.trim() || emailValid ? "Recibirás la confirmación aquí" : ""}
-                    >
-                      <input
-                        type="email"
-                        value={form.email}
-                        placeholder="correo@ejemplo.com"
-                        autoComplete="email"
-                        inputMode="email"
-                        onChange={e => set("email", e.target.value)}
-                        style={{ borderColor: form.email.trim() && !emailValid ? "#dc2626" : undefined }}
-                      />
-                    </Field>
+                    <div className="co-full">
+                      <Field
+                        label="Correo electrónico"
+                        required
+                        error={form.email.trim() && !emailValid ? "Ingresa un correo válido (ej: nombre@correo.com)" : ""}
+                        hint={!form.email.trim() || emailValid ? "Recibirás la confirmación aquí" : ""}
+                      >
+                        <input
+                          type="email"
+                          value={form.email}
+                          placeholder="correo@ejemplo.com"
+                          autoComplete="email"
+                          inputMode="email"
+                          onChange={e => set("email", e.target.value)}
+                          style={{ borderColor: form.email.trim() && !emailValid ? "#dc2626" : undefined }}
+                        />
+                      </Field>
+                    </div>
+                    <div className="co-full">
+                      <Field label="Dirección de facturación" required hint="Dirección asociada a tu cédula o NIT">
+                        <input
+                          value={form.billingAddress}
+                          placeholder="Calle / Carrera, número, barrio, ciudad"
+                          autoComplete="street-address"
+                          onChange={e => set("billingAddress", e.target.value)}
+                        />
+                      </Field>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -615,15 +633,32 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                     </div>
                   )}
                   {form.deliveryType === "domicilio_coordinado" && (
-                    <div className="info-box" style={{ background:"#eff6ff", border:"1px solid #bfdbfe" }}>
-                      <svg style={{ flexShrink:0, marginTop:1 }} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round">
-                        <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.14 9.81 19.79 19.79 0 01.07 1.18 2 2 0 012.05 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91A16 16 0 0014 15.82l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
-                      </svg>
-                      <div>
-                        <div style={{ fontSize:11, fontWeight:700, color:"#1d4ed8", letterSpacing:".06em", textTransform:"uppercase", marginBottom:3 }}>Te contactamos</div>
-                        <div style={{ fontSize:12, color:"#1e40af", lineHeight:1.6 }}>
-                          Completa tu pedido normalmente. Te contactaremos al teléfono o correo registrado para coordinar costo y fecha de envío.
+                    <div style={{ display:"flex", flexDirection:"column", gap:14, animation:"fadeUp .2s ease" }}>
+                      <div className="info-box" style={{ background:"#eff6ff", border:"1px solid #bfdbfe", marginBottom:0 }}>
+                        <svg style={{ flexShrink:0, marginTop:1 }} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round">
+                          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.14 9.81 19.79 19.79 0 01.07 1.18 2 2 0 012.05 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91A16 16 0 0014 15.82l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+                        </svg>
+                        <div>
+                          <div style={{ fontSize:11, fontWeight:700, color:"#1d4ed8", letterSpacing:".06em", textTransform:"uppercase", marginBottom:3 }}>Te contactamos</div>
+                          <div style={{ fontSize:12, color:"#1e40af", lineHeight:1.6 }}>
+                            Completa tu pedido normalmente. Te contactaremos al teléfono o correo registrado para coordinar costo y fecha de envío.
+                          </div>
                         </div>
+                      </div>
+                      <div className="co-grid">
+                        <div className="co-full">
+                          <Field label="Dirección de envío" required>
+                            <input value={form.shippingStreet} placeholder="Calle / Carrera y número"
+                              onChange={e => set("shippingStreet", e.target.value)}/>
+                          </Field>
+                        </div>
+                        <Field label="Barrio">
+                          <input value={form.shippingNeighborhood} placeholder="Barrio"
+                            onChange={e => set("shippingNeighborhood", e.target.value)}/>
+                        </Field>
+                        <Field label="Ciudad">
+                          <input value={form.shippingCity} onChange={e => set("shippingCity", e.target.value)}/>
+                        </Field>
                       </div>
                     </div>
                   )}
@@ -671,10 +706,68 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
               </div>
 
               {/* Botón continuar */}
+              {/* Cupón de descuento */}
+              <div className="co-card">
+                <div className="co-card-head">
+                  <div style={{ fontSize:10, fontWeight:600, color:ACCENT, letterSpacing:".12em", textTransform:"uppercase", marginBottom:2 }}>Opcional</div>
+                  <div style={{ fontSize:16, fontWeight:600, color:INK, fontFamily:"var(--font-display,'Cormorant Garamond',serif)", letterSpacing:".02em" }}>
+                    Cupón de descuento
+                  </div>
+                </div>
+                <div style={{ padding:"clamp(14px,2.5vw,20px)" }}>
+                  {coupon ? (
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12,
+                      background:"#f0fdf4", border:"1.5px solid #86efac", borderRadius:10, padding:"12px 16px" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round">
+                          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        <div>
+                          <div style={{ fontSize:13, fontWeight:700, color:"#15803d" }}>{coupon.code}</div>
+                          <div style={{ fontSize:11, color:"#166534" }}>{coupon.pct}% de descuento aplicado · −{COP(discount)}</div>
+                        </div>
+                      </div>
+                      <button onClick={() => { setCoupon(null); setCouponInput(""); }}
+                        style={{ fontSize:11, color:"#dc2626", background:"#fef2f2", border:"1px solid #fca5a5",
+                          borderRadius:6, padding:"4px 10px", cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>
+                        Quitar
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ display:"flex", gap:8 }}>
+                      <input
+                        value={couponInput}
+                        onChange={e => setCouponInput(e.target.value.toUpperCase())}
+                        onKeyDown={e => { if(e.key==="Enter") handleApplyCoupon(); }}
+                        placeholder="Ingresa tu código"
+                        style={{
+                          flex:1, padding:"11px 13px", border:"1.5px solid #e8e5e1", borderRadius:8,
+                          fontFamily:"var(--font,'Jost',sans-serif)", fontSize:13, color:INK,
+                          background:"#fff", outline:"none", letterSpacing:".06em", fontWeight:600,
+                        }}
+                      />
+                      <button onClick={handleApplyCoupon} disabled={couponLoading || !couponInput.trim()}
+                        style={{
+                          padding:"11px 18px", borderRadius:8, border:"none", flexShrink:0,
+                          background: couponLoading||!couponInput.trim() ? "#f0ede9" : INK,
+                          color: couponLoading||!couponInput.trim() ? "#b0a89f" : "#fff",
+                          fontSize:12, fontWeight:700, cursor: couponLoading||!couponInput.trim() ? "not-allowed" : "pointer",
+                          fontFamily:"inherit", letterSpacing:".06em", transition:"all .15s",
+                          display:"flex", alignItems:"center", gap:6,
+                        }}>
+                        {couponLoading
+                          ? <Spinner size={12}/>
+                          : "Aplicar"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <button
                 className="btn-pri"
                 disabled={!step1Valid}
-                onClick={() => { if(!step1Valid){ toast("Completa nombre, teléfono y correo del acudiente","error"); return; } goStep(2); }}
+                onClick={() => { if(!step1Valid){ toast("Completa todos los campos requeridos del acudiente","error"); return; } goStep(2); }}
               >
                 Continuar al pago
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -719,8 +812,13 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                     {COP(total)}
                   </div>
                   {form.deliveryType === "domicilio" && (
-                    <div style={{ fontSize:11, color:"rgba(255,255,255,.4)", marginTop:6 }}>
+                    <div style={{ fontSize:11, color:"rgba(255,255,255,.4)", marginTop:4 }}>
                       Incluye domicilio {COP(DELIVERY_FEE)}
+                    </div>
+                  )}
+                  {coupon && (
+                    <div style={{ fontSize:11, color:"#86efac", marginTop:4 }}>
+                      Cupón {coupon.code} · −{COP(discount)} aplicado
                     </div>
                   )}
                 </div>
@@ -919,6 +1017,11 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                 <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#6b6560" }}>
                   <span>Subtotal</span><span>{COP(subtotal)}</span>
                 </div>
+                {coupon && (
+                  <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#16a34a", fontWeight:600 }}>
+                    <span>Cupón {coupon.code} ({coupon.pct}%)</span><span>−{COP(discount)}</span>
+                  </div>
+                )}
                 {form.deliveryType==="domicilio" && (
                   <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#6b6560" }}>
                     <span>Domicilio</span><span>+ {COP(DELIVERY_FEE)}</span>

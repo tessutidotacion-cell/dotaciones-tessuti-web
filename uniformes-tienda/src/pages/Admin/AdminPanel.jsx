@@ -22,6 +22,7 @@ const getStatusOptions = (deliveryType) =>
   (deliveryType === "domicilio" || deliveryType === "domicilio_coordinado") ? STATUS_ORDER_DOMICILIO : STATUS_ORDER;
 
 import { DEMO_COLLEGES } from "../../data/colleges";
+import { exportToExcel } from "../../utils/exportExcel";
 
 const getAllUniforms = (col) => col.sections?.length > 0
   ? col.sections.flatMap(s => s.uniforms.map(u => ({ ...u, sectionName: s.name })))
@@ -466,12 +467,25 @@ function SizeStockInput({ size, currentQty, onSave, saving }) {
   const statusBorder= out?"#fca5a5":low?"#fde68a":ok?"#86efac":"#e5e7eb";
   const statusLabel = q === null ? "Sin stock" : q === 0 ? "Agotado" : q <= 3 ? "Bajo" : "OK";
 
+  const handleDelta = (delta) => {
+    const newVal = Math.max(0, (q ?? 0) + delta);
+    onSave(size, String(newVal), () => {});
+  };
+
+  const handleInputSave = () => {
+    if (input === "") return;
+    const delta = parseInt(input, 10);
+    if (isNaN(delta)) return;
+    const newVal = Math.max(0, (q ?? 0) + delta);
+    onSave(size, String(newVal), () => setInput(""));
+  };
+
   return (
     <div style={{
       display:"flex", alignItems:"center", gap:10, padding:"10px 14px",
       borderRadius:10, background: focused ? "#f8faff" : "#fff",
       border: focused ? "1.5px solid #818cf8" : "1px solid #e5e7eb",
-      transition:"all .15s ease", marginBottom:8,
+      transition:"all .15s ease", marginBottom:8, flexWrap:"wrap",
     }}>
       {/* Talla */}
       <div style={{
@@ -498,25 +512,65 @@ function SizeStockInput({ size, currentQty, onSave, saving }) {
       {/* Separador */}
       <div style={{ width:1, height:32, background:"#e5e7eb", flexShrink:0 }} />
 
-      {/* Input nuevo valor */}
-      <div style={{ flex:1, minWidth:0 }}>
-        <div style={{ fontSize:10, fontWeight:600, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".08em", marginBottom:3 }}>Nuevo</div>
+      {/* Botones +/- */}
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:2, flexShrink:0 }}>
+        <div style={{ fontSize:9, fontWeight:600, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".08em", marginBottom:2 }}>Ajuste</div>
+        <div style={{ display:"flex", gap:4 }}>
+          <button
+            onClick={() => handleDelta(-1)}
+            disabled={saving || (q ?? 0) <= 0}
+            title="Restar 1"
+            style={{
+              width:30, height:30, borderRadius:6, border:"1.5px solid #e5e7eb",
+              background: saving||(q??0)<=0 ? "#f3f4f6" : "#fff",
+              color: saving||(q??0)<=0 ? "#d1d5db" : "#dc2626",
+              cursor: saving||(q??0)<=0 ? "not-allowed" : "pointer",
+              fontSize:18, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center",
+              transition:"all .12s", lineHeight:1,
+            }}
+            onMouseEnter={e=>{ if(!saving&&(q??0)>0){ e.currentTarget.style.background="#fef2f2"; e.currentTarget.style.borderColor="#fca5a5"; }}}
+            onMouseLeave={e=>{ e.currentTarget.style.background="#fff"; e.currentTarget.style.borderColor="#e5e7eb"; }}
+          >−</button>
+          <button
+            onClick={() => handleDelta(1)}
+            disabled={saving}
+            title="Sumar 1"
+            style={{
+              width:30, height:30, borderRadius:6, border:"1.5px solid #e5e7eb",
+              background: saving ? "#f3f4f6" : "#fff",
+              color: saving ? "#d1d5db" : "#16a34a",
+              cursor: saving ? "not-allowed" : "pointer",
+              fontSize:18, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center",
+              transition:"all .12s", lineHeight:1,
+            }}
+            onMouseEnter={e=>{ if(!saving){ e.currentTarget.style.background="#f0fdf4"; e.currentTarget.style.borderColor="#86efac"; }}}
+            onMouseLeave={e=>{ e.currentTarget.style.background="#fff"; e.currentTarget.style.borderColor="#e5e7eb"; }}
+          >+</button>
+        </div>
+      </div>
+
+      {/* Separador */}
+      <div style={{ width:1, height:32, background:"#e5e7eb", flexShrink:0 }} />
+
+      {/* Input sumar cantidad */}
+      <div style={{ flex:1, minWidth:80 }}>
+        <div style={{ fontSize:10, fontWeight:600, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".08em", marginBottom:3 }}>Sumar cantidad</div>
         <input type="number" min="0" max="9999" value={input}
           onChange={e=>setInput(e.target.value)}
           onFocus={()=>setFocused(true)}
           onBlur={()=>setFocused(false)}
-          placeholder="Cantidad"
+          placeholder="+ cantidad"
           style={{
             width:"100%", boxSizing:"border-box", padding:"6px 10px",
             fontSize:14, fontWeight:600, border:"1px solid #d1d5db", borderRadius:8,
             outline:"none", background:"#fff", color:"#111",
             transition:"border-color .15s",
           }}
-          onKeyDown={e=>{ if(e.key==="Enter" && input!=="") onSave(size, input, ()=>setInput("")); }} />
+          onKeyDown={e=>{ if(e.key==="Enter") handleInputSave(); }} />
       </div>
 
       {/* Botón guardar */}
-      <button onClick={()=>{ if(input!=="") onSave(size, input, ()=>setInput("")); }}
+      <button onClick={handleInputSave}
         disabled={saving || input===""}
         style={{
           padding:"10px 16px", fontSize:12, fontWeight:700, borderRadius:8,
@@ -1238,7 +1292,27 @@ export default function AdminPanel({ onLogout, toast }) {
                     <h2 style={{ fontSize:22, fontWeight:700, color:"#111", marginBottom:2 }}>Gestión de Stock</h2>
                     <p style={{ fontSize:13, color:"#9ca3af" }}>Administra unidades disponibles por producto y colegio</p>
                   </div>
-                  <ActionBar onRefresh={loadStock} />
+                  <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+                    <button
+                      onClick={() => exportToExcel(stockData, orders)}
+                      style={{
+                        display:"flex", alignItems:"center", gap:7,
+                        padding:"9px 16px", borderRadius:8,
+                        border:"1.5px solid #16a34a", background:"#f0fdf4",
+                        color:"#15803d", fontSize:12, fontWeight:700,
+                        cursor:"pointer", fontFamily:"inherit", letterSpacing:".04em",
+                        transition:"all .15s",
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background="#dcfce7"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background="#f0fdf4"; }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                      </svg>
+                      Descargar Excel
+                    </button>
+                    <ActionBar onRefresh={loadStock} />
+                  </div>
                 </div>
                 <TabBar />
 

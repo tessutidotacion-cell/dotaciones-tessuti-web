@@ -36,8 +36,18 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
     ? (college.sections.find(s => s.id === activeSection)?.uniforms || [])
     : college.uniforms;
 
-  const cats      = ["Todos", ...new Set(currentUniforms.map(u => u.category))];
-  const items     = filter === "Todos" ? currentUniforms : currentUniforms.filter(u => u.category === filter);
+  const visibleUniforms = currentUniforms.filter(u => {
+    if (!u.hideWhenEmpty) return true;
+    const sizeStock = collegeStock?.[String(u.id)];
+    // Si nunca se cargó stock para este producto → mostrar
+    if (!sizeStock || Object.keys(sizeStock).length === 0) return true;
+    // Solo ocultar si fue definido y todas las tallas son 0
+    const total = u.sizes.reduce((s, sz) => s + (sizeStock[sz] ?? 0), 0);
+    return total > 0;
+  });
+
+  const cats      = ["Todos", ...new Set(visibleUniforms.map(u => u.category))];
+  const items     = filter === "Todos" ? visibleUniforms : visibleUniforms.filter(u => u.category === filter);
   const cartQty   = cart.reduce((s, i) => s + i.qty, 0);
   const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
 
