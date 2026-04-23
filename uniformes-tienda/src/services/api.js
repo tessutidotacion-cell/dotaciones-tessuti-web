@@ -203,3 +203,13 @@ export const deleteCoupon = async (code) => {
   return handleResponse(res);
 };
 
+// ── WOMPI ─────────────────────────────────────────────────────
+export const getWompiSignature = async (reference, amountInCents) => {
+  const res = await fetch(`${BASE_URL}/payments/wompi-sign`, {
+    method:  "POST",
+    headers: publicHeaders,
+    body:    JSON.stringify({ reference, amountInCents }),
+  });
+  return handleResponse(res);
+};
+

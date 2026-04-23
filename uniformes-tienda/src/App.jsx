@@ -50,6 +50,23 @@ const { toastState, toast, clearToast } = useToast();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // ── Retorno desde Wompi ───────────────────────────────────────
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const wompiId = params.get("id");
+    if (!wompiId) return;
+    const stored = sessionStorage.getItem("wompi_pending_order");
+    if (stored) {
+      try {
+        const order = JSON.parse(stored);
+        sessionStorage.removeItem("wompi_pending_order");
+        setSuccessOrder({ ...order, wompiTransactionId: wompiId });
+        window.history.replaceState({}, "", window.location.pathname + window.location.hash);
+        setView("success");
+      } catch { /* silencio */ }
+    }
+  }, []);
+
   useEffect(() => {
     if (!menuOpen) return;
     const onKey = (e) => { if (e.key === "Escape") setMenuOpen(false); };

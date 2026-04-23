@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { createOrder, uploadPaymentProof, validateCoupon } from "../../services/api";
+import { createOrder, uploadPaymentProof, validateCoupon, getWompiSignature } from "../../services/api";
 import { COP } from "../../utils/money";
 import { imgQrPago } from "../../assets";
 
@@ -52,7 +52,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
   const [couponInput,    setCouponInput]   = useState("");
   const [coupon,         setCoupon]        = useState(null);   // { code, pct } cuando válido
   const [couponLoading,  setCouponLoading] = useState(false);
-  const [paymentMethod,  setPaymentMethod] = useState("transfer"); // "transfer" | "cash"
+  const [paymentMethod,  setPaymentMethod] = useState("transfer"); // "transfer" | "cash" | "wompi"
 
   const [form, setForm] = useState({
     guardianName:"", guardianDoc:"", phone:"", email:"",
@@ -150,6 +150,28 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
         try { await uploadPaymentProof(orderId, proofFile); }
         catch { toast("Pedido creado. Envía el comprobante por WhatsApp.", "warning"); }
       }
+
+      // ── Wompi redirect ──────────────────────────────────────
+      if (paymentMethod === "wompi" && orderId) {
+        const amountInCents = total * 100;
+        const signRes = await getWompiSignature(orderId, amountInCents);
+        const { signature, publicKey } = signRes.data;
+
+        // Guardar pedido antes de salir de la SPA
+        sessionStorage.setItem("wompi_pending_order", JSON.stringify(orderResult.data));
+
+        const wompiUrl = new URL("https://checkout.wompi.co/p/");
+        wompiUrl.searchParams.set("public-key",         publicKey);
+        wompiUrl.searchParams.set("currency",           "COP");
+        wompiUrl.searchParams.set("amount-in-cents",    String(amountInCents));
+        wompiUrl.searchParams.set("reference",          orderId);
+        wompiUrl.searchParams.set("signature:integrity",signature);
+        wompiUrl.searchParams.set("redirect-url",       window.location.origin + "/");
+
+        window.location.href = wompiUrl.toString();
+        return; // no llama onSuccess — Wompi redirige de vuelta
+      }
+
       onSuccess(orderResult.data);
     } catch (err) {
       toast(err.message || "Error al crear el pedido", "error");
@@ -855,6 +877,16 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                       ),
                     },
                     {
+                      value: "wompi",
+                      label: "Wompi",
+                      sub: "Tarjeta, PSE, Nequi, Efecty",
+                      icon: (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                          <rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/>
+                        </svg>
+                      ),
+                    },
+                    {
                       value: "cash",
                       label: "Efectivo",
                       sub: "Al recoger o al recibir",
@@ -945,6 +977,21 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
 
               }
 
+              {/* Info Wompi */}
+              {paymentMethod === "wompi" && (
+                <div className="info-box" style={{ background:"#f5f3ff", border:"1.5px solid #c4b5fd", borderRadius:12, padding:"18px 20px" }}>
+                  <svg style={{ flexShrink:0, marginTop:1 }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.2" strokeLinecap="round">
+                    <rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/>
+                  </svg>
+                  <div>
+                    <div style={{ fontSize:12, fontWeight:700, color:"#6d28d9", letterSpacing:".06em", textTransform:"uppercase", marginBottom:4 }}>Pago seguro con Wompi</div>
+                    <div style={{ fontSize:13, color:"#4c1d95", lineHeight:1.6 }}>
+                      Al confirmar serás redirigido a <strong>Wompi</strong> para pagar <strong>{COP(total)}</strong> con tarjeta, PSE, Nequi o Efecty. Tu pedido queda registrado antes del pago.
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Info efectivo */}
               {paymentMethod === "cash" && (
                 <div className="info-box" style={{ background:"#f0fdf4", border:"1.5px solid #86efac", borderRadius:12, padding:"18px 20px" }}>
@@ -1030,14 +1077,19 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                 className="btn-pri"
                 onClick={handleSubmit}
                 disabled={loading || (paymentMethod === "transfer" && !proofFile)}
+                style={paymentMethod === "wompi" ? { background:"#7c3aed", boxShadow:"0 4px 20px rgba(124,58,237,.3)" } : {}}
               >
                 {loading
-                  ? <><Spinner size={15}/> Enviando pedido...</>
+                  ? <><Spinner size={15}/> {paymentMethod === "wompi" ? "Redirigiendo a Wompi…" : "Enviando pedido..."}</>
                   : <>
-                      {paymentMethod === "cash" || proofFile
-                        ? <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Confirmar pedido · {COP(total)}</>
-                        : "Adjunta el comprobante para continuar"
-                      }
+                      {paymentMethod === "wompi" && (
+                        <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> Pagar con Wompi · {COP(total)}</>
+                      )}
+                      {paymentMethod !== "wompi" && (
+                        paymentMethod === "cash" || proofFile
+                          ? <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Confirmar pedido · {COP(total)}</>
+                          : "Adjunta el comprobante para continuar"
+                      )}
                     </>
                 }
               </button>
