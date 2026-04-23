@@ -857,72 +857,6 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                 </div>
               </div>
 
-              {/* Selector método de pago */}
-              <div className="co-card">
-                <div className="co-card-head">
-                  <div style={{ fontSize:10, fontWeight:600, color:"#dc2626", letterSpacing:".12em", textTransform:"uppercase", marginBottom:2 }}>Método de pago</div>
-                  <div style={{ fontSize:16, fontWeight:600, color:INK, fontFamily:"var(--font-display,'Cormorant Garamond',serif)" }}>¿Cómo vas a pagar?</div>
-                </div>
-                <div style={{ padding:"clamp(14px,2.5vw,20px)", display:"flex", gap:10, flexWrap:"wrap" }}>
-                  {[
-                    {
-                      value: "transfer",
-                      label: "Transferencia / QR",
-                      sub: "Nequi, Bancolombia, PSE",
-                      icon: (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                          <rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/>
-                          <path d="M14 14h.01M18 14h.01M14 18h.01M18 18h.01M14 22h.01M22 14h.01M22 18h.01M22 22h.01"/>
-                        </svg>
-                      ),
-                    },
-                    {
-                      value: "wompi",
-                      label: "Wompi",
-                      sub: "Tarjeta, PSE, Nequi, Efecty",
-                      icon: (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                          <rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/>
-                        </svg>
-                      ),
-                    },
-                    {
-                      value: "cash",
-                      label: "Efectivo",
-                      sub: "Al recoger o al recibir",
-                      icon: (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                          <rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/>
-                        </svg>
-                      ),
-                    },
-                  ].map(opt => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => setPaymentMethod(opt.value)}
-                      style={{
-                        flex:1, padding:"14px 12px", borderRadius:10, cursor:"pointer", textAlign:"left",
-                        border: paymentMethod === opt.value ? `2px solid ${INK}` : "2px solid #e8e5e1",
-                        background: paymentMethod === opt.value ? "#faf9f7" : "#fff",
-                        boxShadow: paymentMethod === opt.value ? `0 4px 16px rgba(28,28,28,.1)` : "none",
-                        transition:"all .18s", fontFamily:"inherit",
-                        display:"flex", flexDirection:"column", gap:6,
-                      }}
-                    >
-                      <div style={{
-                        width:36, height:36, borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center",
-                        background: paymentMethod === opt.value ? INK : "#f5f3f0",
-                        color: paymentMethod === opt.value ? "#fff" : "#6b6560",
-                        transition:"all .18s", flexShrink:0,
-                      }}>{opt.icon}</div>
-                      <div style={{ fontSize:12, fontWeight:700, color:INK, letterSpacing:".02em" }}>{opt.label}</div>
-                      <div style={{ fontSize:10, color:"#9b9591", lineHeight:1.4 }}>{opt.sub}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Pago QR + transferencia */}
               {paymentMethod === "transfer" && <div className="co-card" style={{ border:`2px solid ${INK}` }}>
                 <div style={{ background:INK, padding:"13px 20px", display:"flex", alignItems:"center", gap:10 }}>
@@ -1071,6 +1005,72 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
               </div>
 
               }
+
+              {/* Selector método de pago */}
+              <div className="co-card">
+                <div className="co-card-head">
+                  <div style={{ fontSize:10, fontWeight:600, color:"#dc2626", letterSpacing:".12em", textTransform:"uppercase", marginBottom:2 }}>Método de pago</div>
+                  <div style={{ fontSize:16, fontWeight:600, color:INK, fontFamily:"var(--font-display,'Cormorant Garamond',serif)" }}>¿Cómo vas a pagar?</div>
+                </div>
+                <div style={{ padding:"clamp(14px,2.5vw,20px)", display:"flex", gap:10, flexWrap:"wrap" }}>
+                  {[
+                    {
+                      value: "transfer",
+                      label: "Transferencia / QR",
+                      sub: "Nequi, Bancolombia, PSE",
+                      icon: (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                          <rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/>
+                          <path d="M14 14h.01M18 14h.01M14 18h.01M18 18h.01M14 22h.01M22 14h.01M22 18h.01M22 22h.01"/>
+                        </svg>
+                      ),
+                    },
+                    {
+                      value: "wompi",
+                      label: "Wompi",
+                      sub: "Tarjeta, PSE, Nequi, Efecty",
+                      icon: (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                          <rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/>
+                        </svg>
+                      ),
+                    },
+                    {
+                      value: "cash",
+                      label: "Efectivo",
+                      sub: "Al recoger o al recibir",
+                      icon: (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                          <rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/>
+                        </svg>
+                      ),
+                    },
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setPaymentMethod(opt.value)}
+                      style={{
+                        flex:1, padding:"14px 12px", borderRadius:10, cursor:"pointer", textAlign:"left",
+                        border: paymentMethod === opt.value ? `2px solid ${INK}` : "2px solid #e8e5e1",
+                        background: paymentMethod === opt.value ? "#faf9f7" : "#fff",
+                        boxShadow: paymentMethod === opt.value ? `0 4px 16px rgba(28,28,28,.1)` : "none",
+                        transition:"all .18s", fontFamily:"inherit",
+                        display:"flex", flexDirection:"column", gap:6,
+                      }}
+                    >
+                      <div style={{
+                        width:36, height:36, borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center",
+                        background: paymentMethod === opt.value ? INK : "#f5f3f0",
+                        color: paymentMethod === opt.value ? "#fff" : "#6b6560",
+                        transition:"all .18s", flexShrink:0,
+                      }}>{opt.icon}</div>
+                      <div style={{ fontSize:12, fontWeight:700, color:INK, letterSpacing:".02em" }}>{opt.label}</div>
+                      <div style={{ fontSize:10, color:"#9b9591", lineHeight:1.4 }}>{opt.sub}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               {/* Botón confirmar */}
               <button
