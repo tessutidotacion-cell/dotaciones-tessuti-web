@@ -863,7 +863,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                   <div style={{ fontSize:10, fontWeight:600, color:"#dc2626", letterSpacing:".12em", textTransform:"uppercase", marginBottom:2 }}>Método de pago</div>
                   <div style={{ fontSize:16, fontWeight:600, color:INK, fontFamily:"var(--font-display,'Cormorant Garamond',serif)" }}>¿Cómo vas a pagar?</div>
                 </div>
-                <div style={{ padding:"clamp(14px,2.5vw,20px)", display:"flex", gap:10 }}>
+                <div style={{ padding:"clamp(14px,2.5vw,20px)", display:"flex", gap:10, flexWrap:"wrap" }}>
                   {[
                     {
                       value: "transfer",
