@@ -879,6 +879,14 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                 </div>
 
                 <div className="qr-block">
+                  <div style={{ textAlign:"center", marginBottom:4 }}>
+                    <div style={{ fontSize:11, fontWeight:700, color:"#9b9591", letterSpacing:".12em", textTransform:"uppercase", marginBottom:4 }}>
+                      A cuenta de Bancolombia
+                    </div>
+                    <div style={{ fontSize:18, fontWeight:800, color:INK, letterSpacing:".08em", fontFamily:"monospace" }}>
+                      862-000243-81
+                    </div>
+                  </div>
                   <img src={imgQrPago} alt="Código QR de pago" className="qr-img"/>
                   <div className="qr-instructions">
                     <div style={{ fontSize:10, fontWeight:700, color:"#9b9591", letterSpacing:".14em", textTransform:"uppercase", marginBottom:16 }}>
