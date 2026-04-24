@@ -401,22 +401,25 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
         /* ── QR ── */
         .qr-block {
           display: flex;
-          gap: clamp(20px,4vw,32px);
-          flex-wrap: wrap;
-          align-items: flex-start;
+          flex-direction: column;
+          align-items: center;
           padding: clamp(18px,3vw,26px);
+          gap: clamp(20px,3vw,28px);
         }
         .qr-img {
-          width: clamp(160px,45vw,220px);
-          height: clamp(160px,45vw,220px);
+          width: clamp(260px,70vw,380px);
+          height: clamp(260px,70vw,380px);
           object-fit: contain;
-          border-radius: 10px;
+          border-radius: 14px;
           border: 1px solid #e8e5e1;
           flex-shrink: 0;
+          box-shadow: 0 4px 24px rgba(28,28,28,.1);
+        }
+        .qr-instructions {
+          width: 100%;
         }
         @media(max-width:480px) {
-          .qr-block { flex-direction:column; align-items:center; }
-          .qr-img { width: min(240px, 75vw); height: min(240px, 75vw); }
+          .qr-img { width: min(300px, 88vw); height: min(300px, 88vw); }
         }
 
         /* ── Payment step number ── */
@@ -633,7 +636,10 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                         key={opt.value}
                         type="button"
                         className={`del-opt${form.deliveryType===opt.value?" on":""}`}
-                        onClick={() => set("deliveryType", opt.value)}
+                        onClick={() => {
+                          set("deliveryType", opt.value);
+                          if (opt.value !== "recogida" && paymentMethod === "cash") setPaymentMethod("transfer");
+                        }}
                       >
                         <div className="del-opt-icon">{opt.icon}</div>
                         <div style={{ fontSize:12, fontWeight:700, color:INK, letterSpacing:".02em" }}>{opt.label}</div>
@@ -874,7 +880,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
 
                 <div className="qr-block">
                   <img src={imgQrPago} alt="Código QR de pago" className="qr-img"/>
-                  <div style={{ flex:1, minWidth:140 }}>
+                  <div className="qr-instructions">
                     <div style={{ fontSize:10, fontWeight:700, color:"#9b9591", letterSpacing:".14em", textTransform:"uppercase", marginBottom:16 }}>
                       Instrucciones paso a paso
                     </div>
@@ -893,20 +899,6 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                   </div>
                 </div>
 
-                {/* Bold */}
-                <div className="bold-strip">
-                  <div>
-                    <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:700, color:"#5b21b6" }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
-                      Tarjeta, Nequi o PSE
-                    </div>
-                    <div style={{ fontSize:11, color:"#9b9591", marginTop:2 }}>Procesado de forma segura por Bold</div>
-                  </div>
-                  {boldPaymentUrl
-                    ? <a href={boldPaymentUrl} target="_blank" rel="noreferrer" className="bold-btn">Pagar con Bold</a>
-                    : <span style={{ fontSize:11, color:"#b0a89f", fontStyle:"italic" }}>Disponible al confirmar</span>
-                  }
-                </div>
               </div>
 
               }
@@ -1038,35 +1030,42 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                     {
                       value: "cash",
                       label: "Efectivo",
-                      sub: "Al recoger o al recibir",
+                      sub: "Solo recogida en tienda",
                       icon: (
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                           <rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/>
                         </svg>
                       ),
                     },
-                  ].map(opt => (
+                  ].filter(opt => opt.value !== "cash" || form.deliveryType === "recogida")
+                  .map(opt => (
                     <button
                       key={opt.value}
                       type="button"
                       onClick={() => setPaymentMethod(opt.value)}
                       style={{
-                        flex:1, padding:"14px 12px", borderRadius:10, cursor:"pointer", textAlign:"left",
+                        flex: opt.value === "wompi" ? "0 0 auto" : 1,
+                        width: opt.value === "wompi" ? "fit-content" : undefined,
+                        padding: opt.value === "wompi" ? "10px 14px" : "14px 12px",
+                        borderRadius:10, cursor:"pointer", textAlign:"left",
                         border: paymentMethod === opt.value ? `2px solid ${INK}` : "2px solid #e8e5e1",
-                        background: paymentMethod === opt.value ? "#faf9f7" : "#fff",
+                        background: paymentMethod === opt.value ? "#faf9f7" : opt.value === "wompi" ? "#fafafa" : "#fff",
                         boxShadow: paymentMethod === opt.value ? `0 4px 16px rgba(28,28,28,.1)` : "none",
                         transition:"all .18s", fontFamily:"inherit",
-                        display:"flex", flexDirection:"column", gap:6,
+                        display:"flex", flexDirection:"column", gap: opt.value === "wompi" ? 4 : 6,
+                        opacity: opt.value === "wompi" ? 0.7 : 1,
                       }}
                     >
                       <div style={{
-                        width:36, height:36, borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center",
+                        width: opt.value === "wompi" ? 28 : 36,
+                        height: opt.value === "wompi" ? 28 : 36,
+                        borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center",
                         background: paymentMethod === opt.value ? INK : "#f5f3f0",
                         color: paymentMethod === opt.value ? "#fff" : "#6b6560",
                         transition:"all .18s", flexShrink:0,
                       }}>{opt.icon}</div>
-                      <div style={{ fontSize:12, fontWeight:700, color:INK, letterSpacing:".02em" }}>{opt.label}</div>
-                      <div style={{ fontSize:10, color:"#9b9591", lineHeight:1.4 }}>{opt.sub}</div>
+                      <div style={{ fontSize: opt.value === "wompi" ? 11 : 12, fontWeight:700, color:INK, letterSpacing:".02em" }}>{opt.label}</div>
+                      {opt.value !== "wompi" && <div style={{ fontSize:10, color:"#9b9591", lineHeight:1.4 }}>{opt.sub}</div>}
                     </button>
                   ))}
                 </div>
