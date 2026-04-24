@@ -1020,7 +1020,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                     {
                       value: "wompi",
                       label: "Wompi",
-                      sub: "Tarjeta, PSE, Nequi, Efecty",
+                      sub: "",
                       icon: (
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                           <rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/>
