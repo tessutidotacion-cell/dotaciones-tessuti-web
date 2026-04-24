@@ -1009,7 +1009,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                     {
                       value: "transfer",
                       label: "Transferencia / QR",
-                      sub: "Nequi, Bancolombia, PSE",
+                      sub: "",
                       icon: (
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                           <rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/>
@@ -1065,7 +1065,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                         transition:"all .18s", flexShrink:0,
                       }}>{opt.icon}</div>
                       <div style={{ fontSize: opt.value === "wompi" ? 11 : 12, fontWeight:700, color:INK, letterSpacing:".02em" }}>{opt.label}</div>
-                      {opt.value !== "wompi" && <div style={{ fontSize:10, color:"#9b9591", lineHeight:1.4 }}>{opt.sub}</div>}
+                      {opt.sub && <div style={{ fontSize:10, color:"#9b9591", lineHeight:1.4 }}>{opt.sub}</div>}
                     </button>
                   ))}
                 </div>
