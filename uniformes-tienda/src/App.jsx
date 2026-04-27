@@ -287,7 +287,7 @@ const { toastState, toast, clearToast } = useToast();
         /* ── Mobile overlay ─────────────────────── */
         .mob-overlay {
           display: none;
-          position: fixed; inset: 0; top: 64px;
+          position: fixed; inset: 0; top: calc(64px + env(safe-area-inset-top));
           background: rgba(24,23,21,.12);
           backdrop-filter: blur(3px);
           z-index: 198;
@@ -297,7 +297,7 @@ const { toastState, toast, clearToast } = useToast();
         /* ── Mobile menu ────────────────────────── */
         .mob-menu {
           display: none;
-          position: fixed; top: 64px; left: 0; right: 0;
+          position: fixed; top: calc(64px + env(safe-area-inset-top)); left: 0; right: 0;
           background: var(--surface);
           z-index: 199;
           flex-direction: column;
@@ -349,7 +349,7 @@ const { toastState, toast, clearToast } = useToast();
           100% { transform: scale(1); }
         }
         .cart-fab {
-          position: fixed; bottom: 88px; right: 24px; z-index: 7999;
+          position: fixed; bottom: calc(88px + env(safe-area-inset-bottom)); right: 24px; z-index: 7999;
           height: 48px;
           padding: 0 20px;
           border-radius: 99px;
@@ -369,7 +369,7 @@ const { toastState, toast, clearToast } = useToast();
         }
         @media (max-width: 640px) {
           .cart-fab {
-            bottom: 80px; left: 16px; right: 16px;
+            bottom: calc(80px + env(safe-area-inset-bottom)); left: 16px; right: 16px;
             width: auto;
             justify-content: center;
             height: 52px;
@@ -396,7 +396,7 @@ const { toastState, toast, clearToast } = useToast();
 
         /* ── WhatsApp FAB ───────────────────────── */
         .wa-fab {
-          position: fixed; bottom: 24px; right: 24px; z-index: 8000;
+          position: fixed; bottom: calc(24px + env(safe-area-inset-bottom)); right: calc(24px + env(safe-area-inset-right)); z-index: 8000;
           width: 52px; height: 52px; border-radius: 50%;
           background: #25d366;
           display: flex; align-items: center; justify-content: center;
@@ -668,10 +668,10 @@ const { toastState, toast, clearToast } = useToast();
           <div style={{ padding:"14px clamp(16px,4vw,48px)",
             display:"flex", flexWrap:"wrap", gap:8,
             justifyContent:"space-between", alignItems:"center" }}>
-            <div style={{ fontSize:11, fontWeight:300, color:"rgba(255,255,255,.18)" }}>
+            <div style={{ fontSize:11, fontWeight:500, color:"rgba(255,255,255,.6)" }}>
               © {new Date().getFullYear()} Dotaciones Tessuti · Todos los derechos reservados
             </div>
-            <div style={{ fontSize:11, fontWeight:300, color:"rgba(255,255,255,.12)" }}>
+            <div style={{ fontSize:11, fontWeight:400, color:"rgba(255,255,255,.45)" }}>
               Fabricado con ♥ en Medellín
             </div>
           </div>

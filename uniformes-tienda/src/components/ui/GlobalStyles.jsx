@@ -199,7 +199,8 @@ export default function GlobalStyles() {
 
       .app-nav {
         position:sticky; top:0; z-index:500;
-        height:64px; padding:0 clamp(20px,5vw,60px);
+        height:calc(64px + env(safe-area-inset-top));
+        padding: env(safe-area-inset-top) clamp(20px,5vw,60px) 0;
         background:rgba(248,246,242,.94);
         backdrop-filter:blur(20px) saturate(1.6);
         -webkit-backdrop-filter:blur(20px) saturate(1.6);
@@ -213,7 +214,7 @@ export default function GlobalStyles() {
       }
 
       .toast {
-        position:fixed; bottom:32px; left:50%; transform:translateX(-50%);
+        position:fixed; bottom:calc(32px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%);
         padding:12px 28px; border-radius:99px;
         font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase;
         box-shadow:var(--sh-lg); z-index:9999;
