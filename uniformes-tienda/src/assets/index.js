@@ -1,4 +1,4 @@
-import imgQrPago from "./TheNewSchool/Codigo QR prueba.webp";
+import imgQrPago from "./TheNewSchool/Codigo QR.webp";
 import LOGO_TESSUTI from "./Logo Tessuti.webp";
 import LOGO_CUMBRES from "./Logo Cumbres.webp";
 import LOGO_LICEO_FRANCES from "./LiceoFrances/logo-liceo-frences.webp";

@@ -407,19 +407,17 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
           gap: clamp(20px,3vw,28px);
         }
         .qr-img {
-          width: clamp(260px,70vw,380px);
-          height: clamp(260px,70vw,380px);
+          width: clamp(320px,85vw,520px);
+          height: clamp(320px,85vw,520px);
           object-fit: contain;
-          border-radius: 14px;
-          border: 1px solid #e8e5e1;
+          border-radius: 10px;
           flex-shrink: 0;
-          box-shadow: 0 4px 24px rgba(28,28,28,.1);
         }
         .qr-instructions {
           width: 100%;
         }
         @media(max-width:480px) {
-          .qr-img { width: min(300px, 88vw); height: min(300px, 88vw); }
+          .qr-img { width: min(380px, 92vw); height: min(380px, 92vw); }
         }
 
         /* ── Payment step number ── */
@@ -879,15 +877,30 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                 </div>
 
                 <div className="qr-block">
-                  <div style={{ textAlign:"center", marginBottom:4 }}>
-                    <div style={{ fontSize:11, fontWeight:700, color:"#9b9591", letterSpacing:".12em", textTransform:"uppercase", marginBottom:4 }}>
-                      A cuenta de Bancolombia
-                    </div>
-                    <div style={{ fontSize:18, fontWeight:800, color:INK, letterSpacing:".08em", fontFamily:"monospace" }}>
-                      862-000243-81
-                    </div>
+                  {/* ── QR image full width ── */}
+                  {/* ── Bancolombia info centrado ── */}
+                  <div style={{ textAlign:"center", display:"flex", flexDirection:"column", alignItems:"center", gap:6, width:"100%" }}>
+                    <div style={{ fontSize:10, fontWeight:700, color:"#9b9591", letterSpacing:".14em", textTransform:"uppercase" }}>A cuenta de Bancolombia</div>
+                    <div style={{ fontSize:22, fontWeight:800, color:INK, fontFamily:"monospace", letterSpacing:".06em" }}>862-000243-81</div>
+                    <div style={{ fontSize:11, fontWeight:600, color:"#9b9591", letterSpacing:".08em", textTransform:"uppercase" }}>Cuenta de Ahorros</div>
+                    <div style={{ height:1, background:"#ebe8e4", width:"60%", margin:"4px 0" }}/>
+                    <div style={{ fontSize:10, fontWeight:700, color:"#9b9591", letterSpacing:".14em", textTransform:"uppercase" }}>Llave</div>
+                    <div style={{ fontSize:18, fontWeight:800, color:INK, fontFamily:"monospace", letterSpacing:".06em" }}>0050069103</div>
                   </div>
-                  <img src={imgQrPago} alt="Código QR de pago" className="qr-img"/>
+
+                  {/* ── QR image full width ── */}
+                  <img
+                    src={imgQrPago}
+                    alt="Código QR de pago"
+                    style={{
+                      width:"100%",
+                      height:"auto",
+                      display:"block",
+                      borderRadius:12,
+                      boxShadow:"0 6px 28px rgba(28,28,28,.12)",
+                    }}
+                  />
+
                   <div className="qr-instructions">
                     <div style={{ fontSize:10, fontWeight:700, color:"#9b9591", letterSpacing:".14em", textTransform:"uppercase", marginBottom:16 }}>
                       Instrucciones paso a paso
@@ -895,7 +908,6 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                     {[
                       "Abre tu aplicación bancaria",
                       "Selecciona la opción «Pagar con QR»",
-                      "Agrega el documento del estudiante en la descripción",
                       <span>Transfiere exactamente <strong style={{ color:INK }}>{COP(total)}</strong></span>,
                       "Descarga o captura el comprobante",
                     ].map((t,i) => (
