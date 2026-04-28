@@ -150,6 +150,15 @@ const { toastState, toast, clearToast } = useToast();
 
   return (
     <>
+      {/* ── Safe-area filler: covers Dynamic Island / notch on iOS ── */}
+      <div style={{
+        position: "fixed",
+        top: 0, left: 0, right: 0,
+        height: "env(safe-area-inset-top)",
+        background: "#f8f6f2",
+        zIndex: 10000,
+        pointerEvents: "none",
+      }} />
       <GlobalStyles />
       <style>{`
         /* ── Nav buttons ────────────────────────── */
