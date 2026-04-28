@@ -6,12 +6,23 @@
 }
 
 html {
-  background: #f8f6f2; /* matches navbar bg — fills Dynamic Island / notch zone */
+  background: #f8f6f2;
 }
 
 html, body, #root {
   min-height: 100vh;
   width: 100%;
+}
+
+/* ── Dynamic Island / notch solid cover ── */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: env(safe-area-inset-top);
+  background: #f8f6f2;
+  z-index: 9999;
+  pointer-events: none;
 }
 
 body {
