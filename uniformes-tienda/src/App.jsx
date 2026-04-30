@@ -63,7 +63,7 @@ const { toastState, toast, clearToast } = useToast();
         setSuccessOrder({ ...order, wompiTransactionId: wompiId });
         window.history.replaceState({}, "", window.location.pathname + window.location.hash);
         setView("success");
-      } catch { /* silencio */ }
+      } catch (e) { console.error("[Wompi return] failed to parse pending order:", e); }
     }
   }, []);
 
@@ -134,7 +134,17 @@ const { toastState, toast, clearToast } = useToast();
     if (view === "catalog" && college) {
       getStock(college.id)
         .then(({ data }) => setCatalogStock(data || {}))
-        .catch(() => setCatalogStock({}));
+        .catch(() => {
+          // Fallback: build stock map from hardcoded data in colleges.js
+          const fallback = {};
+          const allUniforms = college.sections
+            ? college.sections.flatMap(s => s.uniforms)
+            : (college.uniforms || []);
+          allUniforms.forEach(u => {
+            if (u.stock) fallback[String(u.id)] = u.stock;
+          });
+          setCatalogStock(fallback);
+        });
     }
   }, [view, college]);
 

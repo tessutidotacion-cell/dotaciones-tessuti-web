@@ -536,7 +536,7 @@ export default function CollegeSelector({ onSelect }) {
                         ))}
                       </div>
                       <div className="cs-footer">
-                        <span className="cs-cta">{disabled ? "Próximamente" : "Ver catálogo"}</span>
+                        <span className="cs-cta">{disabled ? "Disponible pronto" : "Ver catálogo"}</span>
                         {!disabled && (
                           <div className="cs-arrow">
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none"

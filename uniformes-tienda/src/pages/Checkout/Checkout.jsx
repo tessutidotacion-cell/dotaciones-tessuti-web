@@ -17,16 +17,20 @@ function Spinner({ size = 16 }) {
 }
 
 function Field({ label, required, hint, error, children }) {
+  const autoId = `field-${(label || "").toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`;
+  const child = React.isValidElement(children)
+    ? React.cloneElement(children, { id: children.props.id ?? autoId })
+    : children;
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-      <label style={{
+      <label htmlFor={React.isValidElement(children) ? (children.props.id ?? autoId) : undefined} style={{
         fontSize:10, fontWeight:700, color: error ? "#dc2626" : "#6b6560",
         textTransform:"uppercase", letterSpacing:".12em",
         fontFamily:"var(--font,'Jost',sans-serif)",
       }}>
         {label}{required && <span style={{ color:"#dc2626", marginLeft:2 }}>*</span>}
       </label>
-      {children}
+      {child}
       {(hint || error) && (
         <span style={{ fontSize:11, color: error ? "#dc2626" : "#9b9591", display:"flex", alignItems:"center", gap:4 }}>
           {error && (
@@ -46,7 +50,6 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
   const [loading,        setLoading]       = useState(false);
   const [proofFile,      setProofFile]     = useState(null);
   const [proofPreview,   setProofPreview]  = useState(null);
-  const [boldPaymentUrl, setBoldPaymentUrl]= useState(null);
   const [dragOver,       setDragOver]      = useState(false);
 
   const [couponInput,    setCouponInput]   = useState("");
@@ -90,7 +93,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
     }
   };
   const cartQty     = cart.reduce((s, i) => s + i.qty, 0);
-  const emailValid       = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
+  const emailValid       = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(form.email.trim());
   const needsStreet      = form.deliveryType === "domicilio";
   const needsShipCoord   = form.deliveryType === "domicilio_coordinado";
   const step1Valid  = form.guardianName.trim() && form.guardianDoc.trim() &&
@@ -102,6 +105,11 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
 
   const handleProof = (file) => {
     if (!file) return;
+    const allowed = ["image/jpeg","image/png","image/webp","image/heic","image/heif","application/pdf"];
+    if (!allowed.includes(file.type)) {
+      toast("Solo se permiten imágenes (JPG, PNG, WEBP) o PDF", "error");
+      return;
+    }
     if (file.size > 5 * 1024 * 1024) { toast("El archivo supera los 5 MB", "error"); return; }
     setProofFile(file);
     const reader = new FileReader();
@@ -141,10 +149,6 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
 
       const orderResult = await createOrder(orderPayload);
       const orderId = orderResult.data?.id || orderResult.data?.orderId;
-
-      if (orderResult.data?.boldPaymentUrl) {
-        setBoldPaymentUrl(orderResult.data.boldPaymentUrl);
-      }
 
       if (paymentMethod === "transfer" && orderId && proofFile) {
         try { await uploadPaymentProof(orderId, proofFile); }
@@ -457,29 +461,6 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
           background: #fff;
         }
 
-        /* ── Bold strip ── */
-        .bold-strip {
-          border-top: 1px solid #f0ede9;
-          padding: 14px 20px;
-          display: flex; align-items: center;
-          justify-content: space-between;
-          gap: 12px; flex-wrap: wrap;
-          background: #faf9f7;
-        }
-        .bold-btn {
-          padding: 9px 18px;
-          border-radius: 8px;
-          background: #7c3aed;
-          color: #fff;
-          font-size: 12px; font-weight: 700;
-          text-decoration: none;
-          white-space: nowrap;
-          letter-spacing: .04em;
-          transition: all .15s;
-          flex-shrink: 0;
-          box-shadow: 0 2px 10px rgba(124,58,237,.3);
-        }
-        .bold-btn:hover { background: #6d28d9; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(124,58,237,.35); }
       `}</style>
 
       {/* ── Sub-header ── */}
@@ -635,8 +616,20 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                         type="button"
                         className={`del-opt${form.deliveryType===opt.value?" on":""}`}
                         onClick={() => {
-                          set("deliveryType", opt.value);
-                          if (opt.value !== "recogida" && paymentMethod === "cash") setPaymentMethod("transfer");
+                          if (opt.value === "recogida") {
+                            setForm(f => ({
+                              ...f,
+                              deliveryType: opt.value,
+                              street: "", neighborhood: "",
+                              shippingStreet: "", shippingNeighborhood: "",
+                            }));
+                          } else {
+                            set("deliveryType", opt.value);
+                            if (paymentMethod === "cash") {
+                              setPaymentMethod("transfer");
+                              toast("Efectivo solo disponible para recogida en tienda. Se cambió a Transferencia / QR.", "warning");
+                            }
+                          }
                         }}
                       >
                         <div className="del-opt-icon">{opt.icon}</div>
@@ -1073,7 +1066,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                         boxShadow: paymentMethod === opt.value ? `0 4px 16px rgba(28,28,28,.1)` : "none",
                         transition:"all .18s", fontFamily:"inherit",
                         display:"flex", flexDirection:"column", gap: opt.value === "wompi" ? 4 : 6,
-                        opacity: opt.value === "wompi" ? 0.7 : 1,
+                        opacity: 1,
                       }}
                     >
                       <div style={{

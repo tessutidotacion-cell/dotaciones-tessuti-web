@@ -88,7 +88,7 @@ export default function TrackOrder({ onBack }) {
     }
   };
 
-  const steps       = order?.delivery?.type === "domicilio" ? STEPS_DOMICILIO : ALL_STEPS;
+  const steps       = ["domicilio","domicilio_coordinado"].includes(order?.delivery?.type) ? STEPS_DOMICILIO : ALL_STEPS;
   const currentStep = steps.indexOf(order?.status ?? "");
   const meta        = STATUS_META[order?.status ?? ""];
 

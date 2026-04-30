@@ -95,7 +95,11 @@ export default function OrderSuccess({ order, onHome }) {
 
           <p style={{ fontSize:13, color:"#9ca3af", lineHeight:1.65,
             maxWidth:300, margin:"0 auto" }}>
-            Completa tu pago usando una de las opciones de abajo. Te notificaremos cuando lo confirmemos.
+            {order?.wompiTransactionId
+              ? "Tu pago fue enviado a Wompi. Te notificaremos cuando lo confirmemos."
+              : order?.paymentMethod === "cash"
+              ? "Pagarás en efectivo al recoger tu pedido. Te avisamos cuando esté listo."
+              : "Tu comprobante fue recibido. Te notificaremos cuando confirmemos el pago."}
           </p>
         </div>
 
@@ -187,58 +191,67 @@ export default function OrderSuccess({ order, onHome }) {
           </div>
         )}
 
-        {/* Opciones de pago */}
-        <div style={{ marginBottom:22 }}>
-          <div style={{ fontSize:9, fontWeight:700, color:"#9ca3af",
-            textTransform:"uppercase", letterSpacing:".14em", marginBottom:12 }}>
-            Completa tu pago
-          </div>
-          <div style={{ display:"flex", flexDirection:"column", gap:9 }}>
-
-            {/* Bold — tarjeta, Nequi, PSE */}
-            <a
-              href={order?.boldPaymentUrl || `https://wa.me/573122040973?text=Hola,%20quiero%20pagar%20el%20pedido%20${orderId}`}
-              target="_blank" rel="noreferrer"
-              style={{
-                display:"flex", alignItems:"center", justifyContent:"space-between",
-                padding:"14px 16px", borderRadius:8,
-                background:"#1a1a1a", color:"#fff",
-                textDecoration:"none", gap:12,
-                border:"1.5px solid #1a1a1a",
-              }}>
+        {/* Sección de pago — context-aware */}
+        {order?.wompiTransactionId ? (
+          <div style={{ marginBottom:22 }}>
+            <div style={{ fontSize:9, fontWeight:700, color:"#9ca3af",
+              textTransform:"uppercase", letterSpacing:".14em", marginBottom:9 }}>
+              Transacción Wompi
+            </div>
+            <div style={{
+              padding:"14px 16px", borderRadius:8,
+              border:"1px solid #c4b5fd", background:"#f5f3ff",
+              display:"flex", alignItems:"center", gap:12,
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round">
+                <rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/>
+              </svg>
               <div>
-                <div style={{ fontSize:13, fontWeight:700, letterSpacing:".02em" }}>
-                  Pagar con Bold
+                <div style={{ fontSize:12, fontWeight:700, color:"#6d28d9", marginBottom:2 }}>
+                  Pago procesado con Wompi
                 </div>
-                <div style={{ fontSize:11, color:"rgba(255,255,255,.55)", marginTop:2 }}>
-                  Tarjeta · Nequi · PSE · Daviplata
+                <div style={{ fontFamily:"var(--font-mono,'DM Mono',monospace)", fontSize:11, color:"#4c1d95", letterSpacing:".06em" }}>
+                  ID: {order.wompiTransactionId}
                 </div>
               </div>
-              <div style={{ display:"flex", gap:6, alignItems:"center" }}>
-                <span style={{ fontSize:14, fontWeight:700, fontFamily:"var(--font-mono,'DM Mono',monospace)" }}>
-                  {COP(order.total)}
-                </span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-              </div>
-            </a>
-
-            {/* Transferencia / QR */}
+            </div>
+          </div>
+        ) : order?.paymentMethod === "transfer" ? (
+          <div style={{ marginBottom:22 }}>
+            <div style={{ fontSize:9, fontWeight:700, color:"#9ca3af",
+              textTransform:"uppercase", letterSpacing:".14em", marginBottom:9 }}>
+              Estado del pago
+            </div>
             <div style={{
               padding:"14px 16px", borderRadius:8,
               border:"1px solid #e5e7eb", background:"#fafafa",
               fontSize:12, color:"#6b7280", lineHeight:1.6,
             }}>
               <div style={{ fontWeight:600, color:"#374151", marginBottom:4 }}>
-                Transferencia o QR
+                Comprobante recibido
               </div>
-              Escanea el código QR de la pantalla anterior o transfiere exactamente{" "}
-              <strong style={{ color:"#1a1a1a" }}>{COP(order.total)}</strong> y envía
-              el comprobante por WhatsApp.
+              Validaremos tu transferencia en menos de 24 horas hábiles. Si tienes dudas,
+              escríbenos por WhatsApp con el número de pedido.
             </div>
           </div>
-        </div>
+        ) : order?.paymentMethod === "cash" ? (
+          <div style={{ marginBottom:22 }}>
+            <div style={{ fontSize:9, fontWeight:700, color:"#9ca3af",
+              textTransform:"uppercase", letterSpacing:".14em", marginBottom:9 }}>
+              Pago en efectivo
+            </div>
+            <div style={{
+              padding:"14px 16px", borderRadius:8,
+              border:"1px solid #86efac", background:"#f0fdf4",
+              fontSize:12, color:"#166534", lineHeight:1.6,
+            }}>
+              <div style={{ fontWeight:600, color:"#15803d", marginBottom:4 }}>
+                Pagas al recoger · {COP(order.total)}
+              </div>
+              Ten el efectivo listo cuando vengas a recoger tu pedido.
+            </div>
+          </div>
+        ) : null}
 
         {/* Acciones */}
         <div style={{ display:"flex", flexDirection:"column", gap:9 }}>

@@ -544,9 +544,22 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           font-weight: 600;
         }
         .pd-size.out {
-          opacity: .35;
+          opacity: .55;
           cursor: not-allowed;
-          text-decoration: line-through;
+          text-decoration: none;
+          background: #fef2f2;
+          border-color: #fecaca;
+          color: #b0a89f;
+          flex-direction: column;
+          gap: 1px;
+        }
+        .pd-size.out .pd-size-out-label {
+          font-size: 8px;
+          font-weight: 700;
+          color: #f87171;
+          letter-spacing: .06em;
+          text-transform: uppercase;
+          line-height: 1;
         }
 
         /* Stock alert */
@@ -926,8 +939,10 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
                               setSizes(s => ({ ...s, [u.id]: sz }));
                             }}
                             disabled={isOut}
+                            title={isOut ? "Talla agotada" : undefined}
                           >
                             {sz}
+                            {isOut && <span className="pd-size-out-label">Agotado</span>}
                           </button>
                         );
                       })}
@@ -1114,7 +1129,29 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
                   <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/>
                 </svg>
                 <div className="cat-empty-title">Sin productos</div>
-                <div className="cat-empty-sub">Selecciona otra categoría.</div>
+                <div className="cat-empty-sub">No hay prendas en esta categoría.</div>
+                <button
+                  onClick={() => setFilter("Todos")}
+                  style={{
+                    marginTop: 8,
+                    padding: "9px 20px",
+                    border: `1.5px solid ${P}`,
+                    borderRadius: 6,
+                    background: "transparent",
+                    color: P,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    fontFamily: "var(--font)",
+                    letterSpacing: ".1em",
+                    textTransform: "uppercase",
+                    cursor: "pointer",
+                    transition: "all .15s",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = P; e.currentTarget.style.color = "#fff"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = P; }}
+                >
+                  Ver todas las prendas
+                </button>
               </div>
             )}
 
@@ -1123,13 +1160,16 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
               const hoverSrc = safeSrc(u.hoverImage);
               const pct = getDiscountPct(u.id);
               const finalPrice = getFinalPrice(u);
+              const sizeStock = collegeStock?.[String(u.id)];
+              const allOut = u.sizes?.length > 0 && sizeStock &&
+                u.sizes.every(sz => (sizeStock[sz] ?? null) === 0);
 
               return (
                 <article
                   key={u.id}
                   className="prod-card"
                   role="listitem"
-                  style={{ animationDelay: `${i * 0.045}s` }}
+                  style={{ animationDelay: `${i * 0.045}s`, opacity: allOut ? 0.65 : 1 }}
                   onClick={() => openProduct(u)}
                 >
                   <div className="prod-img">
@@ -1146,7 +1186,18 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
                         </div>
                       )
                     }
-                    {pct > 0 && <span className="prod-disc-badge">-{pct}%</span>}
+                    {pct > 0 && !allOut && <span className="prod-disc-badge">-{pct}%</span>}
+                    {allOut && (
+                      <span style={{
+                        position: "absolute", top: 10, left: 10,
+                        background: "#1c1c1c", color: "#fff",
+                        fontSize: 9, fontWeight: 700,
+                        padding: "4px 9px", letterSpacing: ".08em",
+                        textTransform: "uppercase", pointerEvents: "none",
+                      }}>
+                        Agotado
+                      </span>
+                    )}
                   </div>
                   <div className="prod-info">
                     <div className="prod-name">{u.name}</div>

@@ -72,7 +72,7 @@ function applyLiceoImages(college, imgs) {
     ...college,
     sections: college.sections.map(section => ({
       ...section,
-      uniforms: section.uniforms.map(u => ({ ...u, ...imageMap[u.id] })),
+      uniforms: section.uniforms.map(u => ({ ...u, ...(imageMap[u.id] || {}) })),
     })),
   };
 }
