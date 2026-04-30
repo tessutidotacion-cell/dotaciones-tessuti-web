@@ -407,8 +407,8 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
           gap: clamp(20px,3vw,28px);
         }
         .qr-img {
-          width: clamp(320px,85vw,520px);
-          height: clamp(320px,85vw,520px);
+          width: clamp(210px,58vw,340px);
+          height: clamp(210px,58vw,340px);
           object-fit: contain;
           border-radius: 10px;
           flex-shrink: 0;
@@ -417,7 +417,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
           width: 100%;
         }
         @media(max-width:480px) {
-          .qr-img { width: min(380px, 92vw); height: min(380px, 92vw); }
+          .qr-img { width: min(240px, 78vw); height: min(240px, 78vw); }
         }
 
         /* ── Payment step number ── */
