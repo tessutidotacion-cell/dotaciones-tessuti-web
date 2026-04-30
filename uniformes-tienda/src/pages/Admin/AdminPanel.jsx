@@ -51,6 +51,25 @@ function Badge({ status }) {
   );
 }
 
+function PaymentBadge({ method, transactionId }) {
+  const map = {
+    wompi:    { label:"Wompi",         bg:"#f5f3ff", color:"#6d28d9", dot:"#7c3aed" },
+    transfer: { label:"Transferencia", bg:"#eff6ff", color:"#1e3a8a", dot:"#3b82f6" },
+    cash:     { label:"Efectivo",      bg:"#f0fdf4", color:"#14532d", dot:"#22c55e" },
+  };
+  const m = map[method] || { label: method || "—", bg:"#f3f4f6", color:"#6b7280", dot:"#9ca3af" };
+  return (
+    <span style={{ display:"inline-flex", alignItems:"center", gap:5,
+      background:m.bg, color:m.color, padding:"3px 9px", borderRadius:20,
+      fontSize:11, fontWeight:600, whiteSpace:"nowrap" }}>
+      <span style={{ width:6, height:6, borderRadius:"50%", background:m.dot, flexShrink:0 }} />
+      {m.label}
+      {method === "wompi" && transactionId &&
+        <span style={{ fontFamily:"monospace", fontSize:10, opacity:.75, marginLeft:2 }}>·{transactionId.slice(-6)}</span>}
+    </span>
+  );
+}
+
 const COORDINATION_PRESETS = [
   "Dirección confirmada",
   "Fecha de entrega acordada",
@@ -134,6 +153,15 @@ function OrderDetailModal({ order, onClose, onOrderUpdate }) {
                 : order.delivery?.type === "domicilio_coordinado"
                   ? <span>Fuera de zona<br /><span style={{ fontSize:11, color: order.delivery?.coordinationNote ? "#059669" : "#9ca3af" }}>{order.delivery?.coordinationNote || "Pendiente coordinar"}</span></span>
                   : "Recogida en tienda"}
+            </div>
+            <div style={{ gridColumn:"1 / -1" }}>
+              <span style={{ color:"#9ca3af", fontSize:11, fontWeight:600, display:"block", marginBottom:4 }}>Pago</span>
+              <PaymentBadge method={order.paymentMethod} transactionId={order.wompiTransactionId} />
+              {order.paymentMethod === "wompi" && order.wompiTransactionId && (
+                <div style={{ fontFamily:"monospace", fontSize:11, color:"#6b7280", marginTop:4 }}>
+                  ID completo: {order.wompiTransactionId}
+                </div>
+              )}
             </div>
           </div>
 
@@ -1183,12 +1211,14 @@ export default function AdminPanel({ onLogout, toast }) {
                                   {o.delivery?.type==="domicilio_coordinado" && <div style={{ fontSize:10, color:"#ea580c", fontWeight:600 }}>envío por coordinar</div>}
                                 </td>
                                 <td style={{ padding:"11px 13px" }}>
-                                  {o.paymentProofUrl
-                                    ? <a href={o.paymentProofUrl} target="_blank" rel="noreferrer"
-                                        style={{ fontSize:11, fontWeight:600, color:"#065f46", background:"#f0fdf4", padding:"3px 9px", borderRadius:4, textDecoration:"none" }}>
-                                        Ver
-                                      </a>
-                                    : <span style={{ fontSize:11, color:"#d1d5db" }}>—</span>}
+                                  <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
+                                    <PaymentBadge method={o.paymentMethod} transactionId={o.wompiTransactionId} />
+                                    {o.paymentProofUrl &&
+                                      <a href={o.paymentProofUrl} target="_blank" rel="noreferrer"
+                                          style={{ fontSize:10, fontWeight:600, color:"#065f46", background:"#f0fdf4", padding:"2px 7px", borderRadius:4, textDecoration:"none", alignSelf:"flex-start" }}>
+                                          Ver comprobante
+                                        </a>}
+                                  </div>
                                 </td>
                                 <td style={{ padding:"11px 13px" }}><Badge status={o.status} /></td>
                                 <td style={{ padding:"11px 13px" }}>
@@ -1245,6 +1275,10 @@ export default function AdminPanel({ onLogout, toast }) {
                           <div>
                             <div className="order-card-field">Total</div>
                             <div className="order-card-value" style={{ fontWeight:700 }}>{COP(o.total)}</div>
+                          </div>
+                          <div>
+                            <div className="order-card-field">Pago</div>
+                            <div className="order-card-value"><PaymentBadge method={o.paymentMethod} transactionId={o.wompiTransactionId} /></div>
                           </div>
                         </div>
                         <div className="order-card-footer" onClick={e=>e.stopPropagation()}>
