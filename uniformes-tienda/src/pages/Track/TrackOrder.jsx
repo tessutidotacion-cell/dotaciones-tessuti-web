@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { trackOrder } from "../../services/api";
 import { COP } from "../../utils/money";
+import { waLink } from "../../constants/contact";
 
 // Íconos SVG en lugar de emojis
 const StatusIcon = ({ status, size = 22 }) => {
@@ -142,7 +143,8 @@ export default function TrackOrder({ onBack }) {
               onKeyDown={e=>e.key==="Enter" && handleSearch()}
               placeholder="Ej: PED-2024-1234"
               autoComplete="off"
-              style={{ fontFamily:"var(--font-mono,'DM Mono',monospace)", letterSpacing:".06em", textTransform:"uppercase" }}
+              disabled={loading}
+              style={{ fontFamily:"var(--font-mono,'DM Mono',monospace)", letterSpacing:".06em", textTransform:"uppercase", opacity: loading ? 0.6 : 1 }}
             />
             <div style={{ fontSize:11, color:"#9ca3af", marginTop:5 }}>Lo encontrarás en tu correo de confirmación</div>
           </div>
@@ -292,7 +294,7 @@ export default function TrackOrder({ onBack }) {
             </div>
 
             {/* Soporte */}
-            <a href={`https://wa.me/573122040973?text=Hola,%20consulto%20mi%20pedido%20${order.id}`}
+            <a href={waLink(`Hola, consulto mi pedido ${order.id}`)}
               target="_blank" rel="noreferrer"
               style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8,
                 padding:"11px", borderRadius:7, border:"1px solid #e5e7eb",

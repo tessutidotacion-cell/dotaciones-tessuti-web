@@ -93,11 +93,12 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
     }
   };
   const cartQty     = cart.reduce((s, i) => s + i.qty, 0);
-  const emailValid       = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(form.email.trim());
+  const emailValid  = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(form.email.trim());
+  const phoneValid  = /^(\+?57|0057)?3\d{9}$/.test(form.phone.replace(/[\s\-\(\)]/g, ""));
   const needsStreet      = form.deliveryType === "domicilio";
   const needsShipCoord   = form.deliveryType === "domicilio_coordinado";
   const step1Valid  = form.guardianName.trim() && form.guardianDoc.trim() &&
-    form.phone.trim() && emailValid && form.billingAddress.trim() &&
+    phoneValid && emailValid && form.billingAddress.trim() &&
     (!needsStreet    || form.street.trim()) &&
     (!needsShipCoord || form.shippingStreet.trim());
 
@@ -106,7 +107,9 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
   const handleProof = (file) => {
     if (!file) return;
     const allowed = ["image/jpeg","image/png","image/webp","image/heic","image/heif","application/pdf"];
-    if (!allowed.includes(file.type)) {
+    const validExts = [".jpg",".jpeg",".png",".webp",".heic",".heif",".pdf"];
+    const hasValidExt = validExts.some(ext => file.name.toLowerCase().endsWith(ext));
+    if (!allowed.includes(file.type) || !hasValidExt) {
       toast("Solo se permiten imágenes (JPG, PNG, WEBP) o PDF", "error");
       return;
     }
@@ -558,7 +561,11 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                         onChange={e => set("guardianDoc", e.target.value.replace(/[^0-9\-]/g, ""))}
                       />
                     </Field>
-                    <Field label="Teléfono" required>
+                    <Field
+                      label="Teléfono"
+                      required
+                      error={form.phone.trim() && !phoneValid ? "Ingresa un número colombiano válido (ej: 312 000 0000)" : ""}
+                    >
                       <input
                         type="tel"
                         value={form.phone}
@@ -566,6 +573,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                         autoComplete="tel"
                         inputMode="tel"
                         onChange={e => set("phone", e.target.value.replace(/[^0-9+\s]/g, ""))}
+                        style={{ borderColor: form.phone.trim() && !phoneValid ? "#dc2626" : undefined }}
                       />
                     </Field>
                     <div className="co-full">
@@ -620,8 +628,8 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                             setForm(f => ({
                               ...f,
                               deliveryType: opt.value,
-                              street: "", neighborhood: "",
-                              shippingStreet: "", shippingNeighborhood: "",
+                              street: "", neighborhood: "", city: "Medellín",
+                              shippingStreet: "", shippingNeighborhood: "", shippingCity: "Medellín",
                             }));
                           } else {
                             set("deliveryType", opt.value);

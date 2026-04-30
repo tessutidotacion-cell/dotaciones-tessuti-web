@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
+import { WA_PHONE, waLink } from "./constants/contact";
 import { clearToken, getStock, getPublicDiscounts } from "./services/api";
 import {
   ShoppingBag, Package, Settings, X, Menu, ChevronRight, MessageCircle
@@ -636,7 +637,7 @@ const { toastState, toast, clearToast } = useToast();
                   letterSpacing:".18em", color:"rgba(255,255,255,.25)", marginBottom:16 }}>
                   Contacto
                 </div>
-                <a href="https://wa.me/573122040973" target="_blank" rel="noreferrer"
+                <a href={`https://wa.me/${WA_PHONE}`} target="_blank" rel="noreferrer"
                   style={{ display:"flex", alignItems:"center", gap:8,
                     color:"rgba(255,255,255,.35)", fontSize:12, fontWeight:300,
                     textDecoration:"none", marginBottom:10,
@@ -713,7 +714,7 @@ const { toastState, toast, clearToast } = useToast();
       {/* ── WhatsApp FAB ── */}
       {isPublic && (
         <a
-          href="https://wa.me/573122040973?text=Hola%2C%20necesito%20ayuda%20con%20mi%20pedido%20de%20uniformes"
+          href={waLink("Hola, necesito ayuda con mi pedido de uniformes")}
           target="_blank"
           rel="noreferrer"
           className="wa-fab"

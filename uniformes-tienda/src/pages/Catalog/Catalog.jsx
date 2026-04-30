@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import LogoBox from "../../components/ui/LogoBox";
 import { COP } from "../../utils/money";
+import { waLink } from "../../constants/contact";
 
 const safeCSSColor = (color) => {
   if (typeof color !== "string") return "#4a2510";
@@ -964,7 +965,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
                 {isEmpresarial ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 20 }}>
                     <a
-                      href={`https://wa.me/573122040973?text=${encodeURIComponent(`Hola, me interesa personalizar la prenda: ${u.name}${sizes[u.id] ? `, talla ${sizes[u.id]}` : ""}. Quisiera consultar opciones de estampado / bordado.`)}`}
+                      href={waLink(`Hola, me interesa personalizar la prenda: ${u.name}${sizes[u.id] ? `, talla ${sizes[u.id]}` : ""}. Quisiera consultar opciones de estampado / bordado.`)}
                       target="_blank"
                       rel="noreferrer"
                       style={{
