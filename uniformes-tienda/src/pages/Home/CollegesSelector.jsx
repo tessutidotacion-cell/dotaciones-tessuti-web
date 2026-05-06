@@ -228,7 +228,7 @@ const ALL_STYLES = `
     border-bottom:1px solid var(--line);
     padding:14px clamp(16px,5vw,48px);
     display:flex;align-items:center;gap:16px;
-    position:sticky;top:64px;z-index:10;
+    position:sticky;top:calc(64px + env(safe-area-inset-top));z-index:10;
   }
   .cs-back{
     background:none;border:1px solid var(--line-2);border-radius:6px;

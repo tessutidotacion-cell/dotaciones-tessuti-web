@@ -126,7 +126,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           justify-content: space-between;
           gap: 12px;
           position: sticky;
-          top: 64px;
+          top: calc(64px + env(safe-area-inset-top));
           z-index: 50;
           box-shadow: 0 4px 24px rgba(0,0,0,.22), inset 0 -1px 0 rgba(255,255,255,.06);
         }
@@ -208,7 +208,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           gap: 6px;
           overflow-x: auto;
           position: sticky;
-          top: calc(64px + 60px);
+          top: calc(64px + env(safe-area-inset-top) + 60px);
           z-index: 50;
           scrollbar-width: none;
           border-bottom: 1px solid #e8e5e1;
@@ -256,7 +256,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           background-position: right 16px center;
           cursor: pointer;
           position: sticky;
-          top: calc(56px + 44px);
+          top: calc(56px + env(safe-area-inset-top) + 44px);
           z-index: 50;
         }
         .cat-section-select:focus {
@@ -273,7 +273,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           gap: 0;
           overflow-x: auto;
           position: sticky;
-          top: calc(64px + 60px);
+          top: calc(64px + env(safe-area-inset-top) + 60px);
           z-index: 49;
           scrollbar-width: none;
         }
@@ -462,7 +462,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
         /* Info lado derecho */
         .pd-info {
           position: sticky;
-          top: calc(64px + 60px + 24px);
+          top: calc(64px + env(safe-area-inset-top) + 60px + 24px);
         }
         .pd-category {
           font-size: 10px;
@@ -757,7 +757,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
 
         /* ── Mobile ── */
         @media (max-width: 640px) {
-          .cat-header { height: 44px; top: 56px; padding: 0 12px; }
+          .cat-header { height: 44px; top: calc(56px + env(safe-area-inset-top)); padding: 0 12px; }
           .cat-sections { display: none; }
           .cat-section-select { display: block; }
           .cat-filters { position: relative; top: auto; padding: 0 12px; }

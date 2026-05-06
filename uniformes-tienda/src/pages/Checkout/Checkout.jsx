@@ -247,7 +247,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
         }
         .co-summary {
           position: sticky;
-          top: 116px;
+          top: calc(64px + env(safe-area-inset-top) + 56px);
         }
         @media(max-width:720px) {
           .co-summary { position:static; order:-1; }
@@ -471,7 +471,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
         background: "#fff",
         borderBottom: "1px solid #e8e5e1",
         padding: "0 clamp(14px,4vw,24px)",
-        position: "sticky", top: 56, zIndex: 50,
+        position: "sticky", top: "calc(64px + env(safe-area-inset-top))", zIndex: 50,
         height: 56,
         display: "flex", alignItems: "center",
         justifyContent: "space-between", gap: 12,
