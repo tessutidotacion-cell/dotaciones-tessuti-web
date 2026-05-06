@@ -438,7 +438,7 @@ export default function CollegeSelector({ onSelect }) {
             <button className="hl-hero-nav-btn" onClick={() => goToSection("colegios")}>
               Uniformes Colegio
             </button>
-            <button className="hl-hero-nav-btn" onClick={() => onSelect(EMPRESARIAL_CATALOG)}>
+            <button className="hl-hero-nav-btn" disabled style={{opacity:0.45,cursor:"not-allowed",pointerEvents:"none"}}>
               Dotación Empresarial
             </button>
           </div>
