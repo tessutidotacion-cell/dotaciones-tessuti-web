@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { COP } from "../../utils/money";
 import { LOGO_TESSUTI } from "../../assets";
 import { waLink } from "../../constants/contact";

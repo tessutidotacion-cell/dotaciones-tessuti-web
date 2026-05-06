@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { createOrder, uploadPaymentProof, validateCoupon, getWompiSignature } from "../../services/api";
 import { COP } from "../../utils/money";
 import { imgQrPago } from "../../assets";

@@ -1,4 +1,3 @@
-import React from "react"
 import SizeStockInput from "./SizeStockInput"
 
 export default function StockRow({product,stock,onChange}){

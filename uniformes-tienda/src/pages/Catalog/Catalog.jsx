@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import LogoBox from "../../components/ui/LogoBox";
 import { COP } from "../../utils/money";
 import { waLink } from "../../constants/contact";

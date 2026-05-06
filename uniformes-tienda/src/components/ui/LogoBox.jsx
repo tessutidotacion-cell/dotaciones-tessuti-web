@@ -1,4 +1,3 @@
-import React from "react";
 
 export default function LogoBox({ logo, name, color, size = 48 }) {
   const initials = name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();

@@ -1,25 +1,19 @@
-import imgBusoCierre from "./TheNewSchool/buso-cierre.webp";
 import imgCamisaPolo from "./TheNewSchool/camisa-polo.webp";
-import imgConsciencia from "./TheNewSchool/consciencia.webp";
-import imgSudadera from "./TheNewSchool/sudadera.webp";
-import imgSudaderaModelo from "./TheNewSchool/Sudadera-modelo.webp";
-import imgBusoKidsNS from "./TheNewSchool/Buso Kids New School.webp";
-import imgBusoRevesKidsNS from "./TheNewSchool/buso reves kid New School.webp";
-import imgCamisaPoloNS from "./TheNewSchool/Camisa Polo New School.webp";
-import imgConcienciaPrimNS from "./TheNewSchool/camiseta consciensia primaria.webp";
 import imgCamibusoBlanco from "./TheNewSchool/camibuso blanco.png";
-import imgBusoGris from "./TheNewSchool/buso gris.jpeg";
+import imgBusoAzul1 from "./TheNewSchool/TNS Buzo azul 1.webp";
+import imgBusoAzul2 from "./TheNewSchool/TNS Buso azul 2.webp";
+import imgBusoUltimasUnidades from "./TheNewSchool/TNS Buzo ULTIMAS UNIDADES.webp";
+import imgCamiseta from "./TheNewSchool/TNS Camiseta.webp";
+import imgPava from "./TheNewSchool/TNS Pava.webp";
+import imgSudadera from "./TheNewSchool/TNS sudadera.webp";
 
 export {
-  imgBusoCierre,
   imgCamisaPolo,
-  imgConsciencia,
-  imgSudadera,
-  imgSudaderaModelo,
-  imgBusoKidsNS,
-  imgBusoRevesKidsNS,
-  imgCamisaPoloNS,
-  imgConcienciaPrimNS,
   imgCamibusoBlanco,
-  imgBusoGris,
+  imgBusoAzul1,
+  imgBusoAzul2,
+  imgBusoUltimasUnidades,
+  imgCamiseta,
+  imgPava,
+  imgSudadera,
 };

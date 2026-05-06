@@ -1,46 +1,50 @@
-// Bachillerato
-import imgBusoLF from "./LiceoFrances/Buso Liceo Frances.webp";
-import imgBusoRevesLF from "./LiceoFrances/Buso Reves Liceo Frances.webp";
-import imgBusoFondoLF from "./LiceoFrances/Buso Liceo Frances fondo.webp";
-import imgBusoFondoRevesLF from "./LiceoFrances/Buso liceo frances fondo reves.webp";
-import imgCamisaPoloLF from "./LiceoFrances/camisa polo liceo frances solo prenda.webp";
-import imgCamisaPoloModeloLF from "./LiceoFrances/Camisa Polo  Liceo Frances.webp";
-import imgPantalonetaLF from "./LiceoFrances/pantaloneta liceo frances solo prensa.webp";
-import imgJoggerLF from "./LiceoFrances/jogger Liceo Frances.webp";
-import imgCamisetaDeportivaLF from "./LiceoFrances/Camiseta Deportiva Liceo Frances.webp";
-import imgSudaderaLF from "./LiceoFrances/Sudadera liceo frances sin fondo.webp";
+// Bachillerato / High School
+import imgChaquetaHS1 from "./LiceoFrances/LF Chaqueta HS 1.webp";
+import imgChaquetaHS2 from "./LiceoFrances/LF Chaqueta HS 2.webp";
+import imgChaquetaHS3 from "./LiceoFrances/LF Chaqueta HS 3.webp";
+import imgPoloHS from "./LiceoFrances/LF Polo HS.webp";
+import imgPantaloneta from "./LiceoFrances/LF Pantaloneta Unisex Ed Fis HS.webp";
+import imgJogger from "./LiceoFrances/LF Jogger Unisex Ed Fis HS.webp";
+import imgCamisetaUnisex1 from "./LiceoFrances/LF Camiseta Unisex Ed Fis 1.webp";
+import imgCamisetaUnisex2 from "./LiceoFrances/LF Camiseta Unisex Ed Fis 2.webp";
+import imgSudHS1 from "./LiceoFrances/LF Sud HS 1.webp";
+import imgSudHS2 from "./LiceoFrances/LF Sud HS 2.webp";
+import imgBataLab from "./LiceoFrances/LF Bata Lab. HS.webp";
 
-// Primaria (Kids)
-import imgBusoKidsLF from "./LiceoFrances/Buso kids Liceo frances.webp";
-import imgBusoKidsJpgLF from "./LiceoFrances/buso kids liceo frances.jpg";
-import imgCamisetaPoloKidsLF from "./LiceoFrances/Camiseta Polo Kids Liceo Frances.webp";
-import imgPantalonKidsLF from "./LiceoFrances/Pantalon kids Liceo Frances.webp";
-import imgChalecoKidsLF from "./LiceoFrances/Chaleco kids liceo frances solo prenda.jpg";
-import imgChalecoKidsModeloLF from "./LiceoFrances/Chaleco kids Liceo Frances.webp";
-import imgChalecoNegroKidsLF from "./LiceoFrances/chaleco kids negro liceo frances.jpg";
-import imgDelantalKidsLF from "./LiceoFrances/Delantal kids liceo frances.webp";
-import imgSudaderaKidsLF from "./LiceoFrances/sudadera liceo frances kids solo prenda.jpg";
+// Primaria
+import imgChaquetaPrim1 from "./LiceoFrances/LF Chaqueta Prim 1.webp";
+import imgChaquetaPrim2 from "./LiceoFrances/LF Chaqueta Prim 2.webp";
+import imgChaquetaPrim3 from "./LiceoFrances/LF Chaqueta Prim 3.webp";
+import imgPoloPrim1 from "./LiceoFrances/LF Polo Prim 1.webp";
+import imgPoloPrim2 from "./LiceoFrances/LF Polo Prim 2.webp";
+import imgDelantal from "./LiceoFrances/LF Delantal Prees.webp";
+import imgChalecoPrim1 from "./LiceoFrances/LF Chaleco Prim 1.webp";
+import imgChalecoPrim2 from "./LiceoFrances/LF Chaleco Prim 2.webp";
+import imgSud1 from "./LiceoFrances/LF Sud 1.webp";
+import imgSud2 from "./LiceoFrances/LF Sud 2.webp";
 
 export {
-  // Bachillerato
-  imgBusoLF,
-  imgBusoRevesLF,
-  imgBusoFondoLF,
-  imgBusoFondoRevesLF,
-  imgCamisaPoloLF,
-  imgCamisaPoloModeloLF,
-  imgPantalonetaLF,
-  imgJoggerLF,
-  imgCamisetaDeportivaLF,
-  imgSudaderaLF,
+  // Bachillerato / High School
+  imgChaquetaHS1,
+  imgChaquetaHS2,
+  imgChaquetaHS3,
+  imgPoloHS,
+  imgPantaloneta,
+  imgJogger,
+  imgCamisetaUnisex1,
+  imgCamisetaUnisex2,
+  imgSudHS1,
+  imgSudHS2,
+  imgBataLab,
   // Primaria
-  imgBusoKidsLF,
-  imgBusoKidsJpgLF,
-  imgCamisetaPoloKidsLF,
-  imgPantalonKidsLF,
-  imgChalecoKidsLF,
-  imgChalecoKidsModeloLF,
-  imgChalecoNegroKidsLF,
-  imgDelantalKidsLF,
-  imgSudaderaKidsLF,
+  imgChaquetaPrim1,
+  imgChaquetaPrim2,
+  imgChaquetaPrim3,
+  imgPoloPrim1,
+  imgPoloPrim2,
+  imgDelantal,
+  imgChalecoPrim1,
+  imgChalecoPrim2,
+  imgSud1,
+  imgSud2,
 };

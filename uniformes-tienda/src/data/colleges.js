@@ -36,12 +36,13 @@ export async function loadCollegeImages(college) {
 
 function applyNewSchoolImages(college, imgs) {
   const imageMap = {
-    1: { image: imgs.imgCamisaPolo, hoverImage: imgs.imgCamisaPoloNS },
-    2: { image: imgs.imgConsciencia, hoverImage: imgs.imgConcienciaPrimNS },
-    4: { image: imgs.imgBusoCierre, hoverImage: imgs.imgBusoKidsNS, galleryImages: [imgs.imgBusoRevesKidsNS] },
+    1: { image: imgs.imgCamisaPolo },
+    2: { image: imgs.imgCamiseta },
+    4: { image: imgs.imgBusoAzul1, hoverImage: imgs.imgBusoAzul2 },
     5: { image: imgs.imgCamibusoBlanco },
-    6: { image: imgs.imgSudadera, hoverImage: imgs.imgSudaderaModelo },
-    7: { image: imgs.imgBusoGris },
+    6: { image: imgs.imgSudadera },
+    7: { image: imgs.imgBusoUltimasUnidades },
+    8: { image: imgs.imgPava },
   };
 
   return {
@@ -55,17 +56,18 @@ function applyNewSchoolImages(college, imgs) {
 
 function applyLiceoImages(college, imgs) {
   const imageMap = {
-    500: { image: imgs.imgBusoFondoLF, hoverImage: imgs.imgBusoLF, galleryImages: [imgs.imgBusoRevesLF] },
-    501: { image: imgs.imgCamisaPoloLF, hoverImage: imgs.imgCamisaPoloModeloLF },
-    503: { image: imgs.imgPantalonetaLF },
-    504: { image: imgs.imgJoggerLF },
-    505: { image: imgs.imgCamisetaDeportivaLF },
-    506: { image: imgs.imgSudaderaLF },
-    510: { image: imgs.imgBusoKidsJpgLF, hoverImage: imgs.imgBusoKidsLF },
-    511: { image: imgs.imgCamisaPoloLF, hoverImage: imgs.imgCamisetaPoloKidsLF },
-    514: { image: imgs.imgChalecoKidsLF, hoverImage: imgs.imgDelantalKidsLF },
-    515: { image: imgs.imgChalecoNegroKidsLF, hoverImage: imgs.imgChalecoKidsModeloLF },
-    516: { image: imgs.imgSudaderaKidsLF, hoverImage: imgs.imgPantalonKidsLF },
+    500: { image: imgs.imgChaquetaHS1, hoverImage: imgs.imgChaquetaHS2, galleryImages: [imgs.imgChaquetaHS3] },
+    501: { image: imgs.imgPoloHS },
+    503: { image: imgs.imgPantaloneta },
+    504: { image: imgs.imgJogger },
+    505: { image: imgs.imgCamisetaUnisex1, hoverImage: imgs.imgCamisetaUnisex2 },
+    506: { image: imgs.imgSudHS1, hoverImage: imgs.imgSudHS2 },
+    508: { image: imgs.imgBataLab },
+    510: { image: imgs.imgChaquetaPrim1, hoverImage: imgs.imgChaquetaPrim2, galleryImages: [imgs.imgChaquetaPrim3] },
+    511: { image: imgs.imgPoloPrim1, hoverImage: imgs.imgPoloPrim2 },
+    514: { image: imgs.imgDelantal },
+    515: { image: imgs.imgChalecoPrim1, hoverImage: imgs.imgChalecoPrim2 },
+    516: { image: imgs.imgSud1, hoverImage: imgs.imgSud2 },
   };
 
   return {
