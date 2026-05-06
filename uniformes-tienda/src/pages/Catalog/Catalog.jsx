@@ -758,8 +758,8 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
         /* ── Mobile ── */
         @media (max-width: 640px) {
           .cat-header { height: 44px; top: calc(56px + env(safe-area-inset-top)); padding: 0 12px; }
-          .cat-sections { display: none; }
-          .cat-section-select { display: block; }
+          .cat-sections { display: flex; padding: 6px 12px; top: calc(56px + env(safe-area-inset-top) + 44px); }
+          .cat-section-select { display: none; }
           .cat-filters { position: relative; top: auto; padding: 0 12px; }
           .cat-filter-btn { padding: 10px 10px; font-size: 9px; }
           .cat-col-sub { display: none; }
