@@ -627,6 +627,50 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           animation: addedPop .35s cubic-bezier(.22,.68,0,1.2) both;
         }
 
+        /* ── Qty controls in product detail ── */
+        .pd-qty-wrap { margin-top: 20px; }
+        .pd-qty-label {
+          font-size: 10px; font-weight: 700; color: #9b9591;
+          text-transform: uppercase; letter-spacing: .12em;
+          margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+        }
+        .pd-qty-ctrl {
+          display: flex; align-items: center; width: 100%;
+        }
+        .pd-qty-btn {
+          width: 44px; height: 44px;
+          border: 1.5px solid #e8e5e1;
+          background: #faf9f7;
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 18px; font-weight: 600; color: #4b4844;
+          transition: all .12s; flex-shrink: 0;
+        }
+        .pd-qty-btn:first-child { border-radius: 10px 0 0 10px; }
+        .pd-qty-btn:last-child  { border-radius: 0 10px 10px 0; }
+        .pd-qty-btn:hover { background: #f0ede9; color: #1c1c1c; }
+        .pd-qty-val {
+          flex: 1; height: 44px;
+          display: flex; align-items: center; justify-content: center;
+          border-top: 1.5px solid #e8e5e1;
+          border-bottom: 1.5px solid #e8e5e1;
+          font-size: 16px; font-weight: 700; color: #1c1c1c;
+          background: #fff;
+        }
+        .pd-qty-hint {
+          font-size: 11px; color: #9b9591; margin-top: 8px; text-align: center;
+        }
+
+        /* ── Cart badge on product cards ── */
+        .prod-cart-badge {
+          position: absolute; bottom: 8px; right: 8px;
+          background: #1c1c1c; color: #fff;
+          font-size: 9px; font-weight: 700;
+          padding: 3px 7px; border-radius: 20px;
+          display: flex; align-items: center; gap: 4px;
+          pointer-events: none;
+        }
+
         /* ── Editorial Page Header ─── */
         @keyframes headerIn {
           from { opacity:0; transform:translateY(10px); }
@@ -961,67 +1005,92 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
                   </div>
                 )}
 
-                {/* Agregar */}
-                {isEmpresarial ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 20 }}>
-                    <a
-                      href={waLink(`Hola, me interesa personalizar la prenda: ${u.name}${sizes[u.id] ? `, talla ${sizes[u.id]}` : ""}. Quisiera consultar opciones de estampado / bordado.`)}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{
-                        display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                        width: "100%", padding: "16px 20px", boxSizing: "border-box",
-                        fontFamily: "var(--font)", fontSize: 11, fontWeight: 700,
-                        letterSpacing: ".16em", textTransform: "uppercase",
-                        textDecoration: "none", cursor: "pointer",
-                        background: "#25d366", color: "#fff", border: "none",
-                        transition: "all .2s",
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(37,211,102,.4)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
-                    >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                      </svg>
-                      Contactar proveedor
-                    </a>
+                {/* Agregar / Cantidad */}
+                {(() => {
+                  const cartItem = sizes[u.id]
+                    ? cart.find(i => i.id === u.id && i.size === sizes[u.id])
+                    : null;
+                  const updateQty = (delta) => setCart(prev => {
+                    const newQty = (cartItem?.qty ?? 0) + delta;
+                    if (newQty <= 0) return prev.filter(i => !(i.id === u.id && i.size === sizes[u.id]));
+                    return prev.map(i => i.id === u.id && i.size === sizes[u.id] ? { ...i, qty: newQty } : i);
+                  });
+
+                  const QtyControls = () => (
+                    <div className="pd-qty-wrap">
+                      <div className="pd-qty-label">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        En tu carrito · talla {sizes[u.id]}
+                      </div>
+                      <div className="pd-qty-ctrl">
+                        <button className="pd-qty-btn" onClick={() => updateQty(-1)}>
+                          {cartItem.qty <= 1
+                            ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.5" strokeLinecap="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                            : "−"
+                          }
+                        </button>
+                        <div className="pd-qty-val">{cartItem.qty}</div>
+                        <button className="pd-qty-btn" onClick={() => updateQty(1)}>+</button>
+                      </div>
+                      <div className="pd-qty-hint">
+                        {cartItem.qty <= 1 ? "Toca − para eliminar del carrito" : `${cartItem.qty} unidades · ${COP(cartItem.price * cartItem.qty)}`}
+                      </div>
+                    </div>
+                  );
+
+                  if (isEmpresarial) {
+                    return (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 20 }}>
+                        <a
+                          href={waLink(`Hola, me interesa personalizar la prenda: ${u.name}${sizes[u.id] ? `, talla ${sizes[u.id]}` : ""}. Quisiera consultar opciones de estampado / bordado.`)}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                            width: "100%", padding: "16px 20px", boxSizing: "border-box",
+                            fontFamily: "var(--font)", fontSize: 11, fontWeight: 700,
+                            letterSpacing: ".16em", textTransform: "uppercase",
+                            textDecoration: "none", cursor: "pointer",
+                            background: "#25d366", color: "#fff", border: "none",
+                            transition: "all .2s",
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(37,211,102,.4)"; }}
+                          onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                          </svg>
+                          Contactar proveedor
+                        </a>
+                        {cartItem ? <QtyControls /> : (
+                          <button
+                            className={`pd-add-btn ${btnClass}`}
+                            onClick={() => addToCart(u)}
+                            disabled={!hasSz}
+                          >
+                            {isAdded
+                              ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" style={{ marginRight: 8, verticalAlign: "middle" }}><polyline points="20 6 9 17 4 12"/></svg>Agregado</>
+                              : hasSz ? "Comprar sin personalización" : "Selecciona una talla"
+                            }
+                          </button>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  return cartItem ? <QtyControls /> : (
                     <button
                       className={`pd-add-btn ${btnClass}`}
                       onClick={() => addToCart(u)}
                       disabled={!hasSz}
                     >
                       {isAdded
-                        ? <>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" style={{ marginRight: 8, verticalAlign: "middle" }}>
-                              <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            Agregado
-                          </>
-                        : hasSz
-                          ? "Comprar sin personalización"
-                          : "Selecciona una talla"
+                        ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" style={{ marginRight: 8, verticalAlign: "middle" }}><polyline points="20 6 9 17 4 12"/></svg>Agregado</>
+                        : hasSz ? "Añadir al carrito" : "Selecciona una talla"
                       }
                     </button>
-                  </div>
-                ) : (
-                  <button
-                    className={`pd-add-btn ${btnClass}`}
-                    onClick={() => addToCart(u)}
-                    disabled={!hasSz}
-                  >
-                    {isAdded
-                      ? <>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" style={{ marginRight: 8, verticalAlign: "middle" }}>
-                            <polyline points="20 6 9 17 4 12"/>
-                          </svg>
-                          Agregado
-                        </>
-                      : hasSz
-                        ? "Añadir al carrito"
-                        : "Selecciona una talla"
-                    }
-                  </button>
-                )}
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -1164,6 +1233,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
               const sizeStock = collegeStock?.[String(u.id)];
               const allOut = u.sizes?.length > 0 && sizeStock &&
                 u.sizes.every(sz => (sizeStock[sz] ?? null) === 0);
+              const qtyInCart = cart.filter(ci => ci.id === u.id).reduce((s, ci) => s + ci.qty, 0);
 
               return (
                 <article
@@ -1197,6 +1267,12 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
                         textTransform: "uppercase", pointerEvents: "none",
                       }}>
                         Agotado
+                      </span>
+                    )}
+                    {qtyInCart > 0 && (
+                      <span className="prod-cart-badge">
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18"/></svg>
+                        {qtyInCart}
                       </span>
                     )}
                   </div>
