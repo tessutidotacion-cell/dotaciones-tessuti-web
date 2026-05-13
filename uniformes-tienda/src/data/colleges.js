@@ -36,9 +36,9 @@ export async function loadCollegeImages(college) {
 
 function applyNewSchoolImages(college, imgs) {
   const imageMap = {
-    1: { image: imgs.imgCamisaPolo },
-    2: { image: imgs.imgCamiseta },
-    4: { image: imgs.imgBusoAzul1, hoverImage: imgs.imgBusoAzul2 },
+    1: { image: imgs.imgCamisaPolo, galleryImages: [imgs.imgDalidaPolo] },
+    2: { image: imgs.imgCamiseta, galleryImages: [imgs.imgDalilaCamiseta] },
+    4: { image: imgs.imgBusoAzul1, hoverImage: imgs.imgBusoAzul2, galleryImages: [imgs.imgDalilaBuso] },
     5: { image: imgs.imgCamibusoBlanco },
     6: { image: imgs.imgSudadera },
     7: { image: imgs.imgBusoUltimasUnidades },

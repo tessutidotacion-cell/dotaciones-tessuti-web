@@ -68,6 +68,9 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
 
   const set = (k, v) => setForm(f => ({ ...f, [k]:v }));
 
+  const [touched, setTouched] = useState({});
+  const touch = (k) => setTouched(t => ({ ...t, [k]: true }));
+
   const subtotal    = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const deliveryFee = form.deliveryType === "domicilio" ? DELIVERY_FEE : 0;
   const discount    = coupon ? Math.round(subtotal * coupon.pct / 100) : 0;
@@ -101,6 +104,20 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
     phoneValid && emailValid && form.billingAddress.trim() &&
     (!needsStreet    || form.street.trim()) &&
     (!needsShipCoord || form.shippingStreet.trim());
+
+  const getMissingFields = () => {
+    const m = [];
+    if (!form.guardianName.trim())    m.push("Nombre completo");
+    if (!form.guardianDoc.trim())     m.push("Cédula / NIT");
+    if (!form.phone.trim())           m.push("Teléfono");
+    else if (!phoneValid)             m.push("Teléfono (número colombiano inválido)");
+    if (!form.email.trim())           m.push("Correo electrónico");
+    else if (!emailValid)             m.push("Correo (formato inválido)");
+    if (!form.billingAddress.trim())  m.push("Dirección de facturación");
+    if (needsStreet && !form.street.trim())           m.push("Dirección de domicilio");
+    if (needsShipCoord && !form.shippingStreet.trim()) m.push("Dirección de envío coordinado");
+    return m;
+  };
 
   const goStep = (n) => { setStep(n); window.scrollTo(0, 0); };
 
@@ -544,27 +561,35 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                 <div style={{ padding:"clamp(16px,3vw,22px)", display:"flex", flexDirection:"column", gap:14 }}>
                   <div className="co-grid">
                     <div className="co-full">
-                      <Field label="Nombre completo" required>
+                      <Field label="Nombre completo" required
+                        error={touched.guardianName && !form.guardianName.trim() ? "Este campo es obligatorio" : ""}
+                      >
                         <input
                           value={form.guardianName}
                           placeholder="Tu nombre completo"
                           autoComplete="name"
                           onChange={e => set("guardianName", e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s'-]/g, ""))}
+                          onBlur={() => touch("guardianName")}
+                          style={{ borderColor: touched.guardianName && !form.guardianName.trim() ? "#dc2626" : undefined }}
                         />
                       </Field>
                     </div>
-                    <Field label="Cédula / NIT" required>
+                    <Field label="Cédula / NIT" required
+                      error={touched.guardianDoc && !form.guardianDoc.trim() ? "Este campo es obligatorio" : ""}
+                    >
                       <input
                         value={form.guardianDoc}
                         placeholder="N° cédula o NIT"
                         inputMode="numeric"
                         onChange={e => set("guardianDoc", e.target.value.replace(/[^0-9\-]/g, ""))}
+                        onBlur={() => touch("guardianDoc")}
+                        style={{ borderColor: touched.guardianDoc && !form.guardianDoc.trim() ? "#dc2626" : undefined }}
                       />
                     </Field>
                     <Field
                       label="Teléfono"
                       required
-                      error={form.phone.trim() && !phoneValid ? "Ingresa un número colombiano válido (ej: 312 000 0000)" : ""}
+                      error={touched.phone ? (!form.phone.trim() ? "Este campo es obligatorio" : !phoneValid ? "Número colombiano inválido (ej: 312 000 0000)" : "") : ""}
                     >
                       <input
                         type="tel"
@@ -573,15 +598,16 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                         autoComplete="tel"
                         inputMode="tel"
                         onChange={e => set("phone", e.target.value.replace(/[^0-9+\s]/g, ""))}
-                        style={{ borderColor: form.phone.trim() && !phoneValid ? "#dc2626" : undefined }}
+                        onBlur={() => touch("phone")}
+                        style={{ borderColor: touched.phone && (!form.phone.trim() || !phoneValid) ? "#dc2626" : undefined }}
                       />
                     </Field>
                     <div className="co-full">
                       <Field
                         label="Correo electrónico"
                         required
-                        error={form.email.trim() && !emailValid ? "Ingresa un correo válido (ej: nombre@correo.com)" : ""}
-                        hint={!form.email.trim() || emailValid ? "Recibirás la confirmación aquí" : ""}
+                        error={touched.email ? (!form.email.trim() ? "Este campo es obligatorio" : !emailValid ? "Correo inválido (ej: nombre@correo.com)" : "") : ""}
+                        hint={(!touched.email || form.email.trim()) && emailValid ? "Recibirás la confirmación aquí" : ""}
                       >
                         <input
                           type="email"
@@ -590,17 +616,22 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                           autoComplete="email"
                           inputMode="email"
                           onChange={e => set("email", e.target.value)}
-                          style={{ borderColor: form.email.trim() && !emailValid ? "#dc2626" : undefined }}
+                          onBlur={() => touch("email")}
+                          style={{ borderColor: touched.email && (!form.email.trim() || !emailValid) ? "#dc2626" : undefined }}
                         />
                       </Field>
                     </div>
                     <div className="co-full">
-                      <Field label="Dirección de facturación" required hint="Dirección asociada a tu cédula o NIT">
+                      <Field label="Dirección de facturación" required hint="Dirección asociada a tu cédula o NIT"
+                        error={touched.billingAddress && !form.billingAddress.trim() ? "Este campo es obligatorio" : ""}
+                      >
                         <input
                           value={form.billingAddress}
                           placeholder="Calle / Carrera, número, barrio, ciudad"
                           autoComplete="street-address"
                           onChange={e => set("billingAddress", e.target.value)}
+                          onBlur={() => touch("billingAddress")}
+                          style={{ borderColor: touched.billingAddress && !form.billingAddress.trim() ? "#dc2626" : undefined }}
                         />
                       </Field>
                     </div>
@@ -676,9 +707,14 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                       </div>
                       <div className="co-grid">
                         <div className="co-full">
-                          <Field label="Dirección de envío" required>
+                          <Field label="Dirección de envío" required
+                            error={touched.shippingStreet && !form.shippingStreet.trim() ? "Este campo es obligatorio" : ""}
+                          >
                             <input value={form.shippingStreet} placeholder="Calle / Carrera y número"
-                              onChange={e => set("shippingStreet", e.target.value)}/>
+                              onChange={e => set("shippingStreet", e.target.value)}
+                              onBlur={() => touch("shippingStreet")}
+                              style={{ borderColor: touched.shippingStreet && !form.shippingStreet.trim() ? "#dc2626" : undefined }}
+                            />
                           </Field>
                         </div>
                         <Field label="Barrio">
@@ -703,9 +739,14 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                       </div>
                       <div className="co-grid">
                         <div className="co-full">
-                          <Field label="Dirección" required>
+                          <Field label="Dirección" required
+                            error={touched.street && !form.street.trim() ? "Este campo es obligatorio" : ""}
+                          >
                             <input value={form.street} placeholder="Calle / Carrera y número"
-                              onChange={e => set("street", e.target.value)}/>
+                              onChange={e => set("street", e.target.value)}
+                              onBlur={() => touch("street")}
+                              style={{ borderColor: touched.street && !form.street.trim() ? "#dc2626" : undefined }}
+                            />
                           </Field>
                         </div>
                         <Field label="Barrio">
@@ -795,8 +836,15 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
 
               <button
                 className="btn-pri"
-                disabled={!step1Valid}
-                onClick={() => { if(!step1Valid){ toast("Completa todos los campos requeridos del acudiente","error"); return; } goStep(2); }}
+                onClick={() => {
+                  const missing = getMissingFields();
+                  if (missing.length > 0) {
+                    setTouched({ guardianName:true, guardianDoc:true, phone:true, email:true, billingAddress:true, street:true, shippingStreet:true });
+                    toast(`Falta completar: ${missing.join(", ")}`, "error");
+                    return;
+                  }
+                  goStep(2);
+                }}
               >
                 Continuar al pago
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">

@@ -6,6 +6,9 @@ import imgBusoUltimasUnidades from "./TheNewSchool/TNS Buzo ULTIMAS UNIDADES.web
 import imgCamiseta from "./TheNewSchool/TNS Camiseta.webp";
 import imgPava from "./TheNewSchool/TNS Pava.webp";
 import imgSudadera from "./TheNewSchool/TNS sudadera.webp";
+import imgDalidaPolo from "./TheNewSchool/Dalida polo.jpeg";
+import imgDalilaBuso from "./TheNewSchool/Dalila Buso.jpeg";
+import imgDalilaCamiseta from "./TheNewSchool/Dalila camiseta conciensia.jpeg";
 
 export {
   imgCamisaPolo,
@@ -16,4 +19,7 @@ export {
   imgCamiseta,
   imgPava,
   imgSudadera,
+  imgDalidaPolo,
+  imgDalilaBuso,
+  imgDalilaCamiseta,
 };

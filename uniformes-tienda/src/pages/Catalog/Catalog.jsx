@@ -1226,8 +1226,9 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
             )}
 
             {items.map((u, i) => {
-              const imgSrc = safeSrc(u.image);
-              const hoverSrc = safeSrc(u.hoverImage);
+              const allImgs = getImages(u);
+              const imgSrc = allImgs[0] || null;
+              const hoverSrc = allImgs[1] || null;
               const pct = getDiscountPct(u.id);
               const finalPrice = getFinalPrice(u);
               const sizeStock = collegeStock?.[String(u.id)];
