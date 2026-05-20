@@ -36,12 +36,13 @@ export async function loadCollegeImages(college) {
 
 function applyNewSchoolImages(college, imgs) {
   const imageMap = {
-    1: { image: imgs.imgCamisaPolo, hoverImage: imgs.imgCamisaPoloNS },
-    2: { image: imgs.imgConsciencia, hoverImage: imgs.imgConcienciaPrimNS },
-    4: { image: imgs.imgBusoCierre, hoverImage: imgs.imgBusoKidsNS, galleryImages: [imgs.imgBusoRevesKidsNS] },
+    1: { image: imgs.imgCamisaPolo, galleryImages: [imgs.imgDalidaPolo] },
+    2: { image: imgs.imgCamiseta, galleryImages: [imgs.imgDalilaCamiseta] },
+    4: { image: imgs.imgBusoAzul1, hoverImage: imgs.imgBusoAzul2, galleryImages: [imgs.imgDalilaBuso] },
     5: { image: imgs.imgCamibusoBlanco },
-    6: { image: imgs.imgSudadera, hoverImage: imgs.imgSudaderaModelo },
-    7: { image: imgs.imgBusoGris },
+    6: { image: imgs.imgSudadera },
+    7: { image: imgs.imgBusoUltimasUnidades },
+    8: { image: imgs.imgPava },
   };
 
   return {
@@ -55,17 +56,18 @@ function applyNewSchoolImages(college, imgs) {
 
 function applyLiceoImages(college, imgs) {
   const imageMap = {
-    500: { image: imgs.imgBusoFondoLF, hoverImage: imgs.imgBusoLF, galleryImages: [imgs.imgBusoRevesLF] },
-    501: { image: imgs.imgCamisaPoloLF, hoverImage: imgs.imgCamisaPoloModeloLF },
-    503: { image: imgs.imgPantalonetaLF },
-    504: { image: imgs.imgJoggerLF },
-    505: { image: imgs.imgCamisetaDeportivaLF },
-    506: { image: imgs.imgSudaderaLF },
-    510: { image: imgs.imgBusoKidsJpgLF, hoverImage: imgs.imgBusoKidsLF },
-    511: { image: imgs.imgCamisaPoloLF, hoverImage: imgs.imgCamisetaPoloKidsLF },
-    514: { image: imgs.imgChalecoKidsLF, hoverImage: imgs.imgDelantalKidsLF },
-    515: { image: imgs.imgChalecoNegroKidsLF, hoverImage: imgs.imgChalecoKidsModeloLF },
-    516: { image: imgs.imgSudaderaKidsLF, hoverImage: imgs.imgPantalonKidsLF },
+    500: { image: imgs.imgChaquetaHS1, hoverImage: imgs.imgChaquetaHS2, galleryImages: [imgs.imgChaquetaHS3] },
+    501: { image: imgs.imgPoloHS },
+    503: { image: imgs.imgPantaloneta },
+    504: { image: imgs.imgJogger },
+    505: { image: imgs.imgCamisetaUnisex1, hoverImage: imgs.imgCamisetaUnisex2 },
+    506: { image: imgs.imgSudHS1, hoverImage: imgs.imgSudHS2 },
+    508: { image: imgs.imgBataLab },
+    510: { image: imgs.imgChaquetaPrim1, hoverImage: imgs.imgChaquetaPrim2, galleryImages: [imgs.imgChaquetaPrim3] },
+    511: { image: imgs.imgPoloPrim1, hoverImage: imgs.imgPoloPrim2 },
+    514: { image: imgs.imgDelantal },
+    515: { image: imgs.imgChalecoPrim1, hoverImage: imgs.imgChalecoPrim2 },
+    516: { image: imgs.imgSud1, hoverImage: imgs.imgSud2 },
   };
 
   return {
@@ -106,7 +108,7 @@ export const DEMO_COLLEGES = [
           {
             id: 1,
             name: "Camisa Polo",
-            price: 60000,
+            price: 65000,
             sizes: ["2", "4", "6", "8", "10", "12", "14", "16", "S", "M"],
             category: "Diario",
             description: "Kinder a Primero",
@@ -114,7 +116,7 @@ export const DEMO_COLLEGES = [
           {
             id: 2,
             name: "Camiseta Consciencia",
-            price: 47000,
+            price: 52000,
             sizes: ["2-4", "6-8", "10-12", "14-16", "S", "M", "L", "XL"],
             category: "Deportivo",
             description: "Primaria",
@@ -122,7 +124,7 @@ export const DEMO_COLLEGES = [
           {
             id: 4,
             name: "Buso Cierre",
-            price: 85000,
+            price: 92000,
             sizes: ["2", "4", "6", "8", "10", "12", "14", "16", "S", "M", "L"],
             category: "Deportivo",
             description: "Primaria",
@@ -130,7 +132,7 @@ export const DEMO_COLLEGES = [
           {
             id: 5,
             name: "Camibuso Blanco",
-            price: 40000,
+            price: 42000,
             sizes: ["2-4", "6-8", "10"],
             category: "Diario",
             description: "Primaria",
@@ -138,16 +140,16 @@ export const DEMO_COLLEGES = [
           {
             id: 6,
             name: "Sudadera",
-            price: 73000,
-            sizePrices: { "2":74000, "4":74000, "6":74000, "8":74000, "10":74000, "12":74000, "14":78000, "16":78000, "S":78000, "M":78000, "L":78000, "XL":78000 },
+            price: 76000,
+            sizePrices: { "2":76000, "4":76000, "6":76000, "8":76000, "10":76000, "12":76000, "14":80000, "16":80000, "S":80000, "M":80000, "L":80000, "XL":80000 },
             sizes: ["2", "4", "6", "8", "10", "12", "14", "16", "S", "M", "L", "XL"],
             category: "Deportivo",
-            description: "Talla 2–12: $74.000 · Talla 14–XL: $78.000",
+            description: "Talla 2–12: $76.000 · Talla 14–XL: $80.000",
           },
           {
             id: 8,
             name: "Pava",
-            price: 0,
+            price: 56000,
             sizes: ["Única"],
             category: "Complemento",
           },
@@ -167,7 +169,7 @@ export const DEMO_COLLEGES = [
           {
             id: 7,
             name: "Buso Gris",
-            price: 70000,
+            price: 75000,
             sizes: ["4", "6", "8", "10", "12", "14", "16", "S", "M", "L"],
             category: "Diario",
             description: "Primaria",
@@ -289,8 +291,19 @@ export const DEMO_COLLEGES = [
     description: "",
     sections: [
       {
+        id: "lf-kids",
+        name: "Primaria",
+        uniforms: [
+          { id: 510, name: "Buso Kids", price: 0, sizes: ["4", "6", "8", "10"], stock: { "4": 28, "6": 36, "8": 36, "10": 1 }, category: "Diario" },
+          { id: 511, name: "Camiseta Polo Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], stock: { "4": 64, "6": 60, "8": 22, "10": 25, "12": 5 }, category: "Diario" },
+          { id: 515, name: "Chaleco Negro Kids", price: 0, sizes: ["4", "6", "8", "10", "12", "14"], stock: { "4": 15, "6": 8, "8": 10, "10": 3, "12": 0, "14": 1 }, category: "Diario" },
+          { id: 514, name: "Delantal Kids", price: 0, sizes: ["4", "6", "8"], stock: { "4": 14, "6": 20, "8": 16 }, category: "Complemento" },
+          { id: 516, name: "Sudadera Kids", price: 0, sizes: ["2", "4", "6", "8", "10", "12"], stock: { "2": 10, "4": 35, "6": 33, "8": 33, "10": 17, "12": 41 }, category: "Deportivo" },
+        ],
+      },
+      {
         id: "lf-uniforme",
-        name: "Uniforme",
+        name: "Bachillerato",
         uniforms: [
           { id: 500, name: "Chaqueta", price: 130000, sizes: ["12", "14", "16", "S", "M", "L"], stock: { "12": 14, "14": 17, "16": 8, "S": 13, "M": 10, "L": 5 }, category: "Diario", description: "Nuevo diseño, forrada en su interior con capucha" },
           { id: 501, name: "Camisa Polo", price: 70000, sizes: ["12", "14", "16", "S", "M"], stock: { "12": 5, "14": 42, "16": 29, "S": 43, "M": 40 }, category: "Diario", description: "Talla 16-M: $77.000" },
@@ -300,17 +313,6 @@ export const DEMO_COLLEGES = [
           { id: 503, name: "Pantaloneta Niño", price: 65000, sizes: ["12", "14", "16", "S", "M"], category: "Deportivo", description: "Talla 16-M: $68.000" },
           { id: 507, name: "Short Niña", price: 65000, sizes: ["12", "14", "16", "S", "M"], category: "Deportivo", description: "Talla 16-M: $68.000" },
           { id: 508, name: "Bata de Laboratorio", price: 0, sizes: ["Única"], stock: { "Única": 51 }, category: "Complemento" },
-        ],
-      },
-      {
-        id: "lf-kids",
-        name: "Primaria",
-        uniforms: [
-          { id: 510, name: "Buso Kids", price: 0, sizes: ["4", "6", "8", "10"], stock: { "4": 28, "6": 36, "8": 36, "10": 1 }, category: "Diario" },
-          { id: 511, name: "Camiseta Polo Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], stock: { "4": 64, "6": 60, "8": 22, "10": 25, "12": 5 }, category: "Diario" },
-          { id: 515, name: "Chaleco Negro Kids", price: 0, sizes: ["4", "6", "8", "10", "12", "14"], stock: { "4": 15, "6": 8, "8": 10, "10": 3, "12": 0, "14": 1 }, category: "Diario" },
-          { id: 514, name: "Delantal Kids", price: 0, sizes: ["4", "6", "8"], stock: { "4": 14, "6": 20, "8": 16 }, category: "Complemento" },
-          { id: 516, name: "Sudadera Kids", price: 0, sizes: ["2", "4", "6", "8", "10", "12"], stock: { "2": 10, "4": 35, "6": 33, "8": 33, "10": 17, "12": 41 }, category: "Deportivo" },
         ],
       },
     ],

@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import ErrorBoundary from './components/ui/ErrorBoundary.jsx'
 
 // ── Google Analytics 4 ────────────────────────────────────────────────────────
 // Agrega VITE_GA_ID=G-XXXXXXXXXX en tu archivo .env para activar el tracking.
@@ -26,6 +27,8 @@ if (GA_ID && typeof GA_ID === 'string' && /^G-[A-Z0-9]+$/.test(GA_ID)) {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 )

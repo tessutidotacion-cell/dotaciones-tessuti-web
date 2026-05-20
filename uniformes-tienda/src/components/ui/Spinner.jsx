@@ -1,4 +1,3 @@
-import React from "react";
 
 export default function Spinner({ size = 16, color = "currentColor" }) {
   return (

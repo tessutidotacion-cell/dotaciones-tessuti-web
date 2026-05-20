@@ -1,4 +1,3 @@
-import React from "react";
 
 export default function Btn({ children, onClick, variant = "primary", full, lg, disabled, style = {} }) {
   const base = {

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { WA_PHONE, waLink } from "./constants/contact";
 import { clearToken, getStock, getPublicDiscounts } from "./services/api";
 import {

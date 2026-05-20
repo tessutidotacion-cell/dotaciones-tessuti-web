@@ -78,47 +78,21 @@ function buildSalesRows(orders) {
   );
 }
 
-/**
- * Aplica estilos básicos al encabezado de una hoja
- */
-function styleHeader(ws, cols) {
-  const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
-  for (let c = range.s.c; c <= range.e.c; c++) {
-    const cell = ws[XLSX.utils.encode_cell({ r: 0, c })];
-    if (cell) {
-      cell.s = {
-        font:    { bold: true, color: { rgb: "FFFFFF" } },
-        fill:    { fgColor: { rgb: "1C1C1C" } },
-        alignment: { horizontal: "center" },
-      };
-    }
-  }
-  ws["!cols"] = cols.map(w => ({ wch: w }));
-}
-
-/**
- * exportToExcel — genera y descarga el archivo
- * @param {object} stockData  — { [collegeId]: { [productId]: { [size]: qty } } }
- * @param {Array}  orders     — array de pedidos del admin
- */
 export function exportToExcel(stockData, orders) {
   const wb = XLSX.utils.book_new();
 
-  // ── Hoja 1: Stock ──────────────────────────────────────────
   const stockRows = buildStockRows(stockData);
   const wsStock   = XLSX.utils.json_to_sheet(stockRows);
-  styleHeader(wsStock, [28, 18, 28, 10, 10]);
+  wsStock["!cols"] = [28, 18, 28, 10, 10].map(w => ({ wch: w }));
   XLSX.utils.book_append_sheet(wb, wsStock, "Stock");
 
-  // ── Hoja 2: Ventas ─────────────────────────────────────────
   const salesRows = buildSalesRows(orders);
   const wsSales   = salesRows.length > 0
     ? XLSX.utils.json_to_sheet(salesRows)
     : XLSX.utils.json_to_sheet([{ Colegio:"Sin ventas registradas", Prenda:"", Talla:"", Unidades:0, Ingresos:0 }]);
-  styleHeader(wsSales, [28, 28, 10, 12, 16]);
+  wsSales["!cols"] = [28, 28, 10, 12, 16].map(w => ({ wch: w }));
   XLSX.utils.book_append_sheet(wb, wsSales, "Ventas");
 
-  // ── Descarga ───────────────────────────────────────────────
   const date = new Date().toISOString().slice(0, 10);
   XLSX.writeFile(wb, `tessuti-reporte-${date}.xlsx`);
 }

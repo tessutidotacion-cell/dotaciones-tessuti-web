@@ -1,4 +1,3 @@
-import React from "react";
 import { STATUS_META } from "../../constants/status";
 
 export default function Badge({ status }) {

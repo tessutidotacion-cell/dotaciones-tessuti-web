@@ -41,7 +41,7 @@ export const bootstrapSuperAdmin = async () => {
   const password = process.env.ADMIN_BOOTSTRAP_PASSWORD;
 
   // ← AGREGA ESTA LÍNEA TEMPORALMENTE
-  console.log("🔑 Creando admin con:", email, "| pass length:", password?.length, "| pass:", password);
+  console.log("Creando admin con:", email, "| pass length:", password?.length, "| pass:", password);
 
   const hash = await bcrypt.hash(password, SALT_ROUNDS);
   const id   = `admin_${Date.now()}`;

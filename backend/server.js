@@ -49,7 +49,7 @@ app.options("*", cors(corsOptions));
 app.use(
   helmet({
     contentSecurityPolicy: {
-      directives: { 
+      directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'"],
         styleSrc: ["'self'"],

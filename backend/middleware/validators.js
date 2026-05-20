@@ -21,6 +21,14 @@ export const validate = (req, res, next) => {
 // ── Helper: limpiar string de XSS ────────────────────────────
 const cleanStr = (value) => xss(String(value || "").trim());
 
+// ── Helper: rechazar caracteres de inyección ────────────────
+const noInjection = (value) => {
+  if (typeof value === "string" && (value.includes("$") || value.includes("{") || value.includes("}"))) {
+    throw new Error("Caracteres inválidos detectados");
+  }
+  return true;
+};
+
 // ── Validaciones de LOGIN ─────────────────────────────────────
 export const validateLogin = [
   body("email")

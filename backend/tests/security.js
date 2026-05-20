@@ -6,13 +6,12 @@
  *   node tests/security.js  (en esta terminal)
  *
  * O contra producción:
- *   node tests/security.js --url https://dotaciones-tessuti-m5iy.vercel.app
+ *   node tests/security.js --url https://www.tessuti.store/#home
  */
 
 // ── Config ────────────────────────────────────────────────────────────────────
 const args   = process.argv.slice(2);
-const urlIdx = args.indexOf("--url");
-const BASE   = urlIdx !== -1 ? args[urlIdx + 1] : "http://localhost:3001";
+const urlIdx = args.indexOf("--url");const BASE   = urlIdx !== -1 ? args[urlIdx + 1] : "https://www.tessuti.store/#home";
 
 // ── Colores terminal ──────────────────────────────────────────────────────────
 const C = {
