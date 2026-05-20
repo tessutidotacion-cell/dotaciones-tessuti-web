@@ -80,8 +80,8 @@ function applyLiceoImages(college, imgs) {
 function applyEmpresarialImages(college, imgs) {
   const imageMap = {
     900: { image: imgs.imgCamisaOxford },
-    901: { image: imgs.imgCamisaDril },
-    902: { image: imgs.imgJeanFrente, hoverImage: imgs.imgJeanReves },
+    901: { image: imgs.imgCamisaCaqui },
+    902: { image: imgs.imgJeanDrill },
   };
 
   return {
