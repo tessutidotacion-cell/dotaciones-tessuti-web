@@ -21,11 +21,11 @@ const TrackOrder      = lazy(() => import("./pages/Track/TrackOrder"));
 const AdminLogin      = lazy(() => import("./pages/Admin/AdminLogin"));
 const AdminPanel      = lazy(() => import("./pages/Admin/AdminPanel"));
 
-function encodeHash(view, collegeId) {
-  return collegeId ? `#${view}/${collegeId}` : `#${view}`;
+function encodePath(view, collegeId) {
+  return collegeId ? `/${view}/${collegeId}` : `/${view}`;
 }
-function decodeHash(hash) {
-  const raw = (hash || "").replace(/^#/, "");
+function decodePath(pathname) {
+  const raw = (pathname || "/").replace(/^\//, "");
   const [view, collegeId] = raw.split("/");
   return { view: view || "home", collegeId: collegeId || null };
 }
