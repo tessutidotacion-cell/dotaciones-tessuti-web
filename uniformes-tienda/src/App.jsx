@@ -62,7 +62,7 @@ const { toastState, toast, clearToast } = useToast();
         const order = JSON.parse(stored);
         sessionStorage.removeItem("wompi_pending_order");
         setSuccessOrder({ ...order, wompiTransactionId: wompiId });
-        window.history.replaceState({}, "", window.location.pathname + window.location.hash);
+        window.history.replaceState({}, "", window.location.pathname);
         setView("success");
       } catch (e) { console.error("[Wompi return] failed to parse pending order:", e); }
     }
@@ -78,8 +78,8 @@ const { toastState, toast, clearToast } = useToast();
   const go = useCallback((nextView, nextCollege) => {
     const col = nextCollege !== undefined ? nextCollege : college;
     const needsId = ["catalog","checkout"].includes(nextView) && col?.id;
-    const hash = encodeHash(nextView, needsId ? col.id : null);
-    window.history.pushState({ view: nextView, collegeId: col?.id || null }, "", hash);
+    const path = encodePath(nextView, needsId ? col.id : null);
+    window.history.pushState({ view: nextView, collegeId: col?.id || null }, "", path);
     setView(nextView);
     setMenuOpen(false);
     window.scrollTo(0, 0);
@@ -88,8 +88,8 @@ const { toastState, toast, clearToast } = useToast();
   useEffect(() => {
     const onPop = async (e) => {
       const state = e.state;
-      const targetView    = state?.view      || decodeHash(window.location.hash).view;
-      const targetCollege = state?.collegeId || decodeHash(window.location.hash).collegeId;
+      const targetView    = state?.view      || decodePath(window.location.pathname).view;
+      const targetCollege = state?.collegeId || decodePath(window.location.pathname).collegeId;
       if (targetCollege && ["catalog","checkout"].includes(targetView)) {
         const found = DEMO_COLLEGES.find(c => c.id === targetCollege);
         if (found) {
@@ -107,12 +107,12 @@ const { toastState, toast, clearToast } = useToast();
   }, []);
 
   useEffect(() => {
-    const { view: v, collegeId } = decodeHash(window.location.hash);
+    const { view: v, collegeId } = decodePath(window.location.pathname);
     const hasToken = !!sessionStorage.getItem("ue_admin_token");
     if (v === "admin") {
       if (hasToken) { setIsAdmin(true); setView("admin"); }
       else setView("adminLogin");
-      window.history.replaceState({ view: v }, "", window.location.hash);
+      window.history.replaceState({ view: v }, "", encodePath(v, null));
       return;
     }
     if (collegeId && ["catalog","checkout"].includes(v)) {
@@ -120,14 +120,14 @@ const { toastState, toast, clearToast } = useToast();
       if (found) {
         loadCollegeImages(found).then(enriched => {
           setCollege(enriched); setView(v);
-          window.history.replaceState({ view: v, collegeId }, "", window.location.hash);
+          window.history.replaceState({ view: v, collegeId }, "", encodePath(v, collegeId));
         });
         return;
       }
     }
     const safe = VALID_VIEWS.includes(v) && v !== "success" ? v : "home";
     setView(safe);
-    window.history.replaceState({ view: safe }, "", encodeHash(safe, null));
+    window.history.replaceState({ view: safe }, "", encodePath(safe, null));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
