@@ -1,14 +1,14 @@
 import imgCamisaPolo from "./TheNewSchool/camisa-polo.webp";
-import imgCamibusoBlanco from "./TheNewSchool/camibuso blanco.png";
+import imgCamibusoBlanco from "./TheNewSchool/camibuso blanco.webp";
 import imgBusoAzul1 from "./TheNewSchool/TNS Buzo azul 1.webp";
 import imgBusoAzul2 from "./TheNewSchool/TNS Buso azul 2.webp";
 import imgBusoUltimasUnidades from "./TheNewSchool/TNS Buzo ULTIMAS UNIDADES.webp";
 import imgCamiseta from "./TheNewSchool/TNS Camiseta.webp";
 import imgPava from "./TheNewSchool/TNS Pava.webp";
 import imgSudadera from "./TheNewSchool/TNS sudadera.webp";
-import imgDalidaPolo from "./TheNewSchool/Dalida polo.jpeg";
-import imgDalilaBuso from "./TheNewSchool/Dalila Buso.jpeg";
-import imgDalilaCamiseta from "./TheNewSchool/Dalila camiseta conciensia.jpeg";
+import imgDalidaPolo from "./TheNewSchool/Dalida polo.webp";
+import imgDalilaBuso from "./TheNewSchool/Dalila Buso.webp";
+import imgDalilaCamiseta from "./TheNewSchool/Dalila camiseta conciensia.webp";
 
 export {
   imgCamisaPolo,
