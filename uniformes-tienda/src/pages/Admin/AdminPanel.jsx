@@ -7,7 +7,7 @@ import {
 } from "../../services/api";
 import { LOGO_TESSUTI } from "../../assets";
 import { COP } from "../../utils/money";
-import { STATUS_META, getStatusOptions } from "../../constants/status";
+import { STATUS_META, STATUS_ORDER, getStatusOptions } from "../../constants/status";
 import { DEMO_COLLEGES } from "../../data/colleges";
 import { exportToExcel } from "../../utils/exportExcel";
 import Spinner from "../../components/ui/Spinner";

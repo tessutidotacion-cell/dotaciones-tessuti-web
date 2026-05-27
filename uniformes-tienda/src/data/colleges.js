@@ -118,6 +118,12 @@ function applyCumbresImages(college, imgs) {
     230: { image: imgs.imgSacoTejidoHS },
     231: { image: imgs.imgChompaGrisHS1, hoverImage: imgs.imgChompaGrisHS2 },
     232: { image: imgs.imgSudaderaHS },
+    300: { image: imgs.imgCorbata },
+    223: { image: imgs.imgCorbata },
+    233: { image: imgs.imgCorbata },
+    310: { image: imgs.imgCorrea },
+    225: { image: imgs.imgCorrea },
+    235: { image: imgs.imgCorrea },
   };
 
   return {
