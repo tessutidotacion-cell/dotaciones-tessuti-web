@@ -5,6 +5,8 @@ export default defineConfig({
   plugins: [react()],
   server: { historyApiFallback: true },
   build: {
+    target: 'esnext',
+    assetsInlineLimit: 4096,
     rollupOptions: {
       output: {
         manualChunks: {
