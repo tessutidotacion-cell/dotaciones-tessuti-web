@@ -139,6 +139,15 @@ app.get("/", (req, res) =>
 app.get("/health", (req, res) =>
   res.json({ status: "ok", timestamp: new Date().toISOString() })
 );
+app.get("/firebase-test", async (req, res) => {
+  try {
+    const initFirebase = (await import("./config/firebase.js")).default;
+    initFirebase();
+    res.json({ success: true, message: "Firebase OK" });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
 
 app.use("/api/auth", authLimiter, authRouter);
 app.use("/api/orders", unauthorizedLimiter, ordersRouter);
