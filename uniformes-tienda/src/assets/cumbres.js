@@ -26,8 +26,8 @@ import imgSacoTejidoHS from "./Cumbres/_07A9518.webp";
 import imgChompaGrisHS1 from "./Cumbres/_07A9530.webp";
 import imgChompaGrisHS2 from "./Cumbres/_07A9561.webp";
 import imgSudaderaHS from "./Cumbres/_07A9557.webp";
-import imgCorbata from "./Cumbres/Corbata.webp";
-import imgCorrea from "./Cumbres/Correa.webp";
+import imgCorbata from "./Cumbres/Corbata masculina.webp";
+import imgCorrea from "./Cumbres/correa.webp";
 
 export {
   imgCamisetaBambolino,

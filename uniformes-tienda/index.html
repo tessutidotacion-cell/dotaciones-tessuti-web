@@ -122,7 +122,13 @@
     </script>
 
     <!-- ── Google Analytics 4 ───────────────────────────────────── -->
-    <!-- El ID se configura en .env como VITE_GA_ID=G-XXXXXXXXXX   -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4F5GHP8JM5"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-4F5GHP8JM5');
+    </script>
   </head>
   <body>
     <div id="root"></div>

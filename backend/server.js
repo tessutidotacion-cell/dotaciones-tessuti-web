@@ -139,33 +139,6 @@ app.get("/", (req, res) =>
 app.get("/health", (req, res) =>
   res.json({ status: "ok", timestamp: new Date().toISOString() })
 );
-app.get("/firebase-test", async (req, res) => {
-  try {
-    const { db } = await import("./config/firebase.js");
-    await db.collection("_test").limit(1).get();
-    res.json({ success: true, message: "Firestore query OK" });
-  } catch (e) {
-    res.status(500).json({ success: false, error: e.message, code: e.code });
-  }
-});
-app.get("/firebase-debug", (req, res) => {
-  let raw = process.env.FIREBASE_PRIVATE_KEY || "";
-  const isBase64 = raw.length > 0 && !raw.includes("-----BEGIN");
-  let decoded = raw;
-  if (isBase64) decoded = Buffer.from(raw, "base64").toString("utf8");
-  else decoded = raw.replace(/\\n/g, "\n");
-  res.json({
-    keySet: raw.length > 0,
-    isBase64,
-    decodedHasBegin: decoded.includes("-----BEGIN PRIVATE KEY-----"),
-    decodedHasEnd: decoded.includes("-----END PRIVATE KEY-----"),
-    decodedLength: decoded.length,
-    firstChars: decoded.slice(0, 40),
-    lastChars: decoded.slice(-40),
-    projectId: process.env.FIREBASE_PROJECT_ID || "NOT SET",
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL || "NOT SET",
-  });
-});
 
 app.use("/api/auth", authLimiter, authRouter);
 app.use("/api/orders", unauthorizedLimiter, ordersRouter);

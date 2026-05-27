@@ -310,7 +310,6 @@ export const DEMO_COLLEGES = [
           { id: 205, name: "Camiseta Cuello V Dama High School", price: 64900, sizes: [], category: "Deportivo" },
           { id: 220, name: "Saco Azul Tejido Unisex High School", price: 129900, sizes: [], category: "Gala" },
           { id: 221, name: "Chompa Gris Unisex High School", price: 114900, sizes: [], category: "Deportivo" },
-          { id: 222, name: "Sudadera Unisex High School", price: 89900, sizes: [], category: "Deportivo" },
           { id: 210, name: "Falda Bachillerato y High School", price: 114900, sizes: [], category: "Gala" },
           { id: 223, name: "Corbata Bachillerato y High School", price: 49900, sizes: ["Única"], category: "Complemento" },
           { id: 214, name: "Medias Blancas Gala Dama Paquete por 3 Pares", price: 45000, sizes: [], category: "Complemento" },
