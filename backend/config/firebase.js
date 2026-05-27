@@ -13,11 +13,20 @@ const initFirebase = () => {
 
   if (!firebaseAdmin.apps.length) {
     let privateKey = process.env.FIREBASE_PRIVATE_KEY || "";
-    // Support base64-encoded key (avoids Vercel \n escaping issues)
+    // Decode base64 if stored that way
     if (privateKey && !privateKey.includes("-----BEGIN")) {
       privateKey = Buffer.from(privateKey, "base64").toString("utf8");
     } else {
       privateKey = privateKey.replace(/\\n/g, "\n").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    }
+    // Normalize key: strip all whitespace from body and reformat with 64-char lines
+    if (privateKey.includes("-----BEGIN PRIVATE KEY-----")) {
+      const body = privateKey
+        .replace("-----BEGIN PRIVATE KEY-----", "")
+        .replace("-----END PRIVATE KEY-----", "")
+        .replace(/[\r\n\s]/g, "");
+      const lines = body.match(/.{1,64}/g) || [];
+      privateKey = `-----BEGIN PRIVATE KEY-----\n${lines.join("\n")}\n-----END PRIVATE KEY-----\n`;
     }
 
     if (!process.env.FIREBASE_PROJECT_ID || !privateKey || !process.env.FIREBASE_CLIENT_EMAIL) {
