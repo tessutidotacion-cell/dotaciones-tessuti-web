@@ -141,11 +141,11 @@ app.get("/health", (req, res) =>
 );
 app.get("/firebase-test", async (req, res) => {
   try {
-    const initFirebase = (await import("./config/firebase.js")).default;
-    initFirebase();
-    res.json({ success: true, message: "Firebase OK" });
+    const { db } = await import("./config/firebase.js");
+    await db.collection("_test").limit(1).get();
+    res.json({ success: true, message: "Firestore query OK" });
   } catch (e) {
-    res.status(500).json({ success: false, error: e.message });
+    res.status(500).json({ success: false, error: e.message, code: e.code });
   }
 });
 
