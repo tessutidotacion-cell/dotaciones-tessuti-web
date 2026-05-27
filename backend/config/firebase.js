@@ -17,7 +17,7 @@ const initFirebase = () => {
     if (privateKey && !privateKey.includes("-----BEGIN")) {
       privateKey = Buffer.from(privateKey, "base64").toString("utf8");
     } else {
-      privateKey = privateKey.replace(/\\n/g, "\n");
+      privateKey = privateKey.replace(/\\n/g, "\n").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
     }
 
     if (!process.env.FIREBASE_PROJECT_ID || !privateKey || !process.env.FIREBASE_CLIENT_EMAIL) {
