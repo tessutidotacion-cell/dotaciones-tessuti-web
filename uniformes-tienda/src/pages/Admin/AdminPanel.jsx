@@ -7,37 +7,14 @@ import {
 } from "../../services/api";
 import { LOGO_TESSUTI } from "../../assets";
 import { COP } from "../../utils/money";
-
-// ── Constantes de estado ──────────────────────────────────────
-const STATUS_ORDER = ["Pago en validación","Pago confirmado","Preparando pedido","Listo para recoger","Entregado"];
-const STATUS_ORDER_DOMICILIO = ["Pago en validación","Pago confirmado","Preparando pedido","En camino","Entregado"];
-const STATUS_META = {
-  "Pago en validación": { bg:"#fef9c3", color:"#854d0e", dot:"#eab308" },
-  "Pago confirmado":    { bg:"#dbeafe", color:"#1e3a8a", dot:"#3b82f6" },
-  "Preparando pedido":      { bg:"#f3e8ff", color:"#581c87", dot:"#a855f7" },
-  "Listo para recoger": { bg:"#dcfce7", color:"#14532d", dot:"#22c55e" },
-  "En camino":          { bg:"#ffedd5", color:"#7c2d12", dot:"#f97316" },
-  "Entregado":          { bg:"#f0fdf4", color:"#065f46", dot:"#10b981" },
-};
-const getStatusOptions = (deliveryType) =>
-  (deliveryType === "domicilio" || deliveryType === "domicilio_coordinado") ? STATUS_ORDER_DOMICILIO : STATUS_ORDER;
-
+import { STATUS_META, getStatusOptions } from "../../constants/status";
 import { DEMO_COLLEGES } from "../../data/colleges";
 import { exportToExcel } from "../../utils/exportExcel";
+import Spinner from "../../components/ui/Spinner";
 
 const getAllUniforms = (col) => col.sections?.length > 0
   ? col.sections.flatMap(s => s.uniforms.map(u => ({ ...u, sectionName: s.name })))
   : col.uniforms.map(u => ({ ...u, sectionName: null }));
-
-// ── Helpers UI ────────────────────────────────────────────────
-function Spinner({ size = 20, color = "currentColor" }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5"
-      style={{ animation: "spin .7s linear infinite", flexShrink: 0 }}>
-      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-    </svg>
-  );
-}
 
 function Badge({ status }) {
   const m = STATUS_META[status] || { bg:"#f3f4f6", color:"#374151", dot:"#9ca3af" };

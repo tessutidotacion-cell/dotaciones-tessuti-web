@@ -1,18 +1,13 @@
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, lazy, Suspense } from "react";
 import { WA_PHONE, waLink } from "./constants/contact";
 import { clearToken, getStock, getPublicDiscounts } from "./services/api";
-import {
-  ShoppingBag, Package, Settings, X, Menu, ChevronRight, MessageCircle
-} from "lucide-react";
-
+import { ShoppingBag, Package, Settings, X, Menu, ChevronRight, MessageCircle } from "lucide-react";
 import GlobalStyles from "./components/ui/GlobalStyles";
 import Toast from "./components/ui/Toast";
 import { LOGO_TESSUTI } from "./assets";
 import { DEMO_COLLEGES, loadCollegeImages } from "./data/colleges";
 import { COP } from "./utils/money";
 import { useToast } from "./hooks/useToast";
-
-import { lazy, Suspense } from "react";
 const CollegeSelector = lazy(() => import("./pages/Home/CollegesSelector"));
 const Catalog         = lazy(() => import("./pages/Catalog/Catalog"));
 const Checkout        = lazy(() => import("./pages/Checkout/Checkout"));
@@ -43,7 +38,7 @@ export default function App() {
   const [discounts,    setDiscounts]    = useState({});
   const [menuOpen,     setMenuOpen]     = useState(false);
   const [scrolled,     setScrolled]     = useState(false);
-const { toastState, toast, clearToast } = useToast();
+  const { toastState, toast, clearToast } = useToast();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -543,52 +538,45 @@ const { toastState, toast, clearToast } = useToast();
       )}
 
       {/* ── Views ── */}
-      {/* ── Views ── */}
-<div key={view} className="view-enter">
-<Suspense fallback={
-  <div style={{
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "4rem",
-    fontFamily: "var(--font)"
-  }}>
-    Cargando…
-  </div>
-}>
-  {view === "home" && (
-    <CollegeSelector onSelect={async (c) => {
-      const enriched = await loadCollegeImages(c);
-      setCollege(enriched); setCart([]); go("catalog", enriched);
-    }} />
-  )}
-  {view === "catalog" && college && (
-    <Catalog
-      college={college} cart={cart} setCart={setCart}
-      onCheckout={() => go("checkout")}
-      onBack={() => window.history.back()}
-      collegeStock={catalogStock}
-      discounts={discounts[college?.id] || {}}
-    />
-  )}
-  {view === "checkout" && college && (
-    <Checkout
-      college={college} cart={cart} setCart={setCart}
-      onSuccess={(o) => { setSuccessOrder(o); setCart([]); go("success"); }}
-      onBack={() => window.history.back()}
-      toast={toast}
-    />
-  )}
-  {view === "success" && successOrder && (
-    <OrderSuccess order={successOrder} onHome={() => { setCollege(null); go("home", null); }} />
-  )}
-  {view === "track"      && <TrackOrder onBack={() => window.history.back()} />}
-  {view === "adminLogin" && <AdminLogin onLogin={() => { setIsAdmin(true); go("admin"); }} onBack={() => window.history.back()} />}
-  {view === "admin" && isAdmin && (
-    <AdminPanel onLogout={() => { setIsAdmin(false); clearToken(); go("home"); }} toast={toast} />
-  )}
-</Suspense>
-</div>
+      <div key={view} className="view-enter">
+        <Suspense fallback={
+          <div style={{ display:"flex", justifyContent:"center", alignItems:"center", padding:"4rem", fontFamily:"var(--font)" }}>
+            Cargando…
+          </div>
+        }>
+          {view === "home" && (
+            <CollegeSelector onSelect={async (c) => {
+              const enriched = await loadCollegeImages(c);
+              setCollege(enriched); setCart([]); go("catalog", enriched);
+            }} />
+          )}
+          {view === "catalog" && college && (
+            <Catalog
+              college={college} cart={cart} setCart={setCart}
+              onCheckout={() => go("checkout")}
+              onBack={() => window.history.back()}
+              collegeStock={catalogStock}
+              discounts={discounts[college?.id] || {}}
+            />
+          )}
+          {view === "checkout" && college && (
+            <Checkout
+              college={college} cart={cart} setCart={setCart}
+              onSuccess={(o) => { setSuccessOrder(o); setCart([]); go("success"); }}
+              onBack={() => window.history.back()}
+              toast={toast}
+            />
+          )}
+          {view === "success" && successOrder && (
+            <OrderSuccess order={successOrder} onHome={() => { setCollege(null); go("home", null); }} />
+          )}
+          {view === "track"      && <TrackOrder onBack={() => window.history.back()} />}
+          {view === "adminLogin" && <AdminLogin onLogin={() => { setIsAdmin(true); go("admin"); }} onBack={() => window.history.back()} />}
+          {view === "admin" && isAdmin && (
+            <AdminPanel onLogout={() => { setIsAdmin(false); clearToken(); go("home"); }} toast={toast} />
+          )}
+        </Suspense>
+      </div>
 
       {/* ── Footer global (todas las vistas públicas excepto admin) ── */}
       {isPublic && !["adminLogin"].includes(view) && (

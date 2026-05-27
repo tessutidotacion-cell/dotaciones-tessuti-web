@@ -498,19 +498,12 @@ export default function CollegeSelector({ onSelect }) {
                     <div className="cs-no-results-sub">No encontramos una institución con ese nombre.<br/>Intenta con otro término.</div>
                   </div>
                 );
-                return filtered.map((col, i) => {
-                  const disabled = col.id === "2";
-                  return (
+                return filtered.map((col, i) => (
                   <button key={col.id} className="cs-card"
-                    onClick={()=>{ if(!disabled) onSelect(col); }}
-                    onMouseEnter={()=>{ if(!disabled) setHovered(col.id); }}
+                    onClick={()=>onSelect(col)}
+                    onMouseEnter={()=>setHovered(col.id)}
                     onMouseLeave={()=>setHovered(null)}
-                    disabled={disabled}
-                    style={{
-                      animationDelay:`${i*80}ms`,
-                      opacity: disabled ? 0.5 : 1,
-                      cursor: disabled ? "not-allowed" : "pointer",
-                    }}>
+                    style={{ animationDelay:`${i*80}ms` }}>
 
                     <div className="cs-banner"
                       style={{background: hovered===col.id
@@ -527,7 +520,7 @@ export default function CollegeSelector({ onSelect }) {
                     <div className="cs-body">
                       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
                         <div className="cs-name" style={{margin:0}}>{col.name}</div>
-                        <span className="cs-badge">{disabled ? "Próximamente" : `${countItems(col)} prendas`}</span>
+                        <span className="cs-badge">{countItems(col)} prendas</span>
                       </div>
                       <div className="cs-desc">{col.description}</div>
                       <div className="cs-cats">
@@ -536,20 +529,17 @@ export default function CollegeSelector({ onSelect }) {
                         ))}
                       </div>
                       <div className="cs-footer">
-                        <span className="cs-cta">{disabled ? "Disponible pronto" : "Ver catálogo"}</span>
-                        {!disabled && (
-                          <div className="cs-arrow">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-                              stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                              <path d="M5 12h14M12 5l7 7-7 7"/>
-                            </svg>
-                          </div>
-                        )}
+                        <span className="cs-cta">Ver catálogo</span>
+                        <div className="cs-arrow">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                          </svg>
+                        </div>
                       </div>
                     </div>
                   </button>
-                  );
-                });
+                ));
               })()}
             </div>
           </div>

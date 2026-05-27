@@ -9,8 +9,7 @@ if (!BASE_URL.endsWith("/api")) {
 // ── Token JWT — sessionStorage (se limpia al cerrar el navegador) ──
 const TOKEN_KEY = "ue_admin_token";
 let _token = sessionStorage.getItem(TOKEN_KEY) || null;
-export const setToken   = (t) => { _token = t; if(t) sessionStorage.setItem(TOKEN_KEY, t); else sessionStorage.removeItem(TOKEN_KEY); };
-export const getToken   = ()  => _token;
+const setToken          = (t) => { _token = t; if(t) sessionStorage.setItem(TOKEN_KEY, t); else sessionStorage.removeItem(TOKEN_KEY); };
 export const clearToken = ()  => { _token = null; sessionStorage.removeItem(TOKEN_KEY); };
 
 const publicHeaders = { "Content-Type":"application/json" };
@@ -45,14 +44,6 @@ export const login = async (user, pass) => {
   return data;
 };
 
-export const verifyToken = async () => {
-  if (!_token) throw new Error("Sin token");
-  const res = await fetch(`${BASE_URL}/auth/verify`, {
-    headers: { "Authorization":`Bearer ${_token}` },
-  });
-  return handleResponse(res);
-};
-
 // ── PEDIDOS — PÚBLICO ─────────────────────────────────────────
 
 export const createOrder = async (orderData) => {
@@ -61,11 +52,6 @@ export const createOrder = async (orderData) => {
     headers: publicHeaders,
     body:    JSON.stringify(orderData),
   });
-  return handleResponse(res);
-};
-
-export const getOrderById = async (orderId) => {
-  const res = await fetch(`${BASE_URL}/orders/${orderId}`, { headers:publicHeaders });
   return handleResponse(res);
 };
 

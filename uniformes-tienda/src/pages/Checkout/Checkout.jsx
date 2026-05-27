@@ -2,19 +2,11 @@ import React, { useState } from "react";
 import { createOrder, uploadPaymentProof, validateCoupon, getWompiSignature } from "../../services/api";
 import { COP } from "../../utils/money";
 import { imgQrPago } from "../../assets";
+import Spinner from "../../components/ui/Spinner";
 
 const DELIVERY_FEE = 15000;
 const ACCENT = "#b89a6a";
 const INK    = "#1c1c1c";
-
-function Spinner({ size = 16 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-      style={{ animation:"spin .7s linear infinite", flexShrink:0 }}>
-      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-    </svg>
-  );
-}
 
 function Field({ label, required, hint, error, children }) {
   const autoId = `field-${(label || "").toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`;

@@ -8,6 +8,7 @@ import {
 // ── Loaders de imágenes por colegio (dynamic import → code-split) ──
 const imageLoaders = {
   "1": () => import("../assets/newschool.js"),
+  "2": () => import("../assets/cumbres.js"),
   "liceo-frances": () => import("../assets/liceofrances.js"),
   "empresarial": () => import("../assets/dotaciones.js"),
 };
@@ -24,6 +25,9 @@ export async function loadCollegeImages(college) {
 
   if (college.id === "1") {
     return applyNewSchoolImages(college, imgs);
+  }
+  if (college.id === "2") {
+    return applyCumbresImages(college, imgs);
   }
   if (college.id === "liceo-frances") {
     return applyLiceoImages(college, imgs);
@@ -68,6 +72,52 @@ function applyLiceoImages(college, imgs) {
     514: { image: imgs.imgDelantal },
     515: { image: imgs.imgChalecoPrim1, hoverImage: imgs.imgChalecoPrim2 },
     516: { image: imgs.imgSud1, hoverImage: imgs.imgSud2 },
+  };
+
+  return {
+    ...college,
+    sections: college.sections.map(section => ({
+      ...section,
+      uniforms: section.uniforms.map(u => ({ ...u, ...(imageMap[u.id] || {}) })),
+    })),
+  };
+}
+
+function applyCumbresImages(college, imgs) {
+  const imageMap = {
+    // Bambolino
+    100: { image: imgs.imgCamisetaBambolino },
+    101: { image: imgs.imgChompaBambolino1, hoverImage: imgs.imgChompaBambolino2 },
+    103: { image: imgs.imgDelantalBambolino },
+    104: { image: imgs.imgPavaBambolino },
+    105: { image: imgs.imgGorraBambolino },
+    // Cumbres Femenino
+    400: { image: imgs.imgSacoTejidoV },
+    404: { image: imgs.imgChompaBlancaFem1, hoverImage: imgs.imgChompaBlancaFem2 },
+    407: { image: imgs.imgDelantalVerdeFem },
+    408: { image: imgs.imgFaldaCuadros },
+    // Cumbres Masculino
+    301: { image: imgs.imgSacoTejidoV },
+    302: { image: imgs.imgCamisaGalaMasc1, hoverImage: imgs.imgCamisaGalaMasc2 },
+    303: { image: imgs.imgCamisaGalaMasc2 },
+    304: { image: imgs.imgChompaAzulMasc },
+    305: { image: imgs.imgCamisetaFisicaMasc1, hoverImage: imgs.imgCamisetaFisicaMasc2 },
+    306: { image: imgs.imgCamisetaFisicaMasc2 },
+    307: { image: imgs.imgDelantalAzulNino },
+    // High School Femenino
+    201: { image: imgs.imgBlusaGalaHS },
+    203: { image: imgs.imgPoloDamaHS },
+    205: { image: imgs.imgCuelloVDamaHS },
+    210: { image: imgs.imgFaldaCuadros },
+    220: { image: imgs.imgSacoTejidoHS },
+    221: { image: imgs.imgChompaGrisHS2, hoverImage: imgs.imgChompaGrisHS1 },
+    222: { image: imgs.imgSudaderaHS },
+    // High School Masculino
+    200: { image: imgs.imgCamisaGalaHombreHS },
+    209: { image: imgs.imgCamisaGalaHombreHS },
+    230: { image: imgs.imgSacoTejidoHS },
+    231: { image: imgs.imgChompaGrisHS1, hoverImage: imgs.imgChompaGrisHS2 },
+    232: { image: imgs.imgSudaderaHS },
   };
 
   return {
