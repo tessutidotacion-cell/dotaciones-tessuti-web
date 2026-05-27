@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { LOGO_TESSUTI } from "../../assets";
 import { DEMO_COLLEGES, EMPRESARIAL_CATALOG } from "../../data/colleges";
-const fondoHero = "/banner_home.webp";
+import fondoHero from "../../assets/TheNewSchool/banner_home.webp";
 
 const getAllUniforms = (col) => col.sections?.length > 0
   ? col.sections.flatMap(s => s.uniforms)
