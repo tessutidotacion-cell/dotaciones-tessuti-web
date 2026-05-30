@@ -483,12 +483,13 @@ export default function CollegeSelector({ onSelect }) {
             <div className="cs-grid">
               {(() => {
                 const q = search.trim().toLowerCase();
+                const active = DEMO_COLLEGES.filter(c => !c.disabled);
                 const filtered = q
-                  ? DEMO_COLLEGES.filter(c =>
+                  ? active.filter(c =>
                       c.name.toLowerCase().includes(q) ||
                       c.description?.toLowerCase().includes(q)
                     )
-                  : DEMO_COLLEGES;
+                  : active;
                 if (filtered.length === 0) return (
                   <div className="cs-no-results">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--ink-4)" strokeWidth="1.2">

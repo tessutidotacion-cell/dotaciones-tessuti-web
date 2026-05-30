@@ -248,6 +248,7 @@ export const DEMO_COLLEGES = [
   },
   {
     id: "2",
+    disabled: true,
     name: "Colegio Cumbres Medellín",
     logo: LOGO_CUMBRES,
     primaryColor: "#1a3a5c",
