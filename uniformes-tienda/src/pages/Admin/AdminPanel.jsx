@@ -235,9 +235,18 @@ function OrderDetailModal({ order, onClose, onOrderUpdate }) {
               {order.items?.map((item, i) => (
                 <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center",
                   padding:"10px 14px", borderBottom:i<order.items.length-1?"1px solid #e5e7eb":"none",
-                  background:i%2===0?"#fff":"#f9fafb" }}>
+                  background: item.reserved ? "#fffbeb" : i%2===0?"#fff":"#f9fafb" }}>
                   <div>
-                    <div style={{ fontSize:13, fontWeight:600, color:"#111" }}>{item.name}</div>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+                      <span style={{ fontSize:13, fontWeight:600, color:"#111" }}>{item.name}</span>
+                      {item.reserved && (
+                        <span style={{ fontSize:9, fontWeight:700, letterSpacing:".08em", textTransform:"uppercase",
+                          background:"#fff7ed", color:"#c2410c", border:"1px solid #fed7aa",
+                          padding:"2px 7px", borderRadius:4, whiteSpace:"nowrap" }}>
+                          Reservado
+                        </span>
+                      )}
+                    </div>
                     <div style={{ fontSize:11, color:"#9ca3af", marginTop:2 }}>Talla: {item.size} · {COP(item.price)} c/u</div>
                   </div>
                   <div style={{ textAlign:"right", flexShrink:0 }}>
@@ -258,6 +267,72 @@ function OrderDetailModal({ order, onClose, onOrderUpdate }) {
               </div>
             </div>
           </div>
+
+          {/* Prendas reservadas — contactar cliente */}
+          {order.items?.some(i => i.reserved) && (() => {
+            const reservedItems = order.items.filter(i => i.reserved);
+            const itemsList = reservedItems.map(i => `${i.name} (talla ${i.size})`).join(", ");
+            const firstName = order.guardian?.name?.split(" ")[0] || "";
+            const waMsg = `Hola ${firstName}, soy de Tessuti Dotaciones. Tu pedido ${order.id} fue recibido con éxito. Las siguientes prendas están actualmente agotadas en la talla solicitada: ${itemsList}. Te contactamos para informarte sobre disponibilidad y tiempos de entrega. ¡Gracias por tu comprensión!`;
+            return (
+              <div style={{ border:"1.5px solid #fed7aa", borderRadius:10, overflow:"hidden" }}>
+                <div style={{ background:"#fff7ed", padding:"12px 14px", borderBottom:"1px solid #fed7aa",
+                  display:"flex", alignItems:"flex-start", gap:10 }}>
+                  <svg style={{ flexShrink:0, marginTop:2 }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                  </svg>
+                  <div>
+                    <div style={{ fontSize:11, fontWeight:700, color:"#92400e", textTransform:"uppercase", letterSpacing:".08em", marginBottom:5 }}>
+                      Prendas reservadas · informar al cliente
+                    </div>
+                    <div style={{ display:"flex", flexDirection:"column", gap:3 }}>
+                      {reservedItems.map((item, idx) => (
+                        <div key={idx} style={{ fontSize:12, color:"#78350f" }}>
+                          · {item.name} — talla <strong>{item.size}</strong>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ background:"#fff", padding:"12px 14px", display:"flex", flexDirection:"column", gap:8 }}>
+                  <div style={{ fontSize:11, color:"#6b7280", lineHeight:1.5 }}>
+                    Contacta al cliente para informar disponibilidad, tiempos de entrega o alternativas.
+                  </div>
+                  <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+                    <a
+                      href={`https://wa.me/57${order.guardian?.phone?.replace(/\D/g,"")}?text=${encodeURIComponent(waMsg)}`}
+                      target="_blank" rel="noreferrer"
+                      style={{ display:"inline-flex", alignItems:"center", gap:6,
+                        padding:"9px 16px", borderRadius:8,
+                        background:"#25d366", color:"#fff",
+                        fontSize:12, fontWeight:700, textDecoration:"none",
+                        letterSpacing:".04em", transition:"all .15s" }}
+                      onMouseEnter={e => { e.currentTarget.style.transform="translateY(-1px)"; e.currentTarget.style.boxShadow="0 4px 14px rgba(37,211,102,.4)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="none"; }}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                      </svg>
+                      Contactar por WhatsApp
+                    </a>
+                    {order.guardian?.phone && (
+                      <a href={`tel:${order.guardian.phone}`}
+                        style={{ display:"inline-flex", alignItems:"center", gap:6,
+                          padding:"9px 16px", borderRadius:8,
+                          background:"#eff6ff", color:"#1e3a8a", border:"1px solid #bfdbfe",
+                          fontSize:12, fontWeight:700, textDecoration:"none", transition:"all .15s" }}
+                        onMouseEnter={e => e.currentTarget.style.background="#dbeafe"}
+                        onMouseLeave={e => e.currentTarget.style.background="#eff6ff"}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.14 9.81 19.79 19.79 0 01.07 1.18 2 2 0 012.05 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91A16 16 0 0014 15.82l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+                        </svg>
+                        Llamar · {order.guardian.phone}
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {order.paymentProofUrl && (
             <a href={order.paymentProofUrl} target="_blank" rel="noreferrer"
@@ -1166,7 +1241,16 @@ export default function AdminPanel({ onLogout, toast }) {
                                     Ver
                                   </button>
                                 </td>
-                                <td style={{ padding:"11px 13px", fontSize:12, fontWeight:700, color:"#374151", fontFamily:"monospace" }}>{o.id}</td>
+                                <td style={{ padding:"11px 13px", fontSize:12, fontWeight:700, color:"#374151", fontFamily:"monospace" }}>
+                                  {o.id}
+                                  {o.items?.some(i => i.reserved) && (
+                                    <span style={{ display:"block", fontSize:9, fontWeight:700, letterSpacing:".08em",
+                                      background:"#fff7ed", color:"#c2410c", border:"1px solid #fed7aa",
+                                      padding:"1px 6px", borderRadius:4, marginTop:3, width:"fit-content" }}>
+                                      Con reservas
+                                    </span>
+                                  )}
+                                </td>
                                 <td style={{ padding:"11px 13px" }}>
                                   <div style={{ fontWeight:500, fontSize:13 }}>{o.student?.name}</div>
                                   <div style={{ fontSize:11, color:"#9ca3af" }}>{o.guardian?.name}</div>
@@ -1226,6 +1310,13 @@ export default function AdminPanel({ onLogout, toast }) {
                           <div>
                             <div style={{ fontSize:10, color:"#9ca3af", fontWeight:600, textTransform:"uppercase", letterSpacing:".08em", marginBottom:2 }}>N° Pedido</div>
                             <div style={{ fontSize:13, fontWeight:700, fontFamily:"monospace", color:"#111" }}>{o.id}</div>
+                            {o.items?.some(i => i.reserved) && (
+                              <span style={{ display:"inline-block", fontSize:9, fontWeight:700, letterSpacing:".08em",
+                                background:"#fff7ed", color:"#c2410c", border:"1px solid #fed7aa",
+                                padding:"1px 6px", borderRadius:4, marginTop:3 }}>
+                                Con reservas
+                              </span>
+                            )}
                           </div>
                           <Badge status={o.status} />
                         </div>

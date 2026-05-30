@@ -138,6 +138,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
         collegeName: college.name,
         items: cart.map(i => ({
           id:i.id, name:i.name, size:i.size, qty:i.qty, price:i.price, category:i.category,
+          reserved: i.reserved || false,
         })),
         guardian: {
           name:           form.guardianName.trim(),
@@ -1173,13 +1174,36 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                 <span style={{ fontSize:12, fontWeight:600, color:"#4b4844" }}>{college.name}</span>
               </div>
 
+              {/* Aviso prendas reservadas */}
+              {cart.some(i => i.reserved) && (
+                <div style={{ display:"flex", alignItems:"flex-start", gap:8,
+                  background:"#fff7ed", border:"1px solid #fed7aa", borderRadius:8,
+                  padding:"10px 12px", marginBottom:10 }}>
+                  <svg style={{ flexShrink:0, marginTop:1 }} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.2" strokeLinecap="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                  </svg>
+                  <div style={{ fontSize:11, color:"#92400e", lineHeight:1.55 }}>
+                    <strong>Prendas en reserva:</strong> las tallas agotadas se confirmarán cuando haya disponibilidad. Te contactaremos.
+                  </div>
+                </div>
+              )}
+
               {/* Items */}
               <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:14 }}>
                 {cart.map(item => (
                   <div key={item.id+item.size}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:8, marginBottom:6 }}>
                       <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontSize:12, fontWeight:600, color:INK, lineHeight:1.35, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.name}</div>
+                        <div style={{ display:"flex", alignItems:"center", gap:5, flexWrap:"wrap" }}>
+                          <div style={{ fontSize:12, fontWeight:600, color:INK, lineHeight:1.35, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.name}</div>
+                          {item.reserved && (
+                            <span style={{ fontSize:9, fontWeight:700, letterSpacing:".06em", textTransform:"uppercase",
+                              background:"#fff7ed", color:"#c2410c", border:"1px solid #fed7aa",
+                              padding:"1px 6px", borderRadius:4, flexShrink:0, whiteSpace:"nowrap" }}>
+                              Reservado
+                            </span>
+                          )}
+                        </div>
                         <div style={{ fontSize:10, color:"#9b9591", marginTop:2 }}>Talla {item.size} · {COP(item.price)} c/u</div>
                       </div>
                       <div style={{ fontSize:12, fontWeight:700, color:INK, flexShrink:0 }}>{COP(item.price*item.qty)}</div>

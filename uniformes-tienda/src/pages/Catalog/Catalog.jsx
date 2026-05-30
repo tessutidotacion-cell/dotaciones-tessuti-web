@@ -85,12 +85,12 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
     const size = sizes[u.id];
     if (!size || !Array.isArray(u.sizes) || !u.sizes.includes(size)) return;
     const stockQty = collegeStock?.[String(u.id)]?.[size] ?? null;
-    if (stockQty === 0) return;
+    const isReserved = stockQty === 0;
     const finalPrice = getFinalPrice(u, size);
     setCart(prev => {
       const ex = prev.find(i => i.id === u.id && i.size === size);
       if (ex) return prev.map(i => i.id === u.id && i.size === size ? { ...i, qty: i.qty + 1 } : i);
-      return [...prev, { id: u.id, name: u.name, price: finalPrice, size, qty: 1 }];
+      return [...prev, { id: u.id, name: u.name, price: finalPrice, size, qty: 1, reserved: isReserved }];
     });
 
     const key = `${u.id}-${size}`;
@@ -562,6 +562,56 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           text-transform: uppercase;
           line-height: 1;
         }
+        .pd-size.reservable {
+          border-color: #fcd34d;
+          color: #92400e;
+          background: #fffbeb;
+          cursor: pointer;
+          flex-direction: column;
+          gap: 1px;
+          transition: all .15s;
+        }
+        .pd-size.reservable:hover:not(.selected) {
+          border-color: #d97706;
+          background: #fef3c7;
+          color: #78350f;
+        }
+        .pd-size.reservable.selected {
+          background: #d97706;
+          border-color: #d97706;
+          color: #fff;
+          font-weight: 600;
+        }
+        .pd-size-reserve-label {
+          font-size: 8px;
+          font-weight: 700;
+          color: #d97706;
+          letter-spacing: .06em;
+          text-transform: uppercase;
+          line-height: 1;
+        }
+        .pd-size.reservable.selected .pd-size-reserve-label {
+          color: rgba(255,255,255,.8);
+        }
+        .pd-add-btn.reserve {
+          background: #d97706;
+          color: #fff;
+          border: none;
+          position: relative;
+          overflow: hidden;
+        }
+        .pd-add-btn.reserve::before {
+          content: '';
+          position: absolute; inset: 0;
+          background: linear-gradient(135deg, rgba(255,255,255,.15) 0%, transparent 50%);
+          opacity: 0;
+          transition: opacity .3s ease;
+        }
+        .pd-add-btn.reserve:hover::before { opacity: 1; }
+        .pd-add-btn.reserve:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 24px rgba(217,119,6,.4);
+        }
 
         /* Stock alert */
         .stock-alert {
@@ -894,7 +944,8 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
         const flashKey = `${u.id}-${sizes[u.id]}`;
         const isAdded = flash[flashKey];
         const hasSz = !!sizes[u.id];
-        const btnClass = isAdded ? "added" : hasSz ? "ready" : "idle";
+        const selectedSzOut = hasSz && (collegeStock?.[String(u.id)]?.[sizes[u.id]] ?? null) === 0;
+        const btnClass = isAdded ? "added" : hasSz ? (selectedSzOut ? "reserve" : "ready") : "idle";
 
         const lowSizes = Array.isArray(u.sizes)
           ? u.sizes.filter(sz => {
@@ -978,16 +1029,12 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
                         return (
                           <button
                             key={sz}
-                            className={`pd-size${isSelected ? " selected" : ""}${isOut ? " out" : ""}`}
-                            onClick={() => {
-                              if (isOut) return;
-                              setSizes(s => ({ ...s, [u.id]: sz }));
-                            }}
-                            disabled={isOut}
-                            title={isOut ? "Talla agotada" : undefined}
+                            className={`pd-size${isSelected ? " selected" : ""}${isOut ? " reservable" : ""}`}
+                            onClick={() => setSizes(s => ({ ...s, [u.id]: sz }))}
+                            title={isOut ? "Talla agotada — disponible para reservar" : undefined}
                           >
                             {sz}
-                            {isOut && <span className="pd-size-out-label">Agotado</span>}
+                            {isOut && <span className="pd-size-reserve-label">Reservar</span>}
                           </button>
                         );
                       })}
@@ -995,8 +1042,16 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
                   </>
                 )}
 
+                {/* Aviso reserva */}
+                {selectedSzOut && (
+                  <div className="stock-alert" style={{ background:"#fff7ed", color:"#92400e", border:"1px solid #fed7aa", marginTop:12 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.2" strokeLinecap="round" style={{ flexShrink:0 }}><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    Talla agotada · al reservar quedará pendiente de disponibilidad
+                  </div>
+                )}
+
                 {/* Stock bajo */}
-                {lowSizes.length > 0 && (
+                {!selectedSzOut && lowSizes.length > 0 && (
                   <div className={`stock-alert ${isUrgent ? "urgent" : "warn"}`}>
                     {isUrgent
                       ? `¡Solo ${minStock} ud. en talla${lowSizes.length > 1 ? "s" : ""} ${lowSizes.join(", ")}!`
@@ -1018,9 +1073,12 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
 
                   const QtyControls = () => (
                     <div className="pd-qty-wrap">
-                      <div className="pd-qty-label">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                        En tu carrito · talla {sizes[u.id]}
+                      <div className="pd-qty-label" style={{ color: cartItem?.reserved ? "#d97706" : undefined }}>
+                        {cartItem?.reserved
+                          ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                          : <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        }
+                        {cartItem?.reserved ? "Reservado" : "En tu carrito"} · talla {sizes[u.id]}
                       </div>
                       <div className="pd-qty-ctrl">
                         <button className="pd-qty-btn" onClick={() => updateQty(-1)}>
@@ -1086,7 +1144,11 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
                     >
                       {isAdded
                         ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" style={{ marginRight: 8, verticalAlign: "middle" }}><polyline points="20 6 9 17 4 12"/></svg>Agregado</>
-                        : hasSz ? "Añadir al carrito" : "Selecciona una talla"
+                        : hasSz
+                          ? selectedSzOut
+                            ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: 8, verticalAlign: "middle" }}><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Reservar esta talla</>
+                            : "Añadir al carrito"
+                          : "Selecciona una talla"
                       }
                     </button>
                   );
