@@ -1,12 +1,10 @@
 import imgCamisetaBambolino from "./Cumbres/_07A9588.webp";
 import imgChompaBambolino1 from "./Cumbres/_07A9459.webp";
-import imgChompaBambolino2 from "./Cumbres/_07A9464.webp";
 import imgDelantalBambolino from "./Cumbres/_07A9606.webp";
 import imgPavaBambolino from "./Cumbres/_07A9570.webp";
 import imgGorraBambolino from "./Cumbres/_07A9576.webp";
 
 import imgSacoTejidoV from "./Cumbres/_07A9472.webp";
-import imgChompaBlancaFem1 from "./Cumbres/_07A9487.webp";
 import imgChompaBlancaFem2 from "./Cumbres/_07A9488.webp";
 import imgDelantalVerdeFem from "./Cumbres/_07A9618.webp";
 import imgFaldaCuadros from "./Cumbres/_07A9473.webp";
@@ -16,7 +14,6 @@ import imgCamisaGalaMasc2 from "./Cumbres/_07A9417.webp";
 import imgDelantalAzulNino from "./Cumbres/_07A9422.webp";
 import imgChompaAzulMasc from "./Cumbres/_07A9450.webp";
 import imgCamisetaFisicaMasc1 from "./Cumbres/_07A9426.webp";
-import imgCamisetaFisicaMasc2 from "./Cumbres/_07A9427.webp";
 
 import imgBlusaGalaHS from "./Cumbres/_07A9499.webp";
 import imgPoloDamaHS from "./Cumbres/_07A9506.webp";
@@ -41,12 +38,10 @@ import imgMediasBlancasFisica from "./Cumbres/medias blancas fisica.webp";
 export {
   imgCamisetaBambolino,
   imgChompaBambolino1,
-  imgChompaBambolino2,
   imgDelantalBambolino,
   imgPavaBambolino,
   imgGorraBambolino,
   imgSacoTejidoV,
-  imgChompaBlancaFem1,
   imgChompaBlancaFem2,
   imgDelantalVerdeFem,
   imgFaldaCuadros,
@@ -55,7 +50,6 @@ export {
   imgDelantalAzulNino,
   imgChompaAzulMasc,
   imgCamisetaFisicaMasc1,
-  imgCamisetaFisicaMasc2,
   imgBlusaGalaHS,
   imgPoloDamaHS,
   imgCamisaGalaHombreHS,
