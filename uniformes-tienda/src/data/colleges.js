@@ -109,7 +109,7 @@ function applyCumbresImages(college, imgs) {
     302: { image: imgs.imgCamisaGalaMasc1, hoverImage: imgs.imgCamisaGalaMasc2 },
     303: { image: imgs.imgCamisaGalaMasc2 },
     304: { image: imgs.imgChompaAzulMasc },
-    305: { image: imgs.imgCamisetaFisicaMasc1, hoverImage: imgs.imgCamisetaFisicaMasc2 },
+    305: { image: imgs.imgCamisetaFisicaMasc1 },
     306: { image: imgs.imgSudaderaVerdeMasc },
     307: { image: imgs.imgDelantalAzulNino },
     // High School Femenino
