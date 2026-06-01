@@ -361,7 +361,8 @@ export const DEMO_COLLEGES = [
           { id: 511, name: "Camiseta Polo Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], stock: { "4": 64, "6": 60, "8": 22, "10": 25, "12": 5 }, category: "Diario" },
           { id: 515, name: "Chaleco Negro Kids", price: 0, sizes: ["4", "6", "8", "10", "12", "14"], stock: { "4": 15, "6": 8, "8": 10, "10": 3, "12": 0, "14": 1 }, category: "Diario" },
           { id: 514, name: "Delantal Kids", price: 0, sizes: ["4", "6", "8"], stock: { "4": 14, "6": 20, "8": 16 }, category: "Complemento" },
-          { id: 516, name: "Sudadera Kids", price: 0, sizes: ["2", "4", "6", "8", "10", "12"], stock: { "2": 10, "4": 35, "6": 33, "8": 33, "10": 17, "12": 41 }, category: "Deportivo" },
+          { id: 516, name: "Sudadera Kids", price: 0, sizes: ["2", "4", "6", "8", "10", "12", "14", "16", "S", "M"], stock: { "2": 10, "4": 35, "6": 33, "8": 33, "10": 17, "12": 41, "14": 17, "16": 10, "S": 33, "M": 28 }, category: "Deportivo" },
+          { id: 512, name: "Chaqueta Kids", price: 0, sizes: ["4", "6", "8", "10", "12", "14", "16", "S", "M"], stock: { "4": 34, "6": 26, "8": 26, "10": 12, "12": 0, "14": 29, "16": 10, "S": 0, "M": 0 }, category: "Diario" },
         ],
       },
       {
