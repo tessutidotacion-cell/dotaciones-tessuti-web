@@ -67,7 +67,7 @@ function applyLiceoImages(college, imgs) {
     505: { image: imgs.imgCamisetaUnisex1, hoverImage: imgs.imgCamisetaUnisex2 },
     506: { image: imgs.imgSudHS1, hoverImage: imgs.imgSudHS2 },
     508: { image: imgs.imgBataLab },
-    510: { image: imgs.imgChaquetaPrim1, hoverImage: imgs.imgChaquetaPrim2, galleryImages: [imgs.imgChaquetaPrim3] },
+    512: { image: imgs.imgChaquetaPrim1, hoverImage: imgs.imgChaquetaPrim2, galleryImages: [imgs.imgChaquetaPrim3] },
     511: { image: imgs.imgPoloPrim1, hoverImage: imgs.imgPoloPrim2 },
     514: { image: imgs.imgDelantal },
     515: { image: imgs.imgChalecoPrim1, hoverImage: imgs.imgChalecoPrim2 },
@@ -357,7 +357,6 @@ export const DEMO_COLLEGES = [
         id: "lf-kids",
         name: "Primaria",
         uniforms: [
-          { id: 510, name: "Buso Kids", price: 0, sizes: ["4", "6", "8", "10"], stock: { "4": 28, "6": 36, "8": 36, "10": 1 }, category: "Diario" },
           { id: 511, name: "Camiseta Polo Kids", price: 0, sizes: ["4", "6", "8", "10", "12"], stock: { "4": 64, "6": 60, "8": 22, "10": 25, "12": 5 }, category: "Diario" },
           { id: 515, name: "Chaleco Negro Kids", price: 0, sizes: ["4", "6", "8", "10", "12", "14"], stock: { "4": 15, "6": 8, "8": 10, "10": 3, "12": 0, "14": 1 }, category: "Diario" },
           { id: 514, name: "Delantal Kids", price: 0, sizes: ["4", "6", "8"], stock: { "4": 14, "6": 20, "8": 16 }, category: "Complemento" },
