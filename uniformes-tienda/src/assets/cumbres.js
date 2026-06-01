@@ -28,6 +28,15 @@ import imgChompaGrisHS2 from "./Cumbres/_07A9561.webp";
 import imgSudaderaHS from "./Cumbres/_07A9557.webp";
 import imgCorbata from "./Cumbres/Corbata masculina.webp";
 import imgCorrea from "./Cumbres/Correa.webp";
+import imgBlusaGalaFem from "./Cumbres/Blusa gala femenino.webp";
+import imgJumper from "./Cumbres/jumper.webp";
+import imgChaletoDama from "./Cumbres/chaleco dama.webp";
+import imgMediasCumbres from "./Cumbres/medias cumbres.webp";
+import imgSudaderaBambolino from "./Cumbres/sudadera banbolino.webp";
+import imgSudaderaAzulFem from "./Cumbres/sudadera azul fisica femenino.webp";
+import imgSudaderaVerdeMasc from "./Cumbres/sudadera verde fisica masculino.webp";
+import imgMediasGrises from "./Cumbres/medias grises paquete x 3.webp";
+import imgMediasBlancasFisica from "./Cumbres/medias blancas fisica.webp";
 
 export {
   imgCamisetaBambolino,
@@ -57,4 +66,13 @@ export {
   imgSudaderaHS,
   imgCorbata,
   imgCorrea,
+  imgBlusaGalaFem,
+  imgJumper,
+  imgChaletoDama,
+  imgMediasCumbres,
+  imgSudaderaBambolino,
+  imgSudaderaAzulFem,
+  imgSudaderaVerdeMasc,
+  imgMediasGrises,
+  imgMediasBlancasFisica,
 };

@@ -62,7 +62,7 @@ export default function TrackOrder({ onBack }) {
     try {
       const { data } = await trackOrder(trimId);
       setOrder(data);
-    } catch (err) {
+    } catch {
       setError("No encontramos ese pedido. Verifica el número e intenta de nuevo.");
     } finally {
       setLoading(false);

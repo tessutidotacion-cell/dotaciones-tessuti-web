@@ -371,19 +371,13 @@ const ALL_STYLES = `
 `;
 
 export default function CollegeSelector({ onSelect }) {
-  const [section, setSection] = useState(null);
+  const [section, setSection] = useState(() => window.history.state?.section || null);
   const [visible, setVisible] = useState(false);
   const [hovered, setHovered] = useState(null);
   const [search,  setSearch]  = useState("");
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 60);
     return () => clearTimeout(t);
-  }, []);
-
-  // Restore section from history state on mount
-  useEffect(() => {
-    const s = window.history.state?.section;
-    if (s) setSection(s);
   }, []);
 
   const goToSection = useCallback((s) => {

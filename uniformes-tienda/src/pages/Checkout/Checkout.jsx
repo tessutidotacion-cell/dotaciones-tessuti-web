@@ -88,14 +88,10 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
     }
   };
   const cartQty     = cart.reduce((s, i) => s + i.qty, 0);
-  const emailValid  = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(form.email.trim());
-  const phoneValid  = /^(\+?57|0057)?3\d{9}$/.test(form.phone.replace(/[\s\-\(\)]/g, ""));
+  const emailValid  = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(form.email.trim());
+  const phoneValid  = /^(\+?57|0057)?3\d{9}$/.test(form.phone.replace(/[\s()-]/g, ""));
   const needsStreet      = form.deliveryType === "domicilio";
   const needsShipCoord   = form.deliveryType === "domicilio_coordinado";
-  const step1Valid  = form.guardianName.trim() && form.guardianDoc.trim() &&
-    phoneValid && emailValid && form.billingAddress.trim() &&
-    (!needsStreet    || form.street.trim()) &&
-    (!needsShipCoord || form.shippingStreet.trim());
 
   const getMissingFields = () => {
     const m = [];
@@ -574,7 +570,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                         value={form.guardianDoc}
                         placeholder="N° cédula o NIT"
                         inputMode="numeric"
-                        onChange={e => set("guardianDoc", e.target.value.replace(/[^0-9\-]/g, ""))}
+                        onChange={e => set("guardianDoc", e.target.value.replace(/[^0-9-]/g, ""))}
                         onBlur={() => touch("guardianDoc")}
                         style={{ borderColor: touched.guardianDoc && !form.guardianDoc.trim() ? "#dc2626" : undefined }}
                       />

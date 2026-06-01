@@ -47,6 +47,8 @@ export default function App() {
   }, []);
 
   // ── Retorno desde Wompi ───────────────────────────────────────
+  // One-time mount handler for payment return — intentional setState.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const wompiId = params.get("id");
@@ -62,6 +64,7 @@ export default function App() {
       } catch (e) { console.error("[Wompi return] failed to parse pending order:", e); }
     }
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -101,6 +104,8 @@ export default function App() {
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
+  // One-time route initialization on mount — intentional setState pattern.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const { view: v, collegeId } = decodePath(window.location.pathname);
     const hasToken = !!sessionStorage.getItem("ue_admin_token");
@@ -123,8 +128,8 @@ export default function App() {
     const safe = VALID_VIEWS.includes(v) && v !== "success" ? v : "home";
     setView(safe);
     window.history.replaceState({ view: safe }, "", encodePath(safe, null));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     if (view === "catalog" && college) {

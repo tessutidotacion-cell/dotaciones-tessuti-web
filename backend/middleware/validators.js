@@ -129,7 +129,7 @@ const VALID_STATUSES = [
 
 export const validateStatusUpdate = [
   param("id")
-    .matches(/^PED-\d{4}-\d{3,6}$/).withMessage("ID de pedido inválido"),
+    .matches(/^PED-\d{4}-[0-9A-F]{6}$/).withMessage("ID de pedido inválido"),
   body("status")
     .notEmpty().withMessage("Estado requerido")
     .isIn(VALID_STATUSES).withMessage(`Estado debe ser uno de: ${VALID_STATUSES.join(", ")}`),

@@ -87,22 +87,30 @@ function applyCumbresImages(college, imgs) {
   const imageMap = {
     // Bambolino
     100: { image: imgs.imgCamisetaBambolino },
-    101: { image: imgs.imgChompaBambolino1, hoverImage: imgs.imgChompaBambolino2 },
+    101: { image: imgs.imgChompaBambolino1 },
+    102: { image: imgs.imgSudaderaBambolino },
     103: { image: imgs.imgDelantalBambolino },
     104: { image: imgs.imgPavaBambolino },
     105: { image: imgs.imgGorraBambolino },
+    106: { image: imgs.imgMediasBlancasFisica },
     // Cumbres Femenino
     400: { image: imgs.imgSacoTejidoV },
-    404: { image: imgs.imgChompaBlancaFem1, hoverImage: imgs.imgChompaBlancaFem2 },
+    401: { image: imgs.imgBlusaGalaFem },
+    402: { image: imgs.imgJumper },
+    403: { image: imgs.imgChaletoDama },
+    404: { image: imgs.imgChompaBlancaFem2 },
+    406: { image: imgs.imgSudaderaAzulFem },
     407: { image: imgs.imgDelantalVerdeFem },
     408: { image: imgs.imgFaldaCuadros },
+    409: { image: imgs.imgMediasBlancasFisica },
+    410: { image: imgs.imgMediasCumbres },
     // Cumbres Masculino
     301: { image: imgs.imgSacoTejidoV },
     302: { image: imgs.imgCamisaGalaMasc1, hoverImage: imgs.imgCamisaGalaMasc2 },
     303: { image: imgs.imgCamisaGalaMasc2 },
     304: { image: imgs.imgChompaAzulMasc },
     305: { image: imgs.imgCamisetaFisicaMasc1, hoverImage: imgs.imgCamisetaFisicaMasc2 },
-    306: { image: imgs.imgCamisetaFisicaMasc2 },
+    306: { image: imgs.imgSudaderaVerdeMasc },
     307: { image: imgs.imgDelantalAzulNino },
     // High School Femenino
     201: { image: imgs.imgBlusaGalaHS },
@@ -118,12 +126,14 @@ function applyCumbresImages(college, imgs) {
     230: { image: imgs.imgSacoTejidoHS },
     231: { image: imgs.imgChompaGrisHS1, hoverImage: imgs.imgChompaGrisHS2 },
     232: { image: imgs.imgSudaderaHS },
-    300: { image: imgs.imgCorbata },
-    223: { image: imgs.imgCorbata },
+    214: { image: imgs.imgMediasCumbres },
+    224: { image: imgs.imgMediasBlancasFisica },
     233: { image: imgs.imgCorbata },
-    310: { image: imgs.imgCorrea },
-    225: { image: imgs.imgCorrea },
+    234: { image: imgs.imgMediasBlancasFisica },
+    308: { image: imgs.imgMediasBlancasFisica },
+    309: { image: imgs.imgMediasGrises },
     235: { image: imgs.imgCorrea },
+    310: { image: imgs.imgCorrea },
   };
 
   return {
@@ -248,7 +258,7 @@ export const DEMO_COLLEGES = [
   },
   {
     id: "2",
-    disabled: true,
+    disabled: false,
     name: "Colegio Cumbres Medellín",
     logo: LOGO_CUMBRES,
     primaryColor: "#1a3a5c",
@@ -270,7 +280,7 @@ export const DEMO_COLLEGES = [
       },
       {
         id: "cumbres-femenino",
-        name: "Cumbres Femenino",
+        name: "Primaria Femenino",
         uniforms: [
           { id: 400, name: "Saco Tejido Azul Cuello V", price: 129900, sizePrices: { "12": 129900, "14": 129900, "16": 129900, "S": 134900 }, sizes: ["12", "14", "16", "S"], category: "Gala", description: "Talla 12–16: $129.900 · Talla S: $134.900" },
           { id: 401, name: "Blusa Gala Femenino", price: 34900, sizePrices: { "8": 34900, "10": 34900, "12": 34900, "14": 34900, "16": 34900, "XS": 37900, "S": 37900 }, sizes: ["8", "10", "12", "14", "16", "XS", "S"], category: "Gala", description: "Talla 8–16: $34.900 · Talla XS–S: $37.900" },
@@ -287,9 +297,8 @@ export const DEMO_COLLEGES = [
       },
       {
         id: "cumbres-masculino",
-        name: "Cumbres Masculino",
+        name: "Primaria Masculino",
         uniforms: [
-          { id: 300, name: "Corbata Bachillerato y High School", price: 49900, sizes: ["Única"], category: "Gala" },
           { id: 301, name: "Saco Tejido Azul Cuello V", price: 129900, sizePrices: { "12": 129900, "14": 129900, "16": 129900, "S": 134900 }, sizes: ["12", "14", "16", "S"], category: "Gala", description: "Talla 12–16: $129.900 · Talla S: $134.900" },
           { id: 302, name: "Camisa Gala Masculino", price: 62900, sizePrices: { "8": 62900, "10": 62900, "12": 62900, "14": 62900, "16": 62900, "18": 62900, "XS": 66900, "S": 66900, "M": 66900 }, sizes: ["8", "10", "12", "14", "16", "18", "XS", "S", "M"], category: "Gala", description: "Talla 8–18: $62.900 · Talla XS–M: $66.900" },
           { id: 303, name: "Pantalón Gris Gala", price: 86900, sizePrices: { "10": 86900, "12": 86900, "14": 86900, "16": 86900, "18": 86900, "28": 94900 }, sizes: ["10", "12", "14", "16", "18", "28"], category: "Gala", description: "Talla 10–18: $86.900 · Talla 28: $94.900" },
@@ -312,10 +321,8 @@ export const DEMO_COLLEGES = [
           { id: 220, name: "Saco Azul Tejido Unisex High School", price: 134900, sizePrices: { "S": 134900, "M": 134900, "L": 134900, "XL": 139900 }, sizes: ["S", "M", "L", "XL"], category: "Gala", description: "Talla S–L: $134.900 · Talla XL: $139.900" },
           { id: 221, name: "Chompa Gris Unisex High School", price: 119900, sizePrices: { "S": 119900, "M": 119900, "L": 119900, "XL": 124900 }, sizes: ["S", "M", "L", "XL"], category: "Deportivo", description: "Talla S–L: $119.900 · Talla XL: $124.900" },
           { id: 210, name: "Falda Bachillerato y High School", price: 116900, sizePrices: { "10": 116900, "12": 116900, "14": 116900, "16": 116900, "XS": 125900, "S": 125900, "M": 125900 }, sizes: ["10", "12", "14", "16", "XS", "S", "M"], category: "Gala", description: "Talla 10–16: $116.900 · Talla XS–M: $125.900" },
-          { id: 223, name: "Corbata Bachillerato y High School", price: 49900, sizes: ["Única"], category: "Complemento" },
           { id: 214, name: "Medias Blancas Gala Dama Paquete por 3 Pares", price: 46000, sizePrices: { "8 A 10": 46000, "9 A 11": 48000 }, sizes: ["8 A 10", "9 A 11"], category: "Complemento", description: "Talla 8–10: $46.000 · Talla 9–11: $48.000" },
           { id: 224, name: "Medias Blancas Física Paquete por 2 Pares", price: 22000, sizePrices: { "2 A 4": 22000, "4 A 6": 23000, "6 A 8": 24000, "8 A 10": 25000, "10 A 12": 26000 }, sizes: ["2 A 4", "4 A 6", "6 A 8", "8 A 10", "10 A 12"], category: "Complemento", description: "Precio según talla" },
-          { id: 225, name: "Correa Negra Gala", price: 48900, sizePrices: { "12 A 18": 48900, "28 A 36": 52900 }, sizes: ["12 A 18", "28 A 36"], category: "Complemento", description: "Talla 12–18: $48.900 · Talla 28–36: $52.900" },
         ],
       },
       {
