@@ -16,6 +16,16 @@ const getAllUniforms = (col) => col.sections?.length > 0
   ? col.sections.flatMap(s => s.uniforms.map(u => ({ ...u, sectionName: s.name })))
   : col.uniforms.map(u => ({ ...u, sectionName: null }));
 
+// Estado de stock de un producto: undef | out | low | ok
+const uniStockStatus = (uniform, sizeMap) => {
+  const has = sizeMap && Object.keys(sizeMap).length > 0;
+  if (!has) return "undef";
+  const total = uniform.sizes.reduce((s, sz) => s + (sizeMap[sz] ?? 0), 0);
+  if (total === 0) return "out";
+  if (total <= 5) return "low";
+  return "ok";
+};
+
 function Badge({ status }) {
   const m = STATUS_META[status] || { bg:"#f3f4f6", color:"#374151", dot:"#9ca3af" };
   return (
@@ -555,9 +565,9 @@ function SizeStockInput({ size, currentQty, onSave, saving }) {
 
   const handleInputSave = () => {
     if (input === "") return;
-    const delta = parseInt(input, 10);
-    if (isNaN(delta)) return;
-    const newVal = Math.max(0, (q ?? 0) + delta);
+    const val = parseInt(input, 10);
+    if (isNaN(val) || val < 0) return;
+    const newVal = Math.min(9999, val);
     onSave(size, String(newVal), () => setInput(""));
   };
 
@@ -633,14 +643,14 @@ function SizeStockInput({ size, currentQty, onSave, saving }) {
       {/* Separador */}
       <div style={{ width:1, height:32, background:"#e5e7eb", flexShrink:0 }} />
 
-      {/* Input sumar cantidad */}
+      {/* Input fijar cantidad exacta */}
       <div style={{ flex:1, minWidth:80 }}>
-        <div style={{ fontSize:10, fontWeight:600, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".08em", marginBottom:3 }}>Sumar cantidad</div>
+        <div style={{ fontSize:10, fontWeight:600, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".08em", marginBottom:3 }}>Fijar cantidad</div>
         <input type="number" min="0" max="9999" value={input}
           onChange={e=>setInput(e.target.value)}
           onFocus={()=>setFocused(true)}
           onBlur={()=>setFocused(false)}
-          placeholder="+ cantidad"
+          placeholder={q === null ? "cantidad exacta" : `actual: ${q}`}
           style={{
             width:"100%", boxSizing:"border-box", padding:"6px 10px",
             fontSize:14, fontWeight:600, border:"1px solid #d1d5db", borderRadius:8,
@@ -887,6 +897,8 @@ export default function AdminPanel({ onLogout, toast }) {
   const [loadingDiscounts,   setLoadingDiscounts]   = useState(false);
   const [discountColFilter,  setDiscountColFilter]  = useState("all");
   const [stockSectionFilter, setStockSectionFilter] = useState({});   // { [colId]: "all" | sectionId }
+  const [stockSearch,        setStockSearch]        = useState("");   // filtro por nombre de producto
+  const [stockStatus,        setStockStatus]        = useState("all"); // all | out | low | undef
 
   const loadDiscounts = useCallback(async () => {
     setLoadingDiscounts(true);
@@ -1464,9 +1476,49 @@ export default function AdminPanel({ onLogout, toast }) {
                 </div>
                 <TabBar />
 
+                {/* Buscador + filtros rápidos de estado */}
+                <div style={{ display:"flex", gap:10, flexWrap:"wrap", alignItems:"center", marginBottom:18 }}>
+                  <div style={{ position:"relative", flex:"1 1 260px", minWidth:200 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round"
+                      style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", pointerEvents:"none" }}>
+                      <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                    <input value={stockSearch} onChange={e=>setStockSearch(e.target.value)}
+                      placeholder="Buscar producto por nombre…"
+                      style={{ width:"100%", boxSizing:"border-box", padding:"10px 34px 10px 36px", fontSize:14,
+                        border:"1px solid #d1d5db", borderRadius:9, outline:"none", background:"#fff", color:"#111" }} />
+                    {stockSearch && (
+                      <button onClick={()=>setStockSearch("")} title="Limpiar"
+                        style={{ position:"absolute", right:8, top:"50%", transform:"translateY(-50%)", width:22, height:22,
+                          borderRadius:"50%", border:"none", background:"#f3f4f6", color:"#6b7280", cursor:"pointer",
+                          fontSize:14, lineHeight:1, display:"flex", alignItems:"center", justifyContent:"center" }}>×</button>
+                    )}
+                  </div>
+                  <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                    {[["all","Todos","#111"],["out","Agotado","#dc2626"],["low","Bajo","#d97706"],["undef","Sin definir","#6b7280"]].map(([v,l,c])=>{
+                      const active = stockStatus===v;
+                      return (
+                        <button key={v} onClick={()=>setStockStatus(v)}
+                          style={{ padding:"8px 14px", borderRadius:8, fontSize:12, fontWeight:700, cursor:"pointer",
+                            fontFamily:"inherit", transition:"all .15s",
+                            border:`1.5px solid ${active?c:"#e5e7eb"}`,
+                            background: active?c:"#fff", color: active?"#fff":"#6b7280" }}>
+                          {l}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {loadingStock
                   ? <div style={{ display:"flex", justifyContent:"center", padding:52 }}><Spinner size={28} color="#9ca3af" /></div>
                   : DEMO_COLLEGES.map(col => {
+                    const matchU = (u) => {
+                      if (stockSearch.trim() && !u.name.toLowerCase().includes(stockSearch.toLowerCase().trim())) return false;
+                      if (stockStatus !== "all" && uniStockStatus(u, stockData[col.id]?.[String(u.id)]) !== stockStatus) return false;
+                      return true;
+                    };
+                    const filtering = stockSearch.trim() !== "" || stockStatus !== "all";
                     const allUnis = getAllUniforms(col);
                     const hasSections = col.sections?.length > 0;
                     const currentFilter = stockSectionFilter[col.id] || "all";
@@ -1476,6 +1528,12 @@ export default function AdminPanel({ onLogout, toast }) {
                     const sections = currentFilter === "all"
                       ? allSections
                       : allSections.filter(s => s.id === currentFilter);
+                    // Buscador + filtro de estado
+                    const visSections = sections
+                      .map(s => ({ ...s, uniforms: s.uniforms.filter(matchU) }))
+                      .filter(s => s.uniforms.length > 0);
+                    const visCount = visSections.reduce((n, s) => n + s.uniforms.length, 0);
+                    if (filtering && visCount === 0) return null;
 
                     return (
                     <div key={col.id} style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:14, overflow:"hidden", marginBottom:24, boxShadow:"0 1px 3px rgba(0,0,0,.04)" }}>
@@ -1489,7 +1547,7 @@ export default function AdminPanel({ onLogout, toast }) {
                         </div>
                         <div>
                           <span style={{ fontWeight:700, fontSize:15, color:"#111", display:"block" }}>{col.name}</span>
-                          <span style={{ fontSize:12, color:"#9ca3af" }}>{allUnis.length} productos</span>
+                          <span style={{ fontSize:12, color:"#9ca3af" }}>{filtering ? `${visCount} de ${allUnis.length} productos` : `${allUnis.length} productos`}</span>
                         </div>
                         {hasSections && (
                           <select
@@ -1503,7 +1561,7 @@ export default function AdminPanel({ onLogout, toast }) {
                         )}
                       </div>
 
-                      {sections.map((section, si) => (
+                      {visSections.map((section, si) => (
                         <div key={section.id || si}>
                           {section.name && (
                             <div style={{ padding:"10px 18px", background:"#f3f4f6", borderBottom:"1px solid #e5e7eb",
@@ -1583,6 +1641,29 @@ export default function AdminPanel({ onLogout, toast }) {
                     </div>
                   );})
                 }
+
+                {/* Estado vacío cuando el filtro/búsqueda no encuentra nada */}
+                {!loadingStock && (stockSearch.trim() !== "" || stockStatus !== "all") && (() => {
+                  const total = DEMO_COLLEGES.reduce((n, col) => n + getAllUniforms(col).filter(u => {
+                    if (stockSearch.trim() && !u.name.toLowerCase().includes(stockSearch.toLowerCase().trim())) return false;
+                    if (stockStatus !== "all" && uniStockStatus(u, stockData[col.id]?.[String(u.id)]) !== stockStatus) return false;
+                    return true;
+                  }).length, 0);
+                  return total === 0 ? (
+                    <div style={{ textAlign:"center", padding:"52px 20px", color:"#9ca3af" }}>
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.6" strokeLinecap="round" style={{ marginBottom:12 }}>
+                        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                      </svg>
+                      <div style={{ fontSize:15, fontWeight:600, color:"#6b7280" }}>Sin resultados</div>
+                      <div style={{ fontSize:13, marginTop:4 }}>Ningún producto coincide con la búsqueda o el filtro.</div>
+                      <button onClick={() => { setStockSearch(""); setStockStatus("all"); }}
+                        style={{ marginTop:16, padding:"8px 16px", borderRadius:8, border:"1.5px solid #e5e7eb",
+                          background:"#fff", color:"#374151", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
+                        Limpiar filtros
+                      </button>
+                    </div>
+                  ) : null;
+                })()}
               </>
             )}
 
