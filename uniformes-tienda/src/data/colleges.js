@@ -363,7 +363,7 @@ export const DEMO_COLLEGES = [
         uniforms: [
           { id: 500, name: "Chaqueta", price: 130000, sizes: ["12", "14", "16", "S", "M", "L"], stock: { "12": 14, "14": 17, "16": 8, "S": 13, "M": 10, "L": 5 }, category: "Diario", description: "Nuevo diseño, forrada en su interior con capucha" },
           { id: 501, name: "Camisa Polo", price: 70000, sizes: ["12", "14", "16", "S", "M"], stock: { "12": 5, "14": 42, "16": 29, "S": 43, "M": 40 }, category: "Diario", description: "Talla 16-M: $77.000" },
-          { id: 505, name: "Camiseta Unisex", price: 65000, sizes: ["12", "14", "16", "S", "M", "L"], stock: { "12": 20, "14": 82, "16": 108, "S": 27, "M": 22, "L": 5 }, category: "Deportivo", description: "Talla 16-M: $70.000" },
+          { id: 505, name: "Camiseta Unisex", price: 65000, sizePrices: { "12": 65000, "14": 65000, "16": 70000, "S": 70000, "M": 70000, "L": 70000 }, sizes: ["12", "14", "16", "S", "M", "L"], stock: { "12": 20, "14": 82, "16": 108, "S": 27, "M": 22, "L": 5 }, category: "Deportivo", description: "Talla 12–14: $65.000 · Talla 16–L: $70.000" },
           { id: 506, name: "Sudadera Diario", price: 81500, sizes: ["12", "14", "16", "S", "M"], stock: { "12": 14, "14": 26, "16": 58, "S": 27, "M": 27 }, category: "Diario", description: "Pantalón sudadera diario" },
           { id: 504, name: "Jogger Unisex", price: 70000, sizes: ["12", "14", "16", "S", "M"], stock: { "12": 0, "14": 75, "16": 110, "S": 22, "M": 0 }, category: "Deportivo", description: "Talla 16-M: $75.000" },
           { id: 503, name: "Pantaloneta Niño", price: 65000, sizes: ["12", "14", "16", "S", "M"], category: "Deportivo", description: "Talla 16-M: $68.000" },
