@@ -558,16 +558,20 @@ function SizeStockInput({ size, currentQty, onSave, saving }) {
   const statusBorder= out?"#fca5a5":low?"#fde68a":ok?"#86efac":"#e5e7eb";
   const statusLabel = q === null ? "Sin stock" : q === 0 ? "Agotado" : q <= 3 ? "Bajo" : "OK";
 
+  const parsedInput = input === "" ? 0 : parseInt(input, 10);
+
   const handleDelta = (delta) => {
-    const newVal = Math.max(0, (q ?? 0) + delta);
-    onSave(size, String(newVal), () => {});
+    const current = isNaN(parsedInput) ? 0 : parsedInput;
+    const next = current + delta;
+    const min = -(q ?? 0);
+    setInput(String(Math.max(min, next)));
   };
 
   const handleInputSave = () => {
     if (input === "") return;
     const val = parseInt(input, 10);
-    if (isNaN(val) || val < 0) return;
-    const newVal = Math.min(9999, val);
+    if (isNaN(val)) return;
+    const newVal = Math.max(0, Math.min(9999, (q ?? 0) + val));
     onSave(size, String(newVal), () => setInput(""));
   };
 
@@ -609,23 +613,23 @@ function SizeStockInput({ size, currentQty, onSave, saving }) {
         <div style={{ display:"flex", gap:4 }}>
           <button
             onClick={() => handleDelta(-1)}
-            disabled={saving || (q ?? 0) <= 0}
-            title="Restar 1"
+            disabled={saving || (isNaN(parsedInput) ? 0 : parsedInput) <= -(q ?? 0)}
+            title="Restar 1 al ajuste"
             style={{
               width:30, height:30, borderRadius:6, border:"1.5px solid #e5e7eb",
-              background: saving||(q??0)<=0 ? "#f3f4f6" : "#fff",
-              color: saving||(q??0)<=0 ? "#d1d5db" : "#dc2626",
-              cursor: saving||(q??0)<=0 ? "not-allowed" : "pointer",
+              background: saving ? "#f3f4f6" : "#fff",
+              color: saving ? "#d1d5db" : "#dc2626",
+              cursor: saving ? "not-allowed" : "pointer",
               fontSize:18, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center",
               transition:"all .12s", lineHeight:1,
             }}
-            onMouseEnter={e=>{ if(!saving&&(q??0)>0){ e.currentTarget.style.background="#fef2f2"; e.currentTarget.style.borderColor="#fca5a5"; }}}
+            onMouseEnter={e=>{ if(!saving){ e.currentTarget.style.background="#fef2f2"; e.currentTarget.style.borderColor="#fca5a5"; }}}
             onMouseLeave={e=>{ e.currentTarget.style.background="#fff"; e.currentTarget.style.borderColor="#e5e7eb"; }}
           >−</button>
           <button
             onClick={() => handleDelta(1)}
             disabled={saving}
-            title="Sumar 1"
+            title="Sumar 1 al ajuste"
             style={{
               width:30, height:30, borderRadius:6, border:"1.5px solid #e5e7eb",
               background: saving ? "#f3f4f6" : "#fff",
@@ -643,14 +647,14 @@ function SizeStockInput({ size, currentQty, onSave, saving }) {
       {/* Separador */}
       <div style={{ width:1, height:32, background:"#e5e7eb", flexShrink:0 }} />
 
-      {/* Input fijar cantidad exacta */}
+      {/* Input sumar al stock */}
       <div style={{ flex:1, minWidth:80 }}>
-        <div style={{ fontSize:10, fontWeight:600, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".08em", marginBottom:3 }}>Fijar cantidad</div>
+        <div style={{ fontSize:10, fontWeight:600, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".08em", marginBottom:3 }}>Sumar al stock</div>
         <input type="number" min="0" max="9999" value={input}
           onChange={e=>setInput(e.target.value)}
           onFocus={()=>setFocused(true)}
           onBlur={()=>setFocused(false)}
-          placeholder={q === null ? "cantidad exacta" : `actual: ${q}`}
+          placeholder={q === null ? "cant. a sumar" : `0 → queda ${q}`}
           style={{
             width:"100%", boxSizing:"border-box", padding:"6px 10px",
             fontSize:14, fontWeight:600, border:"1px solid #d1d5db", borderRadius:8,
@@ -662,18 +666,18 @@ function SizeStockInput({ size, currentQty, onSave, saving }) {
 
       {/* Botón guardar */}
       <button onClick={handleInputSave}
-        disabled={saving || input===""}
+        disabled={saving || input === "" || input === "0"}
         style={{
           padding:"10px 16px", fontSize:12, fontWeight:700, borderRadius:8,
           border:"none", flexShrink:0,
-          background: saving||input==="" ? "#f3f4f6" : "#111",
-          color: saving||input==="" ? "#9ca3af" : "#fff",
-          cursor: saving||input==="" ? "not-allowed" : "pointer",
+          background: saving||input===""||input==="0" ? "#f3f4f6" : "#111",
+          color: saving||input===""||input==="0" ? "#9ca3af" : "#fff",
+          cursor: saving||input===""||input==="0" ? "not-allowed" : "pointer",
           transition:"all .15s ease",
           display:"flex", alignItems:"center", gap:5,
         }}
-        onMouseEnter={e => { if(input) e.currentTarget.style.background="#374151"; }}
-        onMouseLeave={e => { if(input) e.currentTarget.style.background="#111"; }}>
+        onMouseEnter={e => { if(input && input !== "0") e.currentTarget.style.background="#374151"; }}
+        onMouseLeave={e => { if(input && input !== "0") e.currentTarget.style.background="#111"; }}>
         {saving
           ? <Spinner size={12} color="#9ca3af" />
           : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>}

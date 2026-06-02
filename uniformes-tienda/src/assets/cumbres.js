@@ -18,6 +18,8 @@ import imgCamisetaFisicaMasc1 from "./Cumbres/_07A9426.webp";
 import imgBlusaGalaHS from "./Cumbres/_07A9499.webp";
 import imgPoloDamaHS from "./Cumbres/_07A9506.webp";
 import imgCamisaGalaHombreHS from "./Cumbres/_07A9508.webp";
+import imgCamisetaPoloMascHS from "./Cumbres/camiseta polo high school masculino.JPG";
+import imgCamisetaCuelloRedondoMascHS from "./Cumbres/camiseta cuello redondo high school masculino.JPG";
 import imgCuelloVDamaHS from "./Cumbres/_07A9520.webp";
 import imgSacoTejidoHS from "./Cumbres/_07A9518.webp";
 import imgChompaGrisHS1 from "./Cumbres/_07A9530.webp";
@@ -54,6 +56,8 @@ export {
   imgBlusaGalaHS,
   imgPoloDamaHS,
   imgCamisaGalaHombreHS,
+  imgCamisetaPoloMascHS,
+  imgCamisetaCuelloRedondoMascHS,
   imgCuelloVDamaHS,
   imgSacoTejidoHS,
   imgChompaGrisHS1,

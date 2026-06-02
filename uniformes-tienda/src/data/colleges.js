@@ -119,6 +119,8 @@ function applyCumbresImages(college, imgs) {
     221: { image: imgs.imgChompaGrisHS2, hoverImage: imgs.imgChompaGrisHS1 },
     // High School Masculino
     200: { image: imgs.imgCamisaGalaHombreHS },
+    202: { image: imgs.imgCamisetaPoloMascHS },
+    204: { image: imgs.imgCamisetaCuelloRedondoMascHS },
     209: { image: imgs.imgCamisaGalaHombreHS },
     232: { image: imgs.imgSudaderaHS },
     233: { image: imgs.imgCorbata },
