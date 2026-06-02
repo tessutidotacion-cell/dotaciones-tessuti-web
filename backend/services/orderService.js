@@ -278,7 +278,6 @@ export const getStats = async () => {
 // ── STOCK ─────────────────────────────────────────────────────
 export const getStock = async (collegeId) => {
   if (IS_MOCK) {
-    // Devuelve stock ficticio para no bloquear el catálogo en pruebas
     return {
       "1": { "S": 100, "M": 100, "L": 100, "XL": 100 },
       "2": { "S": 100, "M": 100, "L": 100, "XL": 100 },

@@ -1607,9 +1607,31 @@ export default function AdminPanel({ onLogout, toast }) {
                     const allUnis = getAllUniforms(col);
                     const hasSections = col.sections?.length > 0;
                     const currentFilter = stockSectionFilter[col.id] || "all";
+
+                    // Detectar productos que aparecen en 2+ secciones → Unisex
+                    const _idCount = {};
+                    col.sections?.forEach(s => s.uniforms.forEach(u => {
+                      _idCount[u.id] = (_idCount[u.id] || 0) + 1;
+                    }));
+                    const _sharedIds = new Set(Object.keys(_idCount).filter(k => _idCount[k] > 1).map(Number));
+                    const _seenShared = new Set();
+                    const _sharedUniforms = [];
+                    col.sections?.forEach(s => s.uniforms.forEach(u => {
+                      if (_sharedIds.has(u.id) && !_seenShared.has(u.id)) {
+                        _seenShared.add(u.id); _sharedUniforms.push(u);
+                      }
+                    }));
+
                     const allSections = hasSections
-                      ? col.sections.map(s => ({ id: s.id, name: s.name, uniforms: s.uniforms }))
+                      ? [
+                          ...(_sharedUniforms.length > 0 ? [{ id:"unisex", name:"Unisex", uniforms: _sharedUniforms }] : []),
+                          ...col.sections.map(s => ({
+                            id: s.id, name: s.name,
+                            uniforms: s.uniforms.filter(u => !_sharedIds.has(u.id)),
+                          })).filter(s => s.uniforms.length > 0),
+                        ]
                       : [{ id: null, name: null, uniforms: col.uniforms }];
+
                     const sections = currentFilter === "all"
                       ? allSections
                       : allSections.filter(s => s.id === currentFilter);
@@ -1641,6 +1663,7 @@ export default function AdminPanel({ onLogout, toast }) {
                             style={{ marginLeft:"auto", padding:"6px 10px", border:"1px solid #d1d5db", borderRadius:6,
                               fontSize:12, background:"#fff", color:"#374151", cursor:"pointer" }}>
                             <option value="all">Todas las secciones</option>
+                            {_sharedUniforms.length > 0 && <option value="unisex">Unisex</option>}
                             {col.sections.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                           </select>
                         )}
