@@ -125,6 +125,7 @@ function applyCumbresImages(college, imgs) {
     233: { image: imgs.imgCorbata },
     309: { image: imgs.imgMediasGrises },
     310: { image: imgs.imgCorrea },
+    212: { image: imgs.imgMediasAzulesGala },
   };
 
   return {
