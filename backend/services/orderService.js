@@ -20,7 +20,7 @@ const STOCK_TTL  = 60_000;
 
 const COUNTER_DOC  = "counters";
 const COUNTER_ID   = "orders";
-const COUNTER_INIT = 3883; // próximo call → 3884
+const COUNTER_INIT = 3834; // próximo call → 3835
 
 let _mockCounter = COUNTER_INIT;
 
