@@ -10,7 +10,7 @@ import { LOGO_TESSUTI } from "../../assets";
 import { COP } from "../../utils/money";
 import { STATUS_META, STATUS_ORDER, getStatusOptions } from "../../constants/status";
 import { DEMO_COLLEGES } from "../../data/colleges";
-import { exportToExcel } from "../../utils/exportExcel";
+import { exportToExcel, exportOrdersToExcel } from "../../utils/exportExcel";
 import Spinner from "../../components/ui/Spinner";
 
 const getAllUniforms = (col) => col.sections?.length > 0
@@ -1268,7 +1268,29 @@ export default function AdminPanel({ onLogout, toast }) {
                     <h2 style={{ fontSize:22, fontWeight:700, color:"#111", marginBottom:2 }}>Pedidos</h2>
                     <p style={{ fontSize:13, color:"#9ca3af" }}>{filtered.length} resultado{filtered.length!==1?"s":""}</p>
                   </div>
-                  <ActionBar onRefresh={loadOrders} />
+                  <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+                    <button
+                      onClick={() => exportOrdersToExcel(orders)}
+                      disabled={orders.length === 0}
+                      style={{
+                        display:"flex", alignItems:"center", gap:7,
+                        padding:"9px 16px", borderRadius:8,
+                        border:"1.5px solid #16a34a", background:"#f0fdf4",
+                        color:"#15803d", fontSize:12, fontWeight:700,
+                        cursor: orders.length === 0 ? "not-allowed" : "pointer",
+                        opacity: orders.length === 0 ? 0.5 : 1,
+                        transition:"all .15s",
+                      }}
+                      onMouseEnter={e => { if(orders.length > 0) e.currentTarget.style.background="#dcfce7"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background="#f0fdf4"; }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                      </svg>
+                      Descargar Excel
+                    </button>
+                    <ActionBar onRefresh={loadOrders} />
+                  </div>
                 </div>
 
                 <TabBar />

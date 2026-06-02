@@ -78,6 +78,40 @@ function buildSalesRows(orders) {
   );
 }
 
+export function exportOrdersToExcel(orders) {
+  const rows = orders.map(o => ({
+    "N° Pedido":      o.id,
+    "Fecha":          o.createdAt ? new Date(o.createdAt).toLocaleDateString("es-CO") : "—",
+    "Estado":         o.status,
+    "Institución":    o.collegeName || "—",
+    "Estudiante":     o.student?.name || "—",
+    "Grado":          o.student?.grade || "—",
+    "Documento":      o.student?.document || "—",
+    "Acudiente":      o.guardian?.name || "—",
+    "Teléfono":       o.guardian?.phone || "—",
+    "Email":          o.guardian?.email || "—",
+    "Entrega":        o.delivery?.type === "domicilio"
+                        ? `Domicilio: ${o.delivery.address?.street || ""}, ${o.delivery.address?.neighborhood || ""}`
+                        : o.delivery?.type === "domicilio_coordinado"
+                        ? `Por coordinar${o.delivery.coordinationNote ? ": " + o.delivery.coordinationNote : ""}`
+                        : "Recogida en tienda",
+    "Pago":           o.paymentMethod || "—",
+    "Trans. Wompi":   o.wompiTransactionId || "—",
+    "Prendas":        (o.items || []).map(i => `${i.name} T${i.size} ×${i.qty}`).join(" | "),
+    "Total":          o.total || 0,
+  }));
+
+  const wb = XLSX.utils.book_new();
+  const ws = rows.length > 0
+    ? XLSX.utils.json_to_sheet(rows)
+    : XLSX.utils.json_to_sheet([{ "N° Pedido": "Sin pedidos" }]);
+  ws["!cols"] = [18, 12, 14, 22, 22, 8, 14, 22, 14, 24, 36, 12, 18, 50, 14].map(w => ({ wch: w }));
+  XLSX.utils.book_append_sheet(wb, ws, "Pedidos");
+
+  const date = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `tessuti-pedidos-${date}.xlsx`);
+}
+
 export function exportToExcel(stockData, orders) {
   const wb = XLSX.utils.book_new();
 
