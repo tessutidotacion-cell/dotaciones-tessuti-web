@@ -6,7 +6,7 @@ import { validateCreateOrder } from "../middleware/validators.js";
 import {
   createOrder, getOrders, getOrderById,
   updateOrderStatus, updatePaymentProof, getStats,
-  getStock, setStock, updateDeliveryNote,
+  getStock, setStock, updateDeliveryNote, getStockHistory,
 } from "../services/orderService.js";
 import { uploadPaymentProof } from "../services/uploadService.js";
 import { sendOrderConfirmation, sendStatusUpdate } from "../services/emailService.js";
@@ -136,6 +136,18 @@ router.get("/track", async (req, res) => {
   }
 });
 
+
+// GET /api/orders/stock/history  — historial de movimientos (admin)
+router.get("/stock/history", requireAdmin, async (req, res) => {
+  try {
+    const { collegeId, limit } = req.query;
+    const data = await getStockHistory({
+      collegeId: collegeId || null,
+      limit:     Math.min(Number(limit) || 200, 500),
+    });
+    res.json({ success: true, data });
+  } catch(e) { res.status(500).json({ success: false, error: e.message }); }
+});
 
 // GET /api/orders/stock?collegeId=1  — público (lo necesita el catálogo del cliente)
 router.get("/stock", async (req, res) => {

@@ -1,13 +1,14 @@
 import { db } from "../config/firebase.js";
-import { randomBytes } from "crypto";
 import { createBoldPaymentLink } from "./boldService.js";
 
-const ORDERS_COL = "pedidos";
-const STOCK_COL  = "stock";
+const ORDERS_COL  = "pedidos";
+const STOCK_COL   = "stock";
+const HISTORY_COL = "stock_historial";
 
 // ── Mock en memoria (solo activo si FIREBASE_MOCK=true) ───────
 const IS_MOCK = process.env.FIREBASE_MOCK === "true";
-const _mockStore = new Map(); // simula Firestore en RAM
+const _mockStore   = new Map();
+const _mockHistory = [];
 
 if (IS_MOCK) {
   console.log("⚠️  FIREBASE_MOCK activo — ninguna escritura llegará a Firestore");
@@ -17,10 +18,29 @@ if (IS_MOCK) {
 const stockCache = new Map();
 const STOCK_TTL  = 60_000;
 
-const generateOrderId = () => {
-  const year   = new Date().getFullYear();
-  const random = randomBytes(3).toString("hex").toUpperCase(); // 16M+ combinaciones
-  return `PED-${year}-${random}`;
+const COUNTER_DOC  = "counters";
+const COUNTER_ID   = "orders";
+const COUNTER_INIT = 3883; // próximo call → 3884
+
+let _mockCounter = COUNTER_INIT;
+
+const generateOrderId = async () => {
+  const year = new Date().getFullYear();
+
+  if (IS_MOCK) {
+    _mockCounter += 1;
+    return `PED-${year}-${_mockCounter}`;
+  }
+
+  const ref = db.collection(COUNTER_DOC).doc(COUNTER_ID);
+  const seq = await db.runTransaction(async (tx) => {
+    const doc = await tx.get(ref);
+    const next = doc.exists ? (doc.data().seq + 1) : (COUNTER_INIT + 1);
+    tx.set(ref, { seq: next }, { merge: true });
+    return next;
+  });
+
+  return `PED-${year}-${seq}`;
 };
 
 const VALID_STATUSES = [
@@ -30,7 +50,7 @@ const VALID_STATUSES = [
 
 // ── CREAR PEDIDO ──────────────────────────────────────────────
 export const createOrder = async (orderData) => {
-  const orderId    = generateOrderId();
+  const orderId    = await generateOrderId();
   const isDelivery = orderData.delivery?.type === "domicilio";
   const itemsTotal = orderData.items.reduce((s, i) => s + i.price * i.qty, 0);
 
@@ -81,7 +101,7 @@ export const createOrder = async (orderData) => {
   batch.set(orderRef, newOrder);
   await batch.commit();
 
-  _decrementStock(orderData.collegeId, orderData.items).catch(err =>
+  _decrementStock(orderData.collegeId, orderData.items, orderId).catch(err =>
     console.error("Error descontando stock:", err.message)
   );
 
@@ -89,19 +109,34 @@ export const createOrder = async (orderData) => {
 };
 
 // Descuenta stock (solo en producción real)
-const _decrementStock = async (collegeId, items) => {
-  if (IS_MOCK) return; // no-op en mock
+const _decrementStock = async (collegeId, items, orderId) => {
+  if (IS_MOCK) return;
 
   const stockRef = db.collection(STOCK_COL).doc(String(collegeId));
+  const movements = [];
+
   await db.runTransaction(async (tx) => {
     const stockDoc = await tx.get(stockRef);
     const current  = stockDoc.exists ? (stockDoc.data().products || {}) : {};
     const updated  = { ...current };
     for (const item of items) {
-      const pid   = String(item.id);
-      const sizes = updated[pid] ? { ...updated[pid] } : {};
+      const pid     = String(item.id);
+      const sizes   = updated[pid] ? { ...updated[pid] } : {};
+      const prevQty = sizes[item.size] ?? 0;
       if (sizes[item.size] !== undefined) {
-        sizes[item.size] = Math.max(0, (sizes[item.size] || 0) - item.qty);
+        sizes[item.size] = Math.max(0, prevQty - item.qty);
+        movements.push({
+          timestamp:   new Date().toISOString(),
+          collegeId:   String(collegeId),
+          productId:   pid,
+          productName: item.name || "",
+          size:        item.size,
+          delta:       -(item.qty),
+          prevQty,
+          newQty:      sizes[item.size],
+          source:      "pedido",
+          orderId:     orderId || null,
+        });
       }
       updated[pid] = sizes;
     }
@@ -111,7 +146,15 @@ const _decrementStock = async (collegeId, items) => {
       updatedAt: new Date().toISOString(),
     }, { merge: true });
   });
+
   stockCache.delete(String(collegeId));
+
+  // Escribir movimientos fuera de la transacción (no bloqueante)
+  const batch = db.batch();
+  for (const mv of movements) {
+    batch.set(db.collection(HISTORY_COL).doc(), mv);
+  }
+  await batch.commit();
 };
 
 // ── LISTAR PEDIDOS ────────────────────────────────────────────
@@ -252,16 +295,61 @@ export const getStock = async (collegeId) => {
 
 export const setStock = async (collegeId, productId, size, quantity) => {
   if (IS_MOCK) {
+    _mockHistory.push({
+      id:          `mock-${Date.now()}`,
+      timestamp:   new Date().toISOString(),
+      collegeId:   String(collegeId),
+      productId:   String(productId),
+      productName: "",
+      size,
+      delta:       quantity,
+      prevQty:     0,
+      newQty:      quantity,
+      source:      "admin_manual",
+      orderId:     null,
+    });
     return { [String(productId)]: { [String(size)]: quantity } };
   }
+
   const key            = String(collegeId);
   const ref            = db.collection(STOCK_COL).doc(key);
   const doc            = await ref.get();
   const current        = doc.exists ? (doc.data().products || {}) : {};
   const currentProduct = current[String(productId)] || {};
+  const prevQty        = currentProduct[String(size)] ?? 0;
   const updatedProduct = { ...currentProduct, [String(size)]: quantity };
   const updated        = { ...current, [String(productId)]: updatedProduct };
+
   await ref.set({ collegeId: key, products: updated, updatedAt: new Date().toISOString() }, { merge: true });
   stockCache.delete(key);
+
+  // Registrar movimiento solo si hubo cambio real
+  const delta = quantity - prevQty;
+  if (delta !== 0) {
+    await db.collection(HISTORY_COL).add({
+      timestamp:   new Date().toISOString(),
+      collegeId:   key,
+      productId:   String(productId),
+      productName: "",
+      size,
+      delta,
+      prevQty,
+      newQty:      quantity,
+      source:      "admin_manual",
+      orderId:     null,
+    });
+  }
+
   return updated;
+};
+
+// ── HISTORIAL DE STOCK ────────────────────────────────────────
+export const getStockHistory = async ({ collegeId, limit = 200 } = {}) => {
+  if (IS_MOCK) {
+    return [..._mockHistory].reverse().slice(0, limit);
+  }
+  let query = db.collection(HISTORY_COL).orderBy("timestamp", "desc").limit(limit);
+  if (collegeId) query = query.where("collegeId", "==", String(collegeId));
+  const snapshot = await query.get();
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
 };

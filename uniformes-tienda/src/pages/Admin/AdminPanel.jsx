@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   getOrders, updateOrderStatus, updateDeliveryNote,
-  getStats, getStock, updateStock,
+  getStats, getStock, updateStock, getStockHistory,
   getDiscounts, setDiscount, removeDiscount,
   getCoupons, createCoupon, toggleCoupon, deleteCoupon,
 } from "../../services/api";
@@ -73,6 +74,25 @@ function OrderDetailModal({ order, onClose, onOrderUpdate }) {
   const [savingNote, setSavingNote] = useState(false);
   const [noteSaved,  setNoteSaved]  = useState(false);
 
+  useEffect(() => {
+    const main = document.querySelector("main");
+    const scrollY = main ? main.scrollTop : window.scrollY;
+    if (main) {
+      main.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      if (main) {
+        main.style.overflow = "";
+        main.scrollTop = scrollY;
+      } else {
+        document.body.style.overflow = "";
+        window.scrollTo(0, scrollY);
+      }
+    };
+  }, []);
+
   if (!order) return null;
   const deliveryFee = order.delivery?.type === "domicilio" ? 15000 : 0;
 
@@ -89,10 +109,10 @@ function OrderDetailModal({ order, onClose, onOrderUpdate }) {
       setSavingNote(false);
     }
   };
-  return (
+  return createPortal(
     <div
       onClick={onClose}
-      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.7)", zIndex:9000,
+      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.75)", zIndex:9999,
         display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
       <div
         onClick={e => e.stopPropagation()}
@@ -240,40 +260,84 @@ function OrderDetailModal({ order, onClose, onOrderUpdate }) {
 
           {/* Artículos */}
           <div>
-            <div style={{ fontSize:11, fontWeight:700, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".1em", marginBottom:10 }}>Artículos</div>
-            <div style={{ border:"1px solid #e5e7eb", borderRadius:8, overflow:"hidden" }}>
+            <div style={{ fontSize:11, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:".12em", marginBottom:12 }}>
+              Prendas del pedido · {order.items?.length} ítem{order.items?.length !== 1 ? "s" : ""}
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
               {order.items?.map((item, i) => (
-                <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center",
-                  padding:"10px 14px", borderBottom:i<order.items.length-1?"1px solid #e5e7eb":"none",
-                  background: item.reserved ? "#fffbeb" : i%2===0?"#fff":"#f9fafb" }}>
-                  <div>
-                    <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
-                      <span style={{ fontSize:13, fontWeight:600, color:"#111" }}>{item.name}</span>
+                <div key={i} style={{
+                  display:"flex", alignItems:"center", gap:14,
+                  background: item.reserved ? "#fffbeb" : "#fff",
+                  border: item.reserved ? "1.5px solid #fcd34d" : "1.5px solid #e5e7eb",
+                  borderRadius:12, padding:"14px 16px",
+                  boxShadow:"0 1px 3px rgba(0,0,0,.05)",
+                }}>
+                  {/* Número de ítem */}
+                  <div style={{
+                    width:32, height:32, borderRadius:8, flexShrink:0,
+                    background: item.reserved ? "#fef3c7" : "#f3f4f6",
+                    display:"flex", alignItems:"center", justifyContent:"center",
+                    fontSize:13, fontWeight:800, color: item.reserved ? "#92400e" : "#374151",
+                  }}>{i + 1}</div>
+
+                  {/* Info prenda */}
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap", marginBottom:6 }}>
+                      <span style={{ fontSize:15, fontWeight:700, color:"#111", lineHeight:1.3 }}>{item.name}</span>
                       {item.reserved && (
-                        <span style={{ fontSize:9, fontWeight:700, letterSpacing:".08em", textTransform:"uppercase",
-                          background:"#fff7ed", color:"#c2410c", border:"1px solid #fed7aa",
-                          padding:"2px 7px", borderRadius:4, whiteSpace:"nowrap" }}>
-                          Reservado
+                        <span style={{ fontSize:10, fontWeight:700, letterSpacing:".06em", textTransform:"uppercase",
+                          background:"#fef3c7", color:"#b45309", border:"1px solid #fcd34d",
+                          padding:"3px 8px", borderRadius:6, whiteSpace:"nowrap", flexShrink:0 }}>
+                          ⚠ Reservado
                         </span>
                       )}
                     </div>
-                    <div style={{ fontSize:11, color:"#9ca3af", marginTop:2 }}>Talla: {item.size} · {COP(item.price)} c/u</div>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+                      {/* Talla */}
+                      <span style={{
+                        background:"#f3f4f6", color:"#374151", border:"1px solid #e5e7eb",
+                        padding:"3px 10px", borderRadius:6, fontSize:13, fontWeight:700,
+                      }}>Talla {item.size}</span>
+                      {/* Precio unitario */}
+                      <span style={{ fontSize:13, color:"#6b7280", fontWeight:500 }}>{COP(item.price)} c/u</span>
+                    </div>
                   </div>
+
+                  {/* Cantidad + subtotal */}
                   <div style={{ textAlign:"right", flexShrink:0 }}>
-                    <div style={{ fontSize:13, fontWeight:700, color:"#111" }}>{COP(item.price * item.qty)}</div>
-                    <div style={{ fontSize:11, color:"#9ca3af", marginTop:1 }}>× {item.qty} ud{item.qty>1?"s":""}</div>
+                    <div style={{ fontSize:17, fontWeight:800, color:"#111", marginBottom:4 }}>
+                      {COP(item.price * item.qty)}
+                    </div>
+                    <div style={{
+                      display:"inline-flex", alignItems:"center", gap:4,
+                      background:"#111", color:"#fff",
+                      padding:"3px 10px", borderRadius:20, fontSize:12, fontWeight:700,
+                    }}>
+                      × {item.qty} ud{item.qty > 1 ? "s" : ""}
+                    </div>
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Domicilio + Total */}
+            <div style={{ marginTop:12, borderRadius:12, border:"1px solid #e5e7eb", overflow:"hidden" }}>
               {deliveryFee > 0 && (
-                <div style={{ display:"flex", justifyContent:"space-between", padding:"10px 14px", background:"#eff6ff", borderTop:"1px solid #e5e7eb" }}>
-                  <span style={{ fontSize:13, color:"#1e3a8a" }}>Costo de domicilio</span>
-                  <span style={{ fontSize:13, fontWeight:600, color:"#1e3a8a" }}>+ {COP(deliveryFee)}</span>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center",
+                  padding:"12px 16px", background:"#eff6ff", borderBottom:"1px solid #bfdbfe" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round">
+                      <path d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+                    </svg>
+                    <span style={{ fontSize:14, color:"#1e3a8a", fontWeight:600 }}>Costo de domicilio</span>
+                  </div>
+                  <span style={{ fontSize:14, fontWeight:700, color:"#1e3a8a" }}>+ {COP(deliveryFee)}</span>
                 </div>
               )}
-              <div style={{ display:"flex", justifyContent:"space-between", padding:"12px 14px", background:"#f3f4f6", borderTop:"1px solid #e5e7eb" }}>
-                <span style={{ fontSize:14, fontWeight:700, color:"#111" }}>Total</span>
-                <span style={{ fontSize:16, fontWeight:700, color:"#111" }}>{COP(order.total)}</span>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center",
+                padding:"16px 18px", background:"#f9fafb" }}>
+                <span style={{ fontSize:15, fontWeight:700, color:"#374151" }}>Total del pedido</span>
+                <span style={{ fontSize:20, fontWeight:800, color:"#111" }}>{COP(order.total)}</span>
               </div>
             </div>
           </div>
@@ -357,7 +421,8 @@ function OrderDetailModal({ order, onClose, onOrderUpdate }) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -983,12 +1048,28 @@ export default function AdminPanel({ onLogout, toast }) {
     } catch(err) { toast(err.message, "error"); }
   };
 
+  // ── Historial de stock ────────────────────────────────────────
+  const [historyData,    setHistoryData]    = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  const loadHistory = useCallback(async () => {
+    setLoadingHistory(true);
+    try {
+      const { data } = await getStockHistory({ limit: 300 });
+      setHistoryData(data || []);
+    } catch(err) { toast(err.message, "error"); }
+    finally { setLoadingHistory(false); }
+  }, [toast]);
+
+  useEffect(() => { if(tab === "history") loadHistory(); }, [tab, loadHistory]);
+
   const TABS = [
     { id:"orders",    label:"Pedidos",      icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg> },
     { id:"stats",     label:"Estadísticas", icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg> },
     { id:"stock",     label:"Stock",        icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg> },
     { id:"discounts", label:"Descuentos",   icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> },
     { id:"coupons",   label:"Cupones",      icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg> },
+    { id:"history",   label:"Historial",    icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 106 5.3L3 8"/><path d="M12 7v5l4 2"/></svg> },
   ];
 
   const TabBar = () => (
@@ -1903,6 +1984,136 @@ export default function AdminPanel({ onLogout, toast }) {
                         </tbody>
                       </table>
                     </div>
+                  )
+                }
+              </>
+            )}
+
+            {/* ── HISTORIAL DE STOCK ── */}
+            {tab === "history" && (
+              <>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20, flexWrap:"wrap", gap:12 }}>
+                  <div>
+                    <h2 style={{ fontSize:22, fontWeight:700, color:"#111", marginBottom:2 }}>Historial de Stock</h2>
+                    <p style={{ fontSize:13, color:"#9ca3af" }}>{historyData.length} movimiento{historyData.length !== 1 ? "s" : ""}</p>
+                  </div>
+                  <ActionBar onRefresh={loadHistory} />
+                </div>
+                <TabBar />
+
+                {loadingHistory
+                  ? <div style={{ display:"flex", justifyContent:"center", padding:52 }}><Spinner size={28} color="#9ca3af" /></div>
+                  : historyData.length === 0
+                  ? <div style={{ textAlign:"center", padding:60, color:"#9ca3af", fontSize:14 }}>Sin movimientos registrados aún</div>
+                  : (
+                    <>
+                      {/* Tabla desktop */}
+                      <div style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:10, overflow:"hidden" }} className="desktop-table">
+                        <div className="tbl-wrap">
+                          <table>
+                            <thead>
+                              <tr style={{ background:"#f3f4f6", borderBottom:"1px solid #e5e7eb" }}>
+                                {["Fecha y hora","Prenda","Talla","Movimiento","Antes","Después","Origen"].map(h => (
+                                  <th key={h}>{h}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {historyData.map((mv, i) => {
+                                const isEntrada = mv.delta > 0;
+                                const col = DEMO_COLLEGES.find(c => String(c.id) === String(mv.collegeId));
+                                return (
+                                  <tr key={mv.id || i} style={{ borderBottom:"1px solid #e5e7eb", background: i%2===0?"#fff":"#fafafa" }}>
+                                    <td style={{ padding:"12px 16px", whiteSpace:"nowrap" }}>
+                                      <div style={{ fontSize:13, fontWeight:600, color:"#111" }}>
+                                        {new Date(mv.timestamp).toLocaleDateString("es-CO", { day:"2-digit", month:"short", year:"numeric" })}
+                                      </div>
+                                      <div style={{ fontSize:11, color:"#9ca3af" }}>
+                                        {new Date(mv.timestamp).toLocaleTimeString("es-CO", { hour:"2-digit", minute:"2-digit" })}
+                                      </div>
+                                    </td>
+                                    <td style={{ padding:"12px 16px" }}>
+                                      <div style={{ fontSize:13, fontWeight:600, color:"#111" }}>
+                                        {mv.productName || `Producto ${mv.productId}`}
+                                      </div>
+                                      {col && <div style={{ fontSize:11, color:"#9ca3af", marginTop:2 }}>{col.name}</div>}
+                                    </td>
+                                    <td style={{ padding:"12px 16px" }}>
+                                      <span style={{ background:"#f3f4f6", color:"#374151", border:"1px solid #e5e7eb", padding:"3px 10px", borderRadius:6, fontSize:13, fontWeight:700 }}>
+                                        {mv.size}
+                                      </span>
+                                    </td>
+                                    <td style={{ padding:"12px 16px" }}>
+                                      <span style={{
+                                        display:"inline-flex", alignItems:"center", gap:5,
+                                        background: isEntrada ? "#f0fdf4" : "#fef2f2",
+                                        color:      isEntrada ? "#15803d" : "#dc2626",
+                                        border:     `1px solid ${isEntrada ? "#86efac" : "#fca5a5"}`,
+                                        padding:"4px 12px", borderRadius:20, fontSize:13, fontWeight:700,
+                                      }}>
+                                        {isEntrada ? "▲" : "▼"} {isEntrada ? "+" : ""}{mv.delta}
+                                      </span>
+                                    </td>
+                                    <td style={{ padding:"12px 16px", fontSize:14, fontWeight:600, color:"#374151" }}>{mv.prevQty ?? "—"}</td>
+                                    <td style={{ padding:"12px 16px", fontSize:14, fontWeight:700, color:"#111" }}>{mv.newQty ?? "—"}</td>
+                                    <td style={{ padding:"12px 16px" }}>
+                                      {mv.source === "pedido"
+                                        ? <span style={{ fontSize:12, color:"#6b7280", background:"#f3f4f6", border:"1px solid #e5e7eb", padding:"3px 8px", borderRadius:6 }}>
+                                            Pedido {mv.orderId || ""}
+                                          </span>
+                                        : <span style={{ fontSize:12, color:"#4338ca", background:"#eef2ff", border:"1px solid #c7d2fe", padding:"3px 8px", borderRadius:6 }}>
+                                            Admin manual
+                                          </span>}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* Cards móvil */}
+                      <div className="mobile-stock-cards">
+                        {historyData.map((mv, i) => {
+                          const isEntrada = mv.delta > 0;
+                          const col = DEMO_COLLEGES.find(c => String(c.id) === String(mv.collegeId));
+                          return (
+                            <div key={mv.id || i} style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:12, padding:"14px 16px", marginBottom:10 }}>
+                              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
+                                <div>
+                                  <div style={{ fontSize:14, fontWeight:700, color:"#111" }}>
+                                    {mv.productName || `Producto ${mv.productId}`}
+                                  </div>
+                                  {col && <div style={{ fontSize:11, color:"#9ca3af", marginTop:1 }}>{col.name}</div>}
+                                </div>
+                                <span style={{
+                                  display:"inline-flex", alignItems:"center", gap:4,
+                                  background: isEntrada ? "#f0fdf4" : "#fef2f2",
+                                  color:      isEntrada ? "#15803d" : "#dc2626",
+                                  border:     `1px solid ${isEntrada ? "#86efac" : "#fca5a5"}`,
+                                  padding:"4px 12px", borderRadius:20, fontSize:13, fontWeight:700,
+                                }}>
+                                  {isEntrada ? "▲" : "▼"} {isEntrada ? "+" : ""}{mv.delta}
+                                </span>
+                              </div>
+                              <div style={{ display:"flex", gap:8, flexWrap:"wrap", alignItems:"center" }}>
+                                <span style={{ background:"#f3f4f6", border:"1px solid #e5e7eb", padding:"2px 10px", borderRadius:6, fontSize:12, fontWeight:700, color:"#374151" }}>
+                                  Talla {mv.size}
+                                </span>
+                                <span style={{ fontSize:12, color:"#6b7280" }}>{mv.prevQty ?? "—"} → {mv.newQty ?? "—"}</span>
+                                <span style={{ fontSize:11, color:"#9ca3af" }}>
+                                  {new Date(mv.timestamp).toLocaleDateString("es-CO",{ day:"2-digit", month:"short" })} {new Date(mv.timestamp).toLocaleTimeString("es-CO",{ hour:"2-digit", minute:"2-digit" })}
+                                </span>
+                              </div>
+                              {mv.orderId && (
+                                <div style={{ marginTop:8, fontSize:11, color:"#6b7280" }}>Pedido: {mv.orderId}</div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
                   )
                 }
               </>

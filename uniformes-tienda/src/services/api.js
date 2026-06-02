@@ -119,6 +119,14 @@ export const updateStock = async (collegeId, productId, size, quantity) => {
   return handleResponse(res);
 };
 
+export const getStockHistory = async ({ collegeId, limit } = {}) => {
+  const params = new URLSearchParams();
+  if (collegeId) params.set("collegeId", collegeId);
+  if (limit)     params.set("limit", limit);
+  const res = await fetch(`${BASE_URL}/orders/stock/history?${params}`, { headers: adminHeaders() });
+  return handleResponse(res);
+};
+
 // ── DESCUENTOS — PÚBLICO ──────────────────────────────────────
 export const getPublicDiscounts = async () => {
   const res = await fetch(`${BASE_URL}/discounts/public`, { headers: publicHeaders });
