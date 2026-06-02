@@ -37,7 +37,7 @@ import imgSudaderaVerdeMasc from "./Cumbres/sudadera verde fisica masculino.webp
 import imgMediasGrises from "./Cumbres/medias grises paquete x 3.webp";
 import imgMediasBlancasFisica from "./Cumbres/medias blancas fisica.webp";
 import imgPoloCumbres from "./Cumbres/polo cumbres.png";
-import imgMediasAzulesGala from "./Cumbres/medias azules pack por 3.png";
+import imgMediasAzulesGala from "./Cumbres/medias azules pack por 3.webp";
 
 export {
   imgCamisetaBambolino,
