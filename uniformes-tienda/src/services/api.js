@@ -98,6 +98,24 @@ export const updateOrderStatus = async (orderId, newStatus) => {
   return handleResponse(res);
 };
 
+export const updatePaymentMethod = async (orderId, paymentMethod) => {
+  const res = await fetch(`${BASE_URL}/orders/${orderId}/payment-method`, {
+    method:  "PATCH",
+    headers: adminHeaders(),
+    body:    JSON.stringify({ paymentMethod }),
+  });
+  return handleResponse(res);
+};
+
+export const cancelOrder = async (orderId) => {
+  const res = await fetch(`${BASE_URL}/orders/${orderId}/status`, {
+    method:  "PATCH",
+    headers: adminHeaders(),
+    body:    JSON.stringify({ status:"Anulado", skipEmail:true }),
+  });
+  return handleResponse(res);
+};
+
 export const getStats = async () => {
   const res = await fetch(`${BASE_URL}/orders/admin/stats`, { headers:adminHeaders() });
   return handleResponse(res);

@@ -21,6 +21,7 @@ export const STATUS_META = {
   "Listo para recoger": { bg: "#dcfce7", color: "#14532d", dot: "#22c55e" },
   "En camino":          { bg: "#ffedd5", color: "#7c2d12", dot: "#f97316" },
   "Entregado":          { bg: "#f0fdf4", color: "#065f46", dot: "#10b981" },
+  "Anulado":            { bg: "#fef2f2", color: "#991b1b", dot: "#ef4444" },
 };
 
 export const getStatusOptions = (deliveryType) =>

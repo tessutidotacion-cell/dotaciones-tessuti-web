@@ -45,7 +45,7 @@ const generateOrderId = async () => {
 
 const VALID_STATUSES = [
   "Pago en validación","Pago confirmado","En producción",
-  "Preparando pedido","Listo para recoger","En camino","Entregado",
+  "Preparando pedido","Listo para recoger","En camino","Entregado","Anulado",
 ];
 
 // ── CREAR PEDIDO ──────────────────────────────────────────────
@@ -242,6 +242,25 @@ export const updatePaymentProof = async (orderId, paymentProofUrl) => {
   if (!doc.exists) return null;
   await ref.update({ paymentProofUrl, updatedAt: new Date().toISOString() });
   return { ...doc.data(), paymentProofUrl };
+};
+
+// ── ACTUALIZAR MÉTODO DE PAGO ─────────────────────────────────
+const VALID_PAYMENT_METHODS = ["transfer", "cash", "wompi"];
+export const updatePaymentMethod = async (orderId, paymentMethod) => {
+  if (!VALID_PAYMENT_METHODS.includes(paymentMethod))
+    throw new Error(`Método de pago inválido: ${paymentMethod}`);
+  if (IS_MOCK) {
+    const order = _mockStore.get(orderId);
+    if (!order) return null;
+    const updated = { ...order, paymentMethod, updatedAt: new Date().toISOString() };
+    _mockStore.set(orderId, updated);
+    return updated;
+  }
+  const ref = db.collection(ORDERS_COL).doc(orderId);
+  const doc = await ref.get();
+  if (!doc.exists) return null;
+  await ref.update({ paymentMethod, updatedAt: new Date().toISOString() });
+  return { ...doc.data(), paymentMethod };
 };
 
 // ── ESTADÍSTICAS ──────────────────────────────────────────────

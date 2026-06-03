@@ -5,7 +5,7 @@ import { requireAdmin } from "../middleware/auth.js";
 import { validateCreateOrder } from "../middleware/validators.js";
 import {
   createOrder, getOrders, getOrderById,
-  updateOrderStatus, updatePaymentProof, getStats,
+  updateOrderStatus, updatePaymentProof, updatePaymentMethod, getStats,
   getStock, setStock, updateDeliveryNote, getStockHistory,
 } from "../services/orderService.js";
 import { uploadPaymentProof } from "../services/uploadService.js";
@@ -217,18 +217,30 @@ router.patch("/:id/delivery-note", requireAdmin, async (req, res) => {
 // PATCH /api/orders/:id/status  — cambiar estado + enviar email
 router.patch("/:id/status", requireAdmin, async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, skipEmail } = req.body;
     if (!status) return res.status(400).json({ success:false, error:"Se requiere el nuevo estado" });
 
     const updated = await updateOrderStatus(req.params.id, status, "admin");
     if (!updated) return res.status(404).json({ success:false, error:"Pedido no encontrado" });
 
-    // Email de actualización (no bloqueante)
-    sendStatusUpdate(updated, status).catch(err =>
-      console.error("Error enviando email de estado:", err.message)
-    );
+    // Email de actualización (no bloqueante) — omitir si skipEmail
+    if (!skipEmail) {
+      sendStatusUpdate(updated, status).catch(err =>
+        console.error("Error enviando email de estado:", err.message)
+      );
+    }
 
     res.json({ success:true, message:`Estado actualizado a: ${status}`, data:updated });
+  } catch(e) { res.status(400).json({ success:false, error:e.message }); }
+});
+
+router.patch("/:id/payment-method", requireAdmin, async (req, res) => {
+  try {
+    const { paymentMethod } = req.body;
+    if (!paymentMethod) return res.status(400).json({ success:false, error:"Se requiere el método de pago" });
+    const updated = await updatePaymentMethod(req.params.id, paymentMethod);
+    if (!updated) return res.status(404).json({ success:false, error:"Pedido no encontrado" });
+    res.json({ success:true, message:"Método de pago actualizado", data:updated });
   } catch(e) { res.status(400).json({ success:false, error:e.message }); }
 });
 

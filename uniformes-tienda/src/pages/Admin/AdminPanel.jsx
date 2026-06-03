@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import {
-  getOrders, updateOrderStatus, updateDeliveryNote,
+  getOrders, updateOrderStatus, cancelOrder, updatePaymentMethod, updateDeliveryNote,
   getStats, getStock, updateStock, getStockHistory,
   getDiscounts, setDiscount, removeDiscount,
   getCoupons, createCoupon, toggleCoupon, deleteCoupon,
@@ -917,6 +917,7 @@ export default function AdminPanel({ onLogout, toast }) {
   const [search, setSearch]     = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [updatingId, setUpdatingId]     = useState(null);
+  const [updatingPayment, setUpdatingPayment] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [statsData, setStatsData]   = useState(null);
   const [stockData, setStockData]   = useState({});
@@ -940,6 +941,27 @@ export default function AdminPanel({ onLogout, toast }) {
       await updateOrderStatus(id, status);
       setOrders(os => os.map(o => o.id===id ? {...o, status} : o));
       toast("Estado actualizado", "success");
+    } catch(err) { toast(err.message,"error"); }
+    finally { setUpdatingId(null); }
+  };
+
+  const handlePaymentMethod = async (id, method) => {
+    setUpdatingPayment(id);
+    try {
+      await updatePaymentMethod(id, method);
+      setOrders(os => os.map(o => o.id===id ? {...o, paymentMethod:method} : o));
+      toast("Método de pago actualizado", "success");
+    } catch(err) { toast(err.message,"error"); }
+    finally { setUpdatingPayment(null); }
+  };
+
+  const handleCancel = async (id) => {
+    if (!window.confirm("¿Anular este pedido? No se enviará correo al cliente.")) return;
+    setUpdatingId(id);
+    try {
+      await cancelOrder(id);
+      setOrders(os => os.map(o => o.id===id ? {...o, status:"Anulado"} : o));
+      toast("Pedido anulado", "success");
     } catch(err) { toast(err.message,"error"); }
     finally { setUpdatingId(null); }
   };
@@ -1335,6 +1357,7 @@ export default function AdminPanel({ onLogout, toast }) {
                         outline:"none", cursor:"pointer", background:"#fff" }}>
                       <option value="">Todos los estados</option>
                       {STATUS_ORDER.map(s=><option key={s}>{s}</option>)}
+                      <option value="Anulado">Anulado</option>
                     </select>
                   </div>
                   {(search || filterStatus) && (
@@ -1408,6 +1431,14 @@ export default function AdminPanel({ onLogout, toast }) {
                                 <td style={{ padding:"11px 13px" }}>
                                   <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
                                     <PaymentBadge method={o.paymentMethod} transactionId={o.wompiTransactionId} />
+                                    {updatingPayment===o.id
+                                      ? <Spinner size={12} color="#9ca3af" />
+                                      : <select value={o.paymentMethod||""} onChange={e=>handlePaymentMethod(o.id,e.target.value)}
+                                          style={{ fontSize:11, padding:"3px 6px", borderRadius:5, border:"1px solid #d1d5db", background:"#fafafa", color:"#374151" }}>
+                                          <option value="transfer">Transferencia</option>
+                                          <option value="cash">Efectivo</option>
+                                          <option value="wompi">Wompi</option>
+                                        </select>}
                                     {o.paymentProofUrl &&
                                       <a href={o.paymentProofUrl} target="_blank" rel="noreferrer"
                                           style={{ fontSize:10, fontWeight:600, color:"#065f46", background:"#f0fdf4", padding:"2px 7px", borderRadius:4, textDecoration:"none", alignSelf:"flex-start" }}>
@@ -1419,10 +1450,26 @@ export default function AdminPanel({ onLogout, toast }) {
                                 <td style={{ padding:"11px 13px" }}>
                                   {updatingId===o.id
                                     ? <Spinner size={14} color="#9ca3af" />
-                                    : <select value={o.status} onChange={e=>handleStatus(o.id,e.target.value)}
-                                        style={{ fontSize:12, padding:"5px 8px", borderRadius:6, border:"1px solid #d1d5db", minWidth:120 }}>
-                                        {getStatusOptions(o.delivery?.type).map(s=><option key={s}>{s}</option>)}
-                                      </select>}
+                                    : o.status === "Anulado"
+                                    ? <button onClick={()=>{
+                                        const prev = [...(o.statusHistory||[])].reverse().find(h=>h.status!=="Anulado")?.status || "Pago en validación";
+                                        handleStatus(o.id, prev);
+                                      }}
+                                        style={{ fontSize:11, padding:"5px 10px", borderRadius:6, border:"1px solid #d1d5db",
+                                          background:"#f9fafb", color:"#374151", cursor:"pointer", fontWeight:600, whiteSpace:"nowrap" }}>
+                                        Desanular
+                                      </button>
+                                    : <div style={{ display:"flex", gap:5, alignItems:"center" }}>
+                                        <select value={o.status} onChange={e=>handleStatus(o.id,e.target.value)}
+                                          style={{ fontSize:12, padding:"5px 8px", borderRadius:6, border:"1px solid #d1d5db", minWidth:120 }}>
+                                          {getStatusOptions(o.delivery?.type).map(s=><option key={s}>{s}</option>)}
+                                        </select>
+                                        <button onClick={()=>handleCancel(o.id)}
+                                          style={{ fontSize:11, padding:"5px 8px", borderRadius:6, border:"1px solid #fca5a5",
+                                            background:"#fef2f2", color:"#dc2626", cursor:"pointer", fontWeight:600, whiteSpace:"nowrap" }}>
+                                          Anular
+                                        </button>
+                                      </div>}
                                 </td>
                               </tr>
                             ))}
@@ -1480,7 +1527,18 @@ export default function AdminPanel({ onLogout, toast }) {
                           </div>
                           <div>
                             <div className="order-card-field">Pago</div>
-                            <div className="order-card-value"><PaymentBadge method={o.paymentMethod} transactionId={o.wompiTransactionId} /></div>
+                            <div className="order-card-value" style={{ display:"flex", flexDirection:"column", gap:4, alignItems:"flex-start" }}>
+                              <PaymentBadge method={o.paymentMethod} transactionId={o.wompiTransactionId} />
+                              {updatingPayment===o.id
+                                ? <Spinner size={12} color="#9ca3af" />
+                                : <select value={o.paymentMethod||""} onChange={e=>{ e.stopPropagation(); handlePaymentMethod(o.id,e.target.value); }}
+                                    onClick={e=>e.stopPropagation()}
+                                    style={{ fontSize:11, padding:"3px 6px", borderRadius:5, border:"1px solid #d1d5db", background:"#fafafa", color:"#374151" }}>
+                                    <option value="transfer">Transferencia</option>
+                                    <option value="cash">Efectivo</option>
+                                    <option value="wompi">Wompi</option>
+                                  </select>}
+                            </div>
                           </div>
                         </div>
                         <div className="order-card-footer" onClick={e=>e.stopPropagation()}>
@@ -1491,10 +1549,26 @@ export default function AdminPanel({ onLogout, toast }) {
                             </a>}
                           {updatingId===o.id
                             ? <Spinner size={14} color="#9ca3af" />
-                            : <select value={o.status} onChange={e=>handleStatus(o.id,e.target.value)}
-                                style={{ fontSize:12, padding:"6px 8px", borderRadius:6, border:"1px solid #d1d5db", flex:1, maxWidth:180, marginLeft:"auto" }}>
-                                {getStatusOptions(o.delivery?.type).map(s=><option key={s}>{s}</option>)}
-                              </select>}
+                            : o.status === "Anulado"
+                            ? <button onClick={()=>{
+                                const prev = [...(o.statusHistory||[])].reverse().find(h=>h.status!=="Anulado")?.status || "Pago en validación";
+                                handleStatus(o.id, prev);
+                              }}
+                                style={{ fontSize:11, padding:"6px 12px", borderRadius:6, border:"1px solid #d1d5db",
+                                  background:"#f9fafb", color:"#374151", cursor:"pointer", fontWeight:600, whiteSpace:"nowrap", marginLeft:"auto" }}>
+                                Desanular
+                              </button>
+                            : <>
+                                <select value={o.status} onChange={e=>handleStatus(o.id,e.target.value)}
+                                  style={{ fontSize:12, padding:"6px 8px", borderRadius:6, border:"1px solid #d1d5db", flex:1, maxWidth:180, marginLeft:"auto" }}>
+                                  {getStatusOptions(o.delivery?.type).map(s=><option key={s}>{s}</option>)}
+                                </select>
+                                <button onClick={()=>handleCancel(o.id)}
+                                  style={{ fontSize:11, padding:"6px 10px", borderRadius:6, border:"1px solid #fca5a5",
+                                    background:"#fef2f2", color:"#dc2626", cursor:"pointer", fontWeight:600, whiteSpace:"nowrap" }}>
+                                  Anular
+                                </button>
+                              </>}
                         </div>
                       </div>
                     ))

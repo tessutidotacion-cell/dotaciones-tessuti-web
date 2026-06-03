@@ -124,7 +124,7 @@ export const validateCreateOrder = [
 // ── Validaciones de CAMBIO DE ESTADO ─────────────────────────
 const VALID_STATUSES = [
   "Pago en validación","Pago confirmado","En producción",
-  "Preparando pedido","Listo para recoger","En camino","Entregado",
+  "Preparando pedido","Listo para recoger","En camino","Entregado","Anulado",
 ];
 
 export const validateStatusUpdate = [
