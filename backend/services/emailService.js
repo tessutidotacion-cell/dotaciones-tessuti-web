@@ -301,6 +301,11 @@ const STATUS_META = {
     label: "Entregado",
     msg: "Su pedido ha sido entregado satisfactoriamente. Gracias por confiar en Dotaciones Tessuti.",
   },
+  "Anulado": {
+    barBg: "#fef2f2", barColor: "#991b1b", barBorder: "#fca5a5",
+    label: "Pedido anulado",
+    msg: "Lamentamos informarle que su pedido ha sido anulado. Si tiene preguntas o desea más información, por favor comuníquese con nosotros.",
+  },
 };
 
 // ── 1. Confirmación de pedido ─────────────────────────────────────────────────

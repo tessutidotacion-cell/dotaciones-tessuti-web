@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import {
-  getOrders, updateOrderStatus, cancelOrder, updatePaymentMethod, updateDeliveryNote,
+  getOrders, updateOrderStatus, updatePaymentMethod, updateDeliveryNote,
   getStats, getStock, updateStock, getStockHistory,
   getDiscounts, setDiscount, removeDiscount,
   getCoupons, createCoupon, toggleCoupon, deleteCoupon,
@@ -955,16 +955,6 @@ export default function AdminPanel({ onLogout, toast }) {
     finally { setUpdatingPayment(null); }
   };
 
-  const handleCancel = async (id) => {
-    if (!window.confirm("¿Anular este pedido? No se enviará correo al cliente.")) return;
-    setUpdatingId(id);
-    try {
-      await cancelOrder(id);
-      setOrders(os => os.map(o => o.id===id ? {...o, status:"Anulado"} : o));
-      toast("Pedido anulado", "success");
-    } catch(err) { toast(err.message,"error"); }
-    finally { setUpdatingId(null); }
-  };
 
   const filtered = orders.filter(o => {
     const q = search.toLowerCase();
@@ -1450,26 +1440,10 @@ export default function AdminPanel({ onLogout, toast }) {
                                 <td style={{ padding:"11px 13px" }}>
                                   {updatingId===o.id
                                     ? <Spinner size={14} color="#9ca3af" />
-                                    : o.status === "Anulado"
-                                    ? <button onClick={()=>{
-                                        const prev = [...(o.statusHistory||[])].reverse().find(h=>h.status!=="Anulado")?.status || "Pago en validación";
-                                        handleStatus(o.id, prev);
-                                      }}
-                                        style={{ fontSize:11, padding:"5px 10px", borderRadius:6, border:"1px solid #d1d5db",
-                                          background:"#f9fafb", color:"#374151", cursor:"pointer", fontWeight:600, whiteSpace:"nowrap" }}>
-                                        Desanular
-                                      </button>
-                                    : <div style={{ display:"flex", gap:5, alignItems:"center" }}>
-                                        <select value={o.status} onChange={e=>handleStatus(o.id,e.target.value)}
-                                          style={{ fontSize:12, padding:"5px 8px", borderRadius:6, border:"1px solid #d1d5db", minWidth:120 }}>
-                                          {getStatusOptions(o.delivery?.type).map(s=><option key={s}>{s}</option>)}
-                                        </select>
-                                        <button onClick={()=>handleCancel(o.id)}
-                                          style={{ fontSize:11, padding:"5px 8px", borderRadius:6, border:"1px solid #fca5a5",
-                                            background:"#fef2f2", color:"#dc2626", cursor:"pointer", fontWeight:600, whiteSpace:"nowrap" }}>
-                                          Anular
-                                        </button>
-                                      </div>}
+                                    : <select value={o.status} onChange={e=>handleStatus(o.id,e.target.value)}
+                                        style={{ fontSize:12, padding:"5px 8px", borderRadius:6, border:"1px solid #d1d5db", minWidth:120 }}>
+                                        {getStatusOptions(o.delivery?.type).map(s=><option key={s}>{s}</option>)}
+                                      </select>}
                                 </td>
                               </tr>
                             ))}
@@ -1549,26 +1523,10 @@ export default function AdminPanel({ onLogout, toast }) {
                             </a>}
                           {updatingId===o.id
                             ? <Spinner size={14} color="#9ca3af" />
-                            : o.status === "Anulado"
-                            ? <button onClick={()=>{
-                                const prev = [...(o.statusHistory||[])].reverse().find(h=>h.status!=="Anulado")?.status || "Pago en validación";
-                                handleStatus(o.id, prev);
-                              }}
-                                style={{ fontSize:11, padding:"6px 12px", borderRadius:6, border:"1px solid #d1d5db",
-                                  background:"#f9fafb", color:"#374151", cursor:"pointer", fontWeight:600, whiteSpace:"nowrap", marginLeft:"auto" }}>
-                                Desanular
-                              </button>
-                            : <>
-                                <select value={o.status} onChange={e=>handleStatus(o.id,e.target.value)}
-                                  style={{ fontSize:12, padding:"6px 8px", borderRadius:6, border:"1px solid #d1d5db", flex:1, maxWidth:180, marginLeft:"auto" }}>
-                                  {getStatusOptions(o.delivery?.type).map(s=><option key={s}>{s}</option>)}
-                                </select>
-                                <button onClick={()=>handleCancel(o.id)}
-                                  style={{ fontSize:11, padding:"6px 10px", borderRadius:6, border:"1px solid #fca5a5",
-                                    background:"#fef2f2", color:"#dc2626", cursor:"pointer", fontWeight:600, whiteSpace:"nowrap" }}>
-                                  Anular
-                                </button>
-                              </>}
+                            : <select value={o.status} onChange={e=>handleStatus(o.id,e.target.value)}
+                                style={{ fontSize:12, padding:"6px 8px", borderRadius:6, border:"1px solid #d1d5db", flex:1, maxWidth:180, marginLeft:"auto" }}>
+                                {getStatusOptions(o.delivery?.type).map(s=><option key={s}>{s}</option>)}
+                              </select>}
                         </div>
                       </div>
                     ))

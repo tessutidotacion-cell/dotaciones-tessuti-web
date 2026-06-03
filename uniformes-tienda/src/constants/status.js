@@ -4,6 +4,7 @@ export const STATUS_ORDER = [
   "Preparando pedido",
   "Listo para recoger",
   "Entregado",
+  "Anulado",
 ];
 
 export const STATUS_ORDER_DOMICILIO = [
@@ -12,6 +13,7 @@ export const STATUS_ORDER_DOMICILIO = [
   "Preparando pedido",
   "En camino",
   "Entregado",
+  "Anulado",
 ];
 
 export const STATUS_META = {
