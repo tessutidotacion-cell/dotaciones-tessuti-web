@@ -226,7 +226,7 @@ export default function TrackOrder({ onBack }) {
                   ["Grado",       order.student?.grade,false, false],
                   ["Entrega",     order.delivery?.type==="domicilio"
                     ? `Domicilio${order.delivery?.address?.street ? ` — ${order.delivery.address.street}` : ""}`
-                    : "Recogida en tienda", false, false],
+                    : "Recogida en tienda — Cra 38 #10-36, El Poblado, Edificio Milenio", false, false],
                   ["Total",       COP(order.total),    false, true],
                   ["Fecha",       new Date(order.createdAt).toLocaleDateString("es-CO",{year:"numeric",month:"long",day:"numeric"}), false, false],
                 ].filter(([,v])=>v).map(([label, value, mono, bold]) => (

@@ -1329,7 +1329,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
                         padding: "4px 9px", letterSpacing: ".08em",
                         textTransform: "uppercase", pointerEvents: "none",
                       }}>
-                        Agotado
+                        Reservar
                       </span>
                     )}
                     {qtyInCart > 0 && (

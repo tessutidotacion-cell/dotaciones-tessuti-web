@@ -156,10 +156,10 @@ function OrderDetailModal({ order, onClose, onOrderUpdate }) {
             <div>
               <span style={{ color:"#9ca3af", fontSize:11, fontWeight:600, display:"block", marginBottom:2 }}>Entrega</span>
               {order.delivery?.type === "domicilio"
-                ? <span>Domicilio<br /><span style={{ fontSize:11, color:"#9ca3af" }}>{order.delivery?.address?.street}, {order.delivery?.address?.neighborhood}</span></span>
+                ? <span>Domicilio<br /><span style={{ fontSize:11, color:"#9ca3af" }}>{[order.delivery?.address?.street, order.delivery?.address?.neighborhood, order.delivery?.address?.city].filter(Boolean).join(", ")}</span></span>
                 : order.delivery?.type === "domicilio_coordinado"
-                  ? <span>Fuera de zona<br /><span style={{ fontSize:11, color: order.delivery?.coordinationNote ? "#059669" : "#9ca3af" }}>{order.delivery?.coordinationNote || "Pendiente coordinar"}</span></span>
-                  : "Recogida en tienda"}
+                  ? <span>Fuera de zona{order.delivery?.address?.street && <><br /><span style={{ fontSize:11, color:"#9ca3af" }}>{[order.delivery.address.street, order.delivery.address.neighborhood, order.delivery.address.city].filter(Boolean).join(", ")}</span></>}<br /><span style={{ fontSize:11, color: order.delivery?.coordinationNote ? "#059669" : "#9ca3af" }}>{order.delivery?.coordinationNote || "Pendiente coordinar"}</span></span>
+                  : <span>Recogida en tienda<br /><span style={{ fontSize:11, color:"#9ca3af" }}>Cra 38 #10-36, El Poblado, Edificio Milenio</span></span>}
             </div>
             <div style={{ gridColumn:"1 / -1" }}>
               <span style={{ color:"#9ca3af", fontSize:11, fontWeight:600, display:"block", marginBottom:4 }}>Pago</span>
@@ -247,7 +247,7 @@ function OrderDetailModal({ order, onClose, onOrderUpdate }) {
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px 16px" }}>
             {[
               ["Estudiante", [order.student?.name, `Grado: ${order.student?.grade}`, order.student?.document && `Doc: ${order.student.document}`]],
-              ["Acudiente",  [order.guardian?.name, order.guardian?.phone, order.guardian?.email]],
+              ["Acudiente",  [order.guardian?.name, order.guardian?.document && `Cédula / NIT: ${order.guardian.document}`, order.guardian?.phone, order.guardian?.email, order.guardian?.billingAddress && `Dir. facturación: ${order.guardian.billingAddress}`]],
             ].map(([title, lines]) => (
               <div key={title} style={{ background:"#f9fafb", borderRadius:8, padding:"12px 14px" }}>
                 <div style={{ fontSize:10, fontWeight:700, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".1em", marginBottom:8 }}>{title}</div>
@@ -341,6 +341,22 @@ function OrderDetailModal({ order, onClose, onOrderUpdate }) {
               </div>
             </div>
           </div>
+
+          {/* Observaciones */}
+          {order.notes && (
+            <div style={{ background:"#f9fafb", borderRadius:8, padding:"12px 14px" }}>
+              <div style={{ fontSize:10, fontWeight:700, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".1em", marginBottom:6 }}>Observaciones</div>
+              <div style={{ fontSize:13, color:"#374151", lineHeight:1.6 }}>{order.notes}</div>
+            </div>
+          )}
+
+          {/* Cupón aplicado */}
+          {order.coupon && (
+            <div style={{ background:"#f0fdf4", border:"1px solid #86efac", borderRadius:8, padding:"12px 14px" }}>
+              <div style={{ fontSize:10, fontWeight:700, color:"#15803d", textTransform:"uppercase", letterSpacing:".1em", marginBottom:4 }}>Cupón aplicado</div>
+              <div style={{ fontSize:13, color:"#166534" }}>{order.coupon.code} · {order.coupon.pct}% de descuento · −{COP(order.coupon.discount ?? 0)}</div>
+            </div>
+          )}
 
           {/* Prendas reservadas — contactar cliente */}
           {order.items?.some(i => i.reserved) && (() => {

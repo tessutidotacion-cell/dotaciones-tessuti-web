@@ -678,6 +678,9 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                         <div style={{ fontSize:12, color:"#166534", lineHeight:1.6 }}>
                           Te avisaremos por correo cuando tu pedido esté <strong>listo para recoger</strong>. Solo preséntate con el número de pedido.
                         </div>
+                        <div style={{ fontSize:12, color:"#166534", lineHeight:1.6, marginTop:4 }}>
+                          <strong>Dirección:</strong> Cra 38 #10-36, El Poblado, Edificio Milenio
+                        </div>
                       </div>
                     </div>
                   )}
