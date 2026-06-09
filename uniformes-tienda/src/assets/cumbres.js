@@ -38,6 +38,7 @@ import imgMediasGrises from "./Cumbres/medias grises paquete x 3.webp";
 import imgMediasBlancasFisica from "./Cumbres/medias blancas fisica.webp";
 import imgPoloCumbres from "./Cumbres/polo cumbres.png";
 import imgMediasAzulesGala from "./Cumbres/medias azules pack por 3.webp";
+import imgCamisetaFisicaFem from "./Cumbres/camiseta blanca fisica femenino.jpeg";
 
 export {
   imgCamisetaBambolino,
@@ -77,4 +78,5 @@ export {
   imgMediasBlancasFisica,
   imgPoloCumbres,
   imgMediasAzulesGala,
+  imgCamisetaFisicaFem,
 };
