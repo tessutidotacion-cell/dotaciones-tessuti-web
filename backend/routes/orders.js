@@ -7,6 +7,7 @@ import {
   createOrder, getOrders, getOrderById,
   updateOrderStatus, updatePaymentProof, updatePaymentMethod, getStats,
   getStock, setStock, updateDeliveryNote, getStockHistory,
+  updateGuardianDocument,
 } from "../services/orderService.js";
 import { uploadPaymentProof } from "../services/uploadService.js";
 import { sendOrderConfirmation, sendStatusUpdate } from "../services/emailService.js";
@@ -241,6 +242,16 @@ router.patch("/:id/payment-method", requireAdmin, async (req, res) => {
     const updated = await updatePaymentMethod(req.params.id, paymentMethod);
     if (!updated) return res.status(404).json({ success:false, error:"Pedido no encontrado" });
     res.json({ success:true, message:"Método de pago actualizado", data:updated });
+  } catch(e) { res.status(400).json({ success:false, error:e.message }); }
+});
+
+router.patch("/:id/guardian-document", requireAdmin, async (req, res) => {
+  try {
+    const { document } = req.body;
+    if (document === undefined) return res.status(400).json({ success:false, error:"Se requiere el campo document" });
+    const updated = await updateGuardianDocument(req.params.id, document);
+    if (!updated) return res.status(404).json({ success:false, error:"Pedido no encontrado" });
+    res.json({ success:true, message:"Cédula actualizada", data:updated });
   } catch(e) { res.status(400).json({ success:false, error:e.message }); }
 });
 

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import {
-  getOrders, updateOrderStatus, updatePaymentMethod, updateDeliveryNote,
+  getOrders, updateOrderStatus, updatePaymentMethod, updateDeliveryNote, updateGuardianDocument,
   getStats, getStock, updateStock, getStockHistory,
   getDiscounts, setDiscount, removeDiscount,
   getCoupons, createCoupon, toggleCoupon, deleteCoupon,
@@ -74,6 +74,10 @@ function OrderDetailModal({ order, onClose, onOrderUpdate }) {
   const [savingNote, setSavingNote] = useState(false);
   const [noteSaved,  setNoteSaved]  = useState(false);
 
+  const [docText,    setDocText]    = useState(order?.guardian?.document || "");
+  const [savingDoc,  setSavingDoc]  = useState(false);
+  const [docSaved,   setDocSaved]   = useState(false);
+
   useEffect(() => {
     const main = document.querySelector("main");
     const scrollY = main ? main.scrollTop : window.scrollY;
@@ -107,6 +111,20 @@ function OrderDetailModal({ order, onClose, onOrderUpdate }) {
       alert("No se pudo guardar: " + e.message);
     } finally {
       setSavingNote(false);
+    }
+  };
+
+  const handleSaveDoc = async () => {
+    setSavingDoc(true);
+    try {
+      const { data } = await updateGuardianDocument(order.id, docText);
+      setDocSaved(true);
+      setTimeout(() => setDocSaved(false), 2500);
+      if (onOrderUpdate) onOrderUpdate(data);
+    } catch (e) {
+      alert("No se pudo guardar: " + e.message);
+    } finally {
+      setSavingDoc(false);
     }
   };
   return createPortal(
@@ -247,7 +265,7 @@ function OrderDetailModal({ order, onClose, onOrderUpdate }) {
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px 16px" }}>
             {[
               ["Estudiante", [order.student?.name, `Grado: ${order.student?.grade}`, order.student?.document && `Doc: ${order.student.document}`]],
-              ["Acudiente",  [order.guardian?.name, order.guardian?.document && `Cédula / NIT: ${order.guardian.document}`, order.guardian?.phone, order.guardian?.email, order.guardian?.billingAddress && `Dir. facturación: ${order.guardian.billingAddress}`]],
+              ["Acudiente",  [order.guardian?.name, order.guardian?.phone, order.guardian?.email, order.guardian?.billingAddress && `Dir. facturación: ${order.guardian.billingAddress}`]],
             ].map(([title, lines]) => (
               <div key={title} style={{ background:"#f9fafb", borderRadius:8, padding:"12px 14px" }}>
                 <div style={{ fontSize:10, fontWeight:700, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".1em", marginBottom:8 }}>{title}</div>
@@ -256,6 +274,36 @@ function OrderDetailModal({ order, onClose, onOrderUpdate }) {
                 ))}
               </div>
             ))}
+          </div>
+
+          {/* Cédula acudiente editable */}
+          <div style={{ background:"#f9fafb", borderRadius:8, padding:"12px 14px" }}>
+            <div style={{ fontSize:10, fontWeight:700, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".1em", marginBottom:8 }}>
+              Cédula / NIT acudiente
+            </div>
+            <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+              <input
+                value={docText}
+                onChange={e => setDocText(e.target.value.replace(/[^0-9\-]/g, ""))}
+                placeholder="Número de cédula..."
+                maxLength={20}
+                style={{ flex:1, fontSize:13, padding:"7px 10px", border:"1px solid #d1d5db",
+                  borderRadius:6, fontFamily:"monospace", color:"#111", outline:"none",
+                  background:"#fff", letterSpacing:".04em" }}
+              />
+              <button
+                onClick={handleSaveDoc}
+                disabled={savingDoc}
+                style={{ display:"inline-flex", alignItems:"center", gap:6,
+                  padding:"7px 14px", borderRadius:7, border:"none",
+                  background: docSaved ? "#16a34a" : "#111",
+                  color:"#fff", fontSize:12, fontWeight:600, cursor:"pointer",
+                  transition:"background .2s", whiteSpace:"nowrap" }}
+              >
+                {savingDoc ? <Spinner size={12} color="#fff" /> : null}
+                {docSaved ? "Guardado" : "Guardar"}
+              </button>
+            </div>
           </div>
 
           {/* Artículos */}
@@ -1401,6 +1449,9 @@ export default function AdminPanel({ onLogout, toast }) {
                                 <td style={{ padding:"11px 13px" }}>
                                   <div style={{ fontWeight:500, fontSize:13 }}>{o.student?.name}</div>
                                   <div style={{ fontSize:11, color:"#9ca3af" }}>{o.guardian?.name}</div>
+                                  {o.guardian?.document && (
+                                    <div style={{ fontSize:10, color:"#b0a89f", fontFamily:"monospace", marginTop:1 }}>CC {o.guardian.document}</div>
+                                  )}
                                 </td>
                                 <td style={{ padding:"11px 13px", fontSize:12, color:"#6b7280", whiteSpace:"nowrap" }}>{o.collegeName}</td>
                                 <td style={{ padding:"11px 13px", fontSize:12, whiteSpace:"nowrap" }}>
@@ -1480,6 +1531,9 @@ export default function AdminPanel({ onLogout, toast }) {
                             <div className="order-card-field">Estudiante</div>
                             <div className="order-card-value">{o.student?.name}</div>
                             <div style={{ fontSize:11, color:"#9ca3af" }}>{o.guardian?.name}</div>
+                            {o.guardian?.document && (
+                              <div style={{ fontSize:10, color:"#b0a89f", fontFamily:"monospace", marginTop:1 }}>CC {o.guardian.document}</div>
+                            )}
                           </div>
                           <div>
                             <div className="order-card-field">Institución</div>

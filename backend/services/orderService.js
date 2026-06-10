@@ -74,9 +74,11 @@ export const createOrder = async (orderData) => {
       document: orderData.student?.document || "",
     },
     guardian: {
-      name:  orderData.guardian.name,
-      phone: orderData.guardian.phone,
-      email: orderData.guardian.email,
+      name:           orderData.guardian.name,
+      phone:          orderData.guardian.phone,
+      email:          orderData.guardian.email,
+      document:       orderData.guardian.document       || "",
+      billingAddress: orderData.guardian.billingAddress || "",
     },
     delivery:        orderData.delivery || { type: "recogida" },
     total,
@@ -261,6 +263,23 @@ export const updatePaymentMethod = async (orderId, paymentMethod) => {
   if (!doc.exists) return null;
   await ref.update({ paymentMethod, updatedAt: new Date().toISOString() });
   return { ...doc.data(), paymentMethod };
+};
+
+// ── ACTUALIZAR CÉDULA ACUDIENTE ───────────────────────────────
+export const updateGuardianDocument = async (orderId, document) => {
+  const clean = String(document || "").trim().replace(/[^0-9\-]/g, "").slice(0, 20);
+  if (IS_MOCK) {
+    const order = _mockStore.get(orderId);
+    if (!order) return null;
+    const updated = { ...order, guardian: { ...order.guardian, document: clean }, updatedAt: new Date().toISOString() };
+    _mockStore.set(orderId, updated);
+    return updated;
+  }
+  const ref = db.collection(ORDERS_COL).doc(orderId);
+  const doc = await ref.get();
+  if (!doc.exists) return null;
+  await ref.update({ "guardian.document": clean, updatedAt: new Date().toISOString() });
+  return { ...doc.data(), guardian: { ...doc.data().guardian, document: clean } };
 };
 
 // ── ESTADÍSTICAS ──────────────────────────────────────────────

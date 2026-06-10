@@ -80,6 +80,15 @@ export const getOrders = async (filters = {}) => {
   return handleResponse(res);
 };
 
+export const updateGuardianDocument = async (orderId, document) => {
+  const res = await fetch(`${BASE_URL}/orders/${orderId}/guardian-document`, {
+    method:  "PATCH",
+    headers: adminHeaders(),
+    body:    JSON.stringify({ document }),
+  });
+  return handleResponse(res);
+};
+
 export const updateDeliveryNote = async (orderId, note) => {
   const res = await fetch(`${BASE_URL}/orders/${orderId}/delivery-note`, {
     method:  "PATCH",
