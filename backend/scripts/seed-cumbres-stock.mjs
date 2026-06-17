@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // scripts/seed-cumbres-stock.mjs
 // Monta el inventario de Cumbres en Firestore (ids UNIFICADOS).
 //
@@ -15,7 +15,7 @@
 // UNIFICADO: cada SKU físico tiene UN solo id canónico (los duplicados
 // por sección se fusionaron en colleges.js). Sin doble conteo → un pedido
 // de cualquier sección descuenta el mismo stock. Ids canónicos de SKUs
-// compartidos: medias blancas=106, medias gala dama=410, camiseta física=305,
+// compartidos: medias blancas=106, medias gala dama=410, camiseta física=4051,
 // saco CV primaria=301, falda=408, correa=310, saco HS=220, chompa gris HS=221.
 // ============================================================
 import { db } from "../config/firebase.js";
@@ -47,7 +47,7 @@ const products = {
   "302": { "8": 5, "10": 10, "12": 30, "14": 30, "16": 20, "18": 20, "XS": 10, "S": 10, "M": 5 }, // Camisa Gala Masc
   "303": { "10": 15, "12": 30, "14": 20, "16": 15, "18": 10, "28": 10 },                // Pantalón Gris Gala
   "304": { "4": 8, "6": 10, "8": 10, "10": 10, "12": 10, "14": 10, "16": 10, "18": 10, "S": 5, "M": 5 }, // Chompa Azul Masc
-  "305": { "4": 40, "6": 60, "8": 60, "10": 60, "12": 40, "14": 50, "16": 30, "18": 20, "XS": 15, "S": 15, "M": 8 }, // Camiseta Blanca Física ★ compartido
+  "4051": { "4": 40, "6": 60, "8": 60, "10": 60, "12": 40, "14": 50, "16": 30, "18": 20, "XS": 15, "S": 15, "M": 8 }, // Camiseta Blanca Física ★ compartido
   "306": { "4": 20, "6": 40, "8": 50, "10": 50, "12": 50, "14": 30, "16": 20, "S": 10, "M": 10 }, // Sudadera Verde Masc
   "307": { "4": 5, "6": 5, "8": 5 },                             // Delantal Azul Niño
   "309": { "8 A 10": 10, "10 A 12": 8 },                         // Medias Grises Gala x3

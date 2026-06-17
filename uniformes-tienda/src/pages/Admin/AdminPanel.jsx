@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import {
   getOrders, updateOrderStatus, updatePaymentMethod, updateDeliveryNote, updateGuardianDocument,
@@ -16,6 +16,20 @@ import Spinner from "../../components/ui/Spinner";
 const getAllUniforms = (col) => col.sections?.length > 0
   ? col.sections.flatMap(s => s.uniforms.map(u => ({ ...u, sectionName: s.name })))
   : col.uniforms.map(u => ({ ...u, sectionName: null }));
+
+const PRODUCT_NAME_MAP = (() => {
+  const map = {};
+  for (const col of DEMO_COLLEGES) {
+    map[String(col.id)] = {};
+    const uniforms = col.sections?.length > 0
+      ? col.sections.flatMap(s => s.uniforms)
+      : col.uniforms;
+    for (const u of uniforms) {
+      map[String(col.id)][String(u.id)] = u.name;
+    }
+  }
+  return map;
+})();
 
 // Estado de stock de un producto: undef | out | low | ok
 const uniStockStatus = (uniform, sizeMap) => {
@@ -2181,7 +2195,7 @@ export default function AdminPanel({ onLogout, toast }) {
                                     </td>
                                     <td style={{ padding:"12px 16px" }}>
                                       <div style={{ fontSize:13, fontWeight:600, color:"#111" }}>
-                                        {mv.productName || `Producto ${mv.productId}`}
+                                        {PRODUCT_NAME_MAP[String(mv.collegeId)]?.[String(mv.productId)] || mv.productName || `Producto ${mv.productId}`}
                                       </div>
                                       {col && <div style={{ fontSize:11, color:"#9ca3af", marginTop:2 }}>{col.name}</div>}
                                     </td>
@@ -2230,7 +2244,7 @@ export default function AdminPanel({ onLogout, toast }) {
                               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
                                 <div>
                                   <div style={{ fontSize:14, fontWeight:700, color:"#111" }}>
-                                    {mv.productName || `Producto ${mv.productId}`}
+                                    {PRODUCT_NAME_MAP[String(mv.collegeId)]?.[String(mv.productId)] || mv.productName || `Producto ${mv.productId}`}
                                   </div>
                                   {col && <div style={{ fontSize:11, color:"#9ca3af", marginTop:1 }}>{col.name}</div>}
                                 </div>

@@ -1,4 +1,4 @@
-import {
+﻿import {
   LOGO_CUMBRES,
   LOGO_LICEO_FRANCES,
   LOGO_NEW_SCHOOL,
@@ -98,7 +98,6 @@ function applyCumbresImages(college, imgs) {
     402: { image: imgs.imgJumper },
     403: { image: imgs.imgChaletoDama },
     404: { image: imgs.imgChompaBlancaFem2 },
-    405: { image: imgs.imgCamisetaFisicaMasc1 },
     406: { image: imgs.imgSudaderaAzulFem },
     407: { image: imgs.imgDelantalVerdeFem },
     408: { image: imgs.imgFaldaCuadros },
@@ -110,8 +109,8 @@ function applyCumbresImages(college, imgs) {
     304: { image: imgs.imgChompaAzulMasc },
     306: { image: imgs.imgSudaderaVerdeMasc },
     307: { image: imgs.imgDelantalAzulNino },
-    // Camiseta Física Femenino (secciones fem, imagen específica)
-    4051: { image: imgs.imgCamisetaFisicaFem },
+    // Camiseta Blanca Física — id canónico 4051 (masc + fem comparten stock)
+    4051: { image: imgs.imgCamisetaFisicaMasc1 },
     // High School Femenino
     201: { image: imgs.imgBlusaGalaHS },
     203: { image: imgs.imgPoloDamaHS },
@@ -287,7 +286,7 @@ export const DEMO_COLLEGES = [
         id: "k4k5-masculino",
         name: "Masc. K4 - K5",
         uniforms: [
-          { id: 405, name: "Camiseta Blanca Física", price: 47900, sizePrices: { "4": 47900, "6": 47900, "8": 47900, "10": 47900, "12": 51900, "14": 51900, "16": 51900, "18": 51900, "XS": 55900, "S": 55900, "M": 55900 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "18", "XS", "S", "M"], category: "Deportivo", description: "Talla 4–10: $47.900 · Talla 12–18: $51.900 · Talla XS–M: $55.900" },
+          { id: 4051, name: "Camiseta Blanca Física", price: 47900, sizePrices: { "4": 47900, "6": 47900, "8": 47900, "10": 47900, "12": 51900, "14": 51900, "16": 51900, "18": 51900, "XS": 55900, "S": 55900, "M": 55900 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "18", "XS", "S", "M"], category: "Deportivo", description: "Talla 4–10: $47.900 · Talla 12–18: $51.900 · Talla XS–M: $55.900" },
           { id: 306, name: "Sudadera Verde Física Masculino", price: 64900, sizePrices: { "4": 64900, "6": 64900, "8": 64900, "10": 64900, "12": 69900, "14": 69900, "16": 69900, "S": 74900, "M": 74900 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "S", "M"], category: "Deportivo", description: "Talla 4–10: $64.900 · Talla 12–16: $69.900 · Talla S–M: $74.900" },
           { id: 304, name: "Chompa Azul Masculino", price: 73900, sizePrices: { "4": 73900, "6": 73900, "8": 73900, "10": 73900, "12": 78900, "14": 78900, "16": 78900, "18": 78900, "S": 86900, "M": 86900 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "18", "S", "M"], category: "Diario", description: "Talla 4–10: $73.900 · Talla 12–18: $78.900 · Talla S–M: $86.900" },
           { id: 307, name: "Delantal Azul Niño K4 – K5", price: 45900, sizes: ["4", "6", "8"], category: "Complemento" },
@@ -308,7 +307,7 @@ export const DEMO_COLLEGES = [
         id: "prim1-3-masculino",
         name: "Masc. Grado 1° - 3°",
         uniforms: [
-          { id: 405, name: "Camiseta Blanca Física", price: 47900, sizePrices: { "4": 47900, "6": 47900, "8": 47900, "10": 47900, "12": 51900, "14": 51900, "16": 51900, "18": 51900, "XS": 55900, "S": 55900, "M": 55900 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "18", "XS", "S", "M"], category: "Deportivo", description: "Talla 4–10: $47.900 · Talla 12–18: $51.900 · Talla XS–M: $55.900" },
+          { id: 4051, name: "Camiseta Blanca Física", price: 47900, sizePrices: { "4": 47900, "6": 47900, "8": 47900, "10": 47900, "12": 51900, "14": 51900, "16": 51900, "18": 51900, "XS": 55900, "S": 55900, "M": 55900 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "18", "XS", "S", "M"], category: "Deportivo", description: "Talla 4–10: $47.900 · Talla 12–18: $51.900 · Talla XS–M: $55.900" },
           { id: 306, name: "Sudadera Verde Física Masculino", price: 64900, sizePrices: { "4": 64900, "6": 64900, "8": 64900, "10": 64900, "12": 69900, "14": 69900, "16": 69900, "S": 74900, "M": 74900 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "S", "M"], category: "Deportivo", description: "Talla 4–10: $64.900 · Talla 12–16: $69.900 · Talla S–M: $74.900" },
           { id: 304, name: "Chompa Azul Masculino", price: 73900, sizePrices: { "4": 73900, "6": 73900, "8": 73900, "10": 73900, "12": 78900, "14": 78900, "16": 78900, "18": 78900, "S": 86900, "M": 86900 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "18", "S", "M"], category: "Diario", description: "Talla 4–10: $73.900 · Talla 12–18: $78.900 · Talla S–M: $86.900" },
           { id: 106, name: "Medias Blancas Física Paquete por 2 Pares", price: 22000, sizePrices: { "2 A 4": 22000, "4 A 6": 23000, "6 A 8": 24000, "8 A 10": 25000, "10 A 12": 26000 }, sizes: ["2 A 4", "4 A 6", "6 A 8", "8 A 10", "10 A 12"], category: "Complemento", description: "Precio según talla" },
@@ -337,7 +336,7 @@ export const DEMO_COLLEGES = [
           { id: 301, name: "Saco Tejido Azul Cuello V", price: 129900, sizePrices: { "12": 129900, "14": 129900, "16": 129900, "S": 134900 }, sizes: ["12", "14", "16", "S"], category: "Gala", description: "Talla 12–16: $129.900 · Talla S: $134.900" },
           { id: 309, name: "Medias Grises Gala Paquete por 3 Pares", price: 38000, sizePrices: { "8 A 10": 38000, "10 A 12": 39000 }, sizes: ["8 A 10", "10 A 12"], category: "Complemento", description: "Talla 8–10: $38.000 · Talla 10–12: $39.000" },
           { id: 310, name: "Correa Negra Gala", price: 48900, sizePrices: { "12 A 18": 48900, "28 A 36": 52900 }, sizes: ["12 A 18", "28 A 36"], category: "Complemento", description: "Talla 12–18: $48.900 · Talla 28–36: $52.900" },
-          { id: 405, name: "Camiseta Blanca Física", price: 47900, sizePrices: { "4": 47900, "6": 47900, "8": 47900, "10": 47900, "12": 51900, "14": 51900, "16": 51900, "18": 51900, "XS": 55900, "S": 55900, "M": 55900 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "18", "XS", "S", "M"], category: "Deportivo", description: "Talla 4–10: $47.900 · Talla 12–18: $51.900 · Talla XS–M: $55.900" },
+          { id: 4051, name: "Camiseta Blanca Física", price: 47900, sizePrices: { "4": 47900, "6": 47900, "8": 47900, "10": 47900, "12": 51900, "14": 51900, "16": 51900, "18": 51900, "XS": 55900, "S": 55900, "M": 55900 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "18", "XS", "S", "M"], category: "Deportivo", description: "Talla 4–10: $47.900 · Talla 12–18: $51.900 · Talla XS–M: $55.900" },
           { id: 306, name: "Sudadera Verde Física Masculino", price: 64900, sizePrices: { "4": 64900, "6": 64900, "8": 64900, "10": 64900, "12": 69900, "14": 69900, "16": 69900, "S": 74900, "M": 74900 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "S", "M"], category: "Deportivo", description: "Talla 4–10: $64.900 · Talla 12–16: $69.900 · Talla S–M: $74.900" },
           { id: 304, name: "Chompa Azul Masculino", price: 73900, sizePrices: { "4": 73900, "6": 73900, "8": 73900, "10": 73900, "12": 78900, "14": 78900, "16": 78900, "18": 78900, "S": 86900, "M": 86900 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "18", "S", "M"], category: "Diario", description: "Talla 4–10: $73.900 · Talla 12–18: $78.900 · Talla S–M: $86.900" },
           { id: 106, name: "Medias Blancas Física Paquete por 2 Pares", price: 22000, sizePrices: { "2 A 4": 22000, "4 A 6": 23000, "6 A 8": 24000, "8 A 10": 25000, "10 A 12": 26000 }, sizes: ["2 A 4", "4 A 6", "6 A 8", "8 A 10", "10 A 12"], category: "Complemento", description: "Precio según talla" },
@@ -367,7 +366,7 @@ export const DEMO_COLLEGES = [
           { id: 301, name: "Saco Tejido Azul Cuello V", price: 129900, sizePrices: { "12": 129900, "14": 129900, "16": 129900, "S": 134900 }, sizes: ["12", "14", "16", "S"], category: "Gala", description: "Talla 12–16: $129.900 · Talla S: $134.900" },
           { id: 309, name: "Medias Grises Gala Paquete por 3 Pares", price: 38000, sizePrices: { "8 A 10": 38000, "10 A 12": 39000 }, sizes: ["8 A 10", "10 A 12"], category: "Complemento", description: "Talla 8–10: $38.000 · Talla 10–12: $39.000" },
           { id: 310, name: "Correa Negra Gala", price: 48900, sizePrices: { "12 A 18": 48900, "28 A 36": 52900 }, sizes: ["12 A 18", "28 A 36"], category: "Complemento", description: "Talla 12–18: $48.900 · Talla 28–36: $52.900" },
-          { id: 405, name: "Camiseta Blanca Física", price: 47900, sizePrices: { "4": 47900, "6": 47900, "8": 47900, "10": 47900, "12": 51900, "14": 51900, "16": 51900, "18": 51900, "XS": 55900, "S": 55900, "M": 55900 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "18", "XS", "S", "M"], category: "Deportivo", description: "Talla 4–10: $47.900 · Talla 12–18: $51.900 · Talla XS–M: $55.900" },
+          { id: 4051, name: "Camiseta Blanca Física", price: 47900, sizePrices: { "4": 47900, "6": 47900, "8": 47900, "10": 47900, "12": 51900, "14": 51900, "16": 51900, "18": 51900, "XS": 55900, "S": 55900, "M": 55900 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "18", "XS", "S", "M"], category: "Deportivo", description: "Talla 4–10: $47.900 · Talla 12–18: $51.900 · Talla XS–M: $55.900" },
           { id: 306, name: "Sudadera Verde Física Masculino", price: 64900, sizePrices: { "4": 64900, "6": 64900, "8": 64900, "10": 64900, "12": 69900, "14": 69900, "16": 69900, "S": 74900, "M": 74900 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "S", "M"], category: "Deportivo", description: "Talla 4–10: $64.900 · Talla 12–16: $69.900 · Talla S–M: $74.900" },
           { id: 304, name: "Chompa Azul Masculino", price: 73900, sizePrices: { "4": 73900, "6": 73900, "8": 73900, "10": 73900, "12": 78900, "14": 78900, "16": 78900, "18": 78900, "S": 86900, "M": 86900 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "18", "S", "M"], category: "Diario", description: "Talla 4–10: $73.900 · Talla 12–18: $78.900 · Talla S–M: $86.900" },
           { id: 106, name: "Medias Blancas Física Paquete por 2 Pares", price: 22000, sizePrices: { "2 A 4": 22000, "4 A 6": 23000, "6 A 8": 24000, "8 A 10": 25000, "10 A 12": 26000 }, sizes: ["2 A 4", "4 A 6", "6 A 8", "8 A 10", "10 A 12"], category: "Complemento", description: "Precio según talla" },
