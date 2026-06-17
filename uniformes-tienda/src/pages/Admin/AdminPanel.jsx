@@ -28,6 +28,9 @@ const PRODUCT_NAME_MAP = (() => {
       map[String(col.id)][String(u.id)] = u.name;
     }
   }
+  // IDs legacy (renombrados/unificados) — para historial antiguo
+  map["2"]["405"] = "Camiseta Blanca Física";
+  map["2"]["305"] = "Camiseta Blanca Física";
   return map;
 })();
 
@@ -1746,12 +1749,14 @@ export default function AdminPanel({ onLogout, toast }) {
                     const hasSections = col.sections?.length > 0;
                     const currentFilter = stockSectionFilter[col.id] || "all";
 
-                    // Detectar productos que aparecen en 2+ secciones → Unisex
-                    const _idCount = {};
+                    // Unisex solo si el ID aparece en sección femenina Y masculina
+                    const _inFem  = new Set();
+                    const _inMasc = new Set();
                     col.sections?.forEach(s => s.uniforms.forEach(u => {
-                      _idCount[u.id] = (_idCount[u.id] || 0) + 1;
+                      if (s.id.includes("femenino")) _inFem.add(u.id);
+                      else if (s.id.includes("masculino")) _inMasc.add(u.id);
                     }));
-                    const _sharedIds = new Set(Object.keys(_idCount).filter(k => _idCount[k] > 1).map(Number));
+                    const _sharedIds = new Set([..._inFem].filter(id => _inMasc.has(id)));
                     const _seenShared = new Set();
                     const _sharedUniforms = [];
                     col.sections?.forEach(s => s.uniforms.forEach(u => {
