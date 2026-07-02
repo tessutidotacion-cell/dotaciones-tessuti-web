@@ -18,6 +18,22 @@ if (IS_MOCK) {
 const stockCache = new Map();
 const STOCK_TTL  = 60_000;
 
+// ── Tallas de stock físico compartido entre prendas ────────────
+// Liceo Francés: Polo Primaria (511) y Polo Bachillerato (501) talla 12
+// es la misma prenda física — se mantiene sincronizada entre ambas.
+const SHARED_STOCK_LINKS = {
+  "liceo-frances": [
+    { size: "12", productIds: ["511", "501"] },
+  ],
+};
+
+const _sharedGroup = (collegeId, productId, size) => {
+  const groups = SHARED_STOCK_LINKS[String(collegeId)];
+  if (!groups) return null;
+  const group = groups.find(g => g.size === String(size) && g.productIds.includes(String(productId)));
+  return group ? group.productIds : null;
+};
+
 const COUNTER_DOC  = "counters";
 const COUNTER_ID   = "orders";
 const COUNTER_INIT = 3834; // próximo call → 3835
@@ -141,6 +157,32 @@ const _decrementStock = async (collegeId, items, orderId) => {
         });
       }
       updated[pid] = sizes;
+
+      // Descontar también en las prendas que comparten esta talla físicamente
+      const sharedIds = _sharedGroup(collegeId, pid, item.size);
+      if (sharedIds) {
+        for (const sibPid of sharedIds) {
+          if (sibPid === pid) continue;
+          const sibSizes   = updated[sibPid] ? { ...updated[sibPid] } : {};
+          const sibPrevQty = sibSizes[item.size] ?? 0;
+          if (sibSizes[item.size] !== undefined) {
+            sibSizes[item.size] = Math.max(0, sibPrevQty - item.qty);
+            movements.push({
+              timestamp:   new Date().toISOString(),
+              collegeId:   String(collegeId),
+              productId:   sibPid,
+              productName: "",
+              size:        item.size,
+              delta:       -(item.qty),
+              prevQty:     sibPrevQty,
+              newQty:      sibSizes[item.size],
+              source:      "pedido_compartido",
+              orderId:     orderId || null,
+            });
+          }
+          updated[sibPid] = sibSizes;
+        }
+      }
     }
     tx.set(stockRef, {
       collegeId: String(collegeId),
@@ -357,13 +399,32 @@ export const setStock = async (collegeId, productId, size, quantity) => {
   const updatedProduct = { ...currentProduct, [String(size)]: quantity };
   const updated        = { ...current, [String(productId)]: updatedProduct };
 
+  // Espejar a las prendas que comparten stock físico para esta talla
+  const sharedIds = _sharedGroup(key, productId, size);
+  const movements = [];
+  if (sharedIds) {
+    for (const pid of sharedIds) {
+      if (pid === String(productId)) continue;
+      const sibling    = updated[pid] || {};
+      const siblingPrev = sibling[String(size)] ?? 0;
+      updated[pid] = { ...sibling, [String(size)]: quantity };
+      if (siblingPrev !== quantity) {
+        movements.push({
+          timestamp: new Date().toISOString(), collegeId: key, productId: pid, productName: "",
+          size, delta: quantity - siblingPrev, prevQty: siblingPrev, newQty: quantity,
+          source: "admin_manual_shared", orderId: null,
+        });
+      }
+    }
+  }
+
   await ref.set({ collegeId: key, products: updated, updatedAt: new Date().toISOString() }, { merge: true });
   stockCache.delete(key);
 
   // Registrar movimiento solo si hubo cambio real
   const delta = quantity - prevQty;
   if (delta !== 0) {
-    await db.collection(HISTORY_COL).add({
+    movements.push({
       timestamp:   new Date().toISOString(),
       collegeId:   key,
       productId:   String(productId),
@@ -375,6 +436,11 @@ export const setStock = async (collegeId, productId, size, quantity) => {
       source:      "admin_manual",
       orderId:     null,
     });
+  }
+  if (movements.length > 0) {
+    const batch = db.batch();
+    for (const mv of movements) batch.set(db.collection(HISTORY_COL).doc(), mv);
+    await batch.commit();
   }
 
   return updated;
