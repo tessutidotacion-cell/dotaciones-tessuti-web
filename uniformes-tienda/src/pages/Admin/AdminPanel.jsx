@@ -1777,25 +1777,33 @@ export default function AdminPanel({ onLogout, toast }) {
                     const hasSections = col.sections?.length > 0;
                     const currentFilter = stockSectionFilter[col.id] || "all";
 
-                    // Unisex solo si el ID aparece en sección femenina Y masculina
+                    // Compartido: cualquier ID que aparezca en más de una sección
+                    // se lista una sola vez (es la misma prenda/mismo stock físico)
                     const _inFem  = new Set();
                     const _inMasc = new Set();
+                    const _sectionsById = new Map();
                     col.sections?.forEach(s => s.uniforms.forEach(u => {
                       if (s.id.includes("femenino")) _inFem.add(u.id);
                       else if (s.id.includes("masculino")) _inMasc.add(u.id);
+                      if (!_sectionsById.has(u.id)) _sectionsById.set(u.id, new Set());
+                      _sectionsById.get(u.id).add(s.id);
                     }));
-                    const _sharedIds = new Set([..._inFem].filter(id => _inMasc.has(id)));
+                    const _isUnisex = id => _inFem.has(id) && _inMasc.has(id);
+                    const _sharedIds = new Set([..._sectionsById.entries()].filter(([, secs]) => secs.size > 1).map(([id]) => id));
                     const _seenShared = new Set();
-                    const _sharedUniforms = [];
+                    const _unisexUniforms   = [];
+                    const _compartidoUniforms = [];
                     col.sections?.forEach(s => s.uniforms.forEach(u => {
                       if (_sharedIds.has(u.id) && !_seenShared.has(u.id)) {
-                        _seenShared.add(u.id); _sharedUniforms.push(u);
+                        _seenShared.add(u.id);
+                        (_isUnisex(u.id) ? _unisexUniforms : _compartidoUniforms).push(u);
                       }
                     }));
 
                     const allSections = hasSections
                       ? [
-                          ...(_sharedUniforms.length > 0 ? [{ id:"unisex", name:"Unisex", uniforms: _sharedUniforms }] : []),
+                          ...(_unisexUniforms.length > 0 ? [{ id:"unisex", name:"Unisex", uniforms: _unisexUniforms }] : []),
+                          ...(_compartidoUniforms.length > 0 ? [{ id:"compartido", name:"Compartido entre secciones", uniforms: _compartidoUniforms }] : []),
                           ...col.sections.map(s => ({
                             id: s.id, name: s.name,
                             uniforms: s.uniforms.filter(u => !_sharedIds.has(u.id)),
@@ -1834,7 +1842,8 @@ export default function AdminPanel({ onLogout, toast }) {
                             style={{ marginLeft:"auto", padding:"6px 10px", border:"1px solid #d1d5db", borderRadius:6,
                               fontSize:12, background:"#fff", color:"#374151", cursor:"pointer" }}>
                             <option value="all">Todas las secciones</option>
-                            {_sharedUniforms.length > 0 && <option value="unisex">Unisex</option>}
+                            {_unisexUniforms.length > 0 && <option value="unisex">Unisex</option>}
+                            {_compartidoUniforms.length > 0 && <option value="compartido">Compartido entre secciones</option>}
                             {col.sections.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                           </select>
                         )}
