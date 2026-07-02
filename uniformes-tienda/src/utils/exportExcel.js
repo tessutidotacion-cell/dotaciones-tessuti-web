@@ -88,6 +88,7 @@ export function exportOrdersToExcel(orders) {
     "Grado":          o.student?.grade || "—",
     "Documento":      o.student?.document || "—",
     "Acudiente":      o.guardian?.name || "—",
+    "Cédula Acudiente": o.guardian?.document || "—",
     "Teléfono":       o.guardian?.phone || "—",
     "Email":          o.guardian?.email || "—",
     "Entrega":        o.delivery?.type === "domicilio"
@@ -105,7 +106,7 @@ export function exportOrdersToExcel(orders) {
   const ws = rows.length > 0
     ? XLSX.utils.json_to_sheet(rows)
     : XLSX.utils.json_to_sheet([{ "N° Pedido": "Sin pedidos" }]);
-  ws["!cols"] = [18, 12, 14, 22, 22, 8, 14, 22, 14, 24, 36, 12, 18, 50, 14].map(w => ({ wch: w }));
+  ws["!cols"] = [18, 12, 14, 22, 22, 8, 14, 22, 16, 14, 24, 36, 12, 18, 50, 14].map(w => ({ wch: w }));
   XLSX.utils.book_append_sheet(wb, ws, "Pedidos");
 
   const date = new Date().toISOString().slice(0, 10);

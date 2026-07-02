@@ -416,7 +416,54 @@ export const sendStatusUpdate = async (order, newStatus) => {
   });
 };
 
-// ── 3. Correo de prueba ───────────────────────────────────────────────────────
+// ── 3. Aviso interno de pedido nuevo (a la tienda) ────────────────────────────
+export const sendAdminNewOrderNotification = async (order) => {
+  const to = process.env.ADMIN_NOTIFY_EMAIL || process.env.SMTP_USER;
+  if (!to) return;
+
+  const itemRows = order.items.map(i => `
+    <div class="data-row">
+      <span class="data-label">${i.name} &nbsp;·&nbsp; Talla ${i.size} &nbsp;&times;&nbsp; ${i.qty}</span>
+      <span class="data-value">${COP(i.price * i.qty)}</span>
+    </div>`).join("");
+
+  const content = `
+    <h2>Nuevo pedido recibido</h2>
+    <p>Se registró un nuevo pedido en la plataforma.</p>
+
+    <div class="order-block">
+      <div class="order-block-label">Número de pedido</div>
+      <div class="order-num">${order.id}</div>
+    </div>
+
+    <div class="section-title">Cliente</div>
+    <div class="data-block">
+      <div class="data-row"><span class="data-label">Acudiente</span><span class="data-value">${order.guardian.name}</span></div>
+      <div class="data-row"><span class="data-label">Teléfono</span><span class="data-value">${order.guardian.phone}</span></div>
+      <div class="data-row"><span class="data-label">Email</span><span class="data-value">${order.guardian.email}</span></div>
+      <div class="data-row"><span class="data-label">Institución</span><span class="data-value">${order.collegeName}</span></div>
+      ${order.student?.name  ? `<div class="data-row"><span class="data-label">Estudiante</span><span class="data-value">${order.student.name}</span></div>` : ""}
+    </div>
+
+    <div class="section-title">Artículos del pedido</div>
+    <div class="data-block">
+      ${itemRows}
+      <div class="data-total">
+        <span class="data-total-label">Total</span>
+        <span class="data-total-val">${COP(order.total)}</span>
+      </div>
+    </div>
+  `;
+
+  return getTransporter().sendMail({
+    from:    FROM(),
+    to,
+    subject: `Nuevo pedido ${order.id} — ${order.collegeName}`,
+    html:    baseHtml(content),
+  });
+};
+
+// ── 4. Correo de prueba ───────────────────────────────────────────────────────
 export const sendTestEmail = async (to) => {
   const content = `
     <h2>Verificacion de configuracion SMTP</h2>

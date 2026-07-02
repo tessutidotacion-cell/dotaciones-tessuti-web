@@ -10,7 +10,7 @@ import {
   updateGuardianDocument,
 } from "../services/orderService.js";
 import { uploadPaymentProof } from "../services/uploadService.js";
-import { sendOrderConfirmation, sendStatusUpdate } from "../services/emailService.js";
+import { sendOrderConfirmation, sendStatusUpdate, sendAdminNewOrderNotification } from "../services/emailService.js";
 
 const router = express.Router();
 
@@ -95,6 +95,9 @@ router.post("/", validateCreateOrder, async (req, res) => {
     // Email de confirmación (no bloqueante)
     sendOrderConfirmation(order).catch(err =>
       console.error("Error enviando email de confirmación:", err.message)
+    );
+    sendAdminNewOrderNotification(order).catch(err =>
+      console.error("Error enviando aviso de pedido nuevo:", err.message)
     );
 
     res.status(201).json({ success:true, message:"Pedido creado exitosamente", data:order });

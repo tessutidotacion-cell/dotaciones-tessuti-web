@@ -318,7 +318,7 @@ export const DEMO_COLLEGES = [
         name: "Fem. Grado 4° - 6°",
         uniforms: [
           { id: 401, name: "Blusa Gala Femenino", price: 34900, sizePrices: { "8": 34900, "10": 34900, "12": 34900, "14": 34900, "16": 34900, "XS": 37900, "S": 37900 }, sizes: ["8", "10", "12", "14", "16", "XS", "S"], category: "Gala", description: "Talla 8–16: $34.900 · Talla XS–S: $37.900" },
-          { id: 402, name: "Jumper", price: 126900, sizes: ["10", "12", "14"], category: "Gala" },
+          { id: 402, name: "Jumper", price: 126900, sizes: ["10", "12", "14", "16"], category: "Gala" },
           { id: 301, name: "Saco Tejido Azul Cuello V", price: 129900, sizePrices: { "12": 129900, "14": 129900, "16": 129900, "S": 134900 }, sizes: ["12", "14", "16", "S"], category: "Gala", description: "Talla 12–16: $129.900 · Talla S: $134.900" },
           { id: 410, name: "Medias Blancas Gala Dama Paquete por 3 Pares", price: 46000, sizePrices: { "8 A 10": 46000, "9 A 11": 48000 }, sizes: ["8 A 10", "9 A 11"], category: "Complemento", description: "Talla 8–10: $46.000 · Talla 9–11: $48.000" },
           { id: 4051, name: "Camiseta Blanca Física", price: 47900, sizePrices: { "4": 47900, "6": 47900, "8": 47900, "10": 47900, "12": 51900, "14": 51900, "16": 51900, "18": 51900, "XS": 55900, "S": 55900, "M": 55900 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "18", "XS", "S", "M"], category: "Deportivo", description: "Talla 4–10: $47.900 · Talla 12–18: $51.900 · Talla XS–M: $55.900" },
@@ -423,14 +423,14 @@ export const DEMO_COLLEGES = [
           { id: 515, name: "Chaleco Negro", price: 73000, sizes: ["4", "6", "8", "10", "12", "14"], stock: { "4": 15, "6": 8, "8": 10, "10": 3, "12": 0, "14": 1 }, category: "Diario" },
           { id: 514, name: "Delantal", price: 70000, sizes: ["4", "6", "8"], stock: { "4": 14, "6": 20, "8": 16 }, category: "Complemento" },
           { id: 516, name: "Sudadera", price: 73000, sizes: ["2", "4", "6", "8", "10", "12", "14"], stock: { "2": 10, "4": 35, "6": 33, "8": 33, "10": 17, "12": 41, "14": 17 }, category: "Deportivo" },
-          { id: 512, name: "Chaqueta", price: 120000, sizePrices: { "4": 120000, "6": 120000, "8": 120000, "10": 120000, "12": 120000, "14": 120000, "16": 130000, "S": 130000, "M": 130000 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "S", "M"], stock: { "4": 34, "6": 26, "8": 26, "10": 12, "12": 0, "14": 29, "16": 10, "S": 0, "M": 0 }, category: "Diario", description: "Talla 4–14: $120.000 · Talla 16–M: $130.000" },
+          { id: 512, name: "Chaqueta Primaria", price: 120000, sizePrices: { "4": 120000, "6": 120000, "8": 120000, "10": 120000, "12": 120000, "14": 120000, "16": 130000, "S": 130000, "M": 130000 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "S", "M"], stock: { "4": 34, "6": 26, "8": 26, "10": 12, "12": 0, "14": 29, "16": 10, "S": 0, "M": 0 }, category: "Diario", description: "Talla 4–14: $120.000 · Talla 16–M: $130.000" },
         ],
       },
       {
         id: "lf-uniforme",
         name: "Bachillerato",
         uniforms: [
-          { id: 500, name: "Chaqueta", price: 130000, sizes: ["12", "14", "16", "S", "M", "L"], stock: { "12": 14, "14": 17, "16": 8, "S": 13, "M": 10, "L": 5 }, category: "Diario", description: "Nuevo diseño, forrada en su interior con capucha" },
+          { id: 500, name: "Chaqueta Bachillerato", price: 130000, sizes: ["12", "14", "16", "S", "M", "L"], stock: { "12": 14, "14": 17, "16": 8, "S": 13, "M": 10, "L": 5 }, category: "Diario", description: "Nuevo diseño, forrada en su interior con capucha" },
           { id: 501, name: "Camisa Polo", price: 70000, sizePrices: { "12": 70000, "14": 70000, "16": 77000, "S": 77000, "M": 77000 }, sizes: ["12", "14", "16", "S", "M"], stock: { "12": 5, "14": 42, "16": 29, "S": 43, "M": 40 }, category: "Diario", description: "Talla 12–14: $70.000 · Talla 16–M: $77.000" },
           { id: 505, name: "Camiseta Unisex", price: 65000, sizePrices: { "12": 65000, "14": 65000, "16": 70000, "S": 70000, "M": 70000, "L": 70000 }, sizes: ["12", "14", "16", "S", "M", "L"], stock: { "12": 20, "14": 82, "16": 108, "S": 27, "M": 22, "L": 5 }, category: "Deportivo", description: "Talla 12–14: $65.000 · Talla 16–L: $70.000" },
           { id: 506, name: "Sudadera Diario", price: 81500, sizes: ["12", "14", "16", "S", "M"], stock: { "12": 14, "14": 26, "16": 58, "S": 27, "M": 27 }, category: "Diario", description: "Pantalón sudadera diario" },

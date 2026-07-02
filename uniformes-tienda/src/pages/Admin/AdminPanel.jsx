@@ -984,6 +984,7 @@ export default function AdminPanel({ onLogout, toast }) {
   const [updatingId, setUpdatingId]     = useState(null);
   const [updatingPayment, setUpdatingPayment] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [exportMonth, setExportMonth] = useState("");
   const [statsData, setStatsData]   = useState(null);
   const [stockData, setStockData]   = useState({});
   const [loadingStock, setLoadingStock] = useState(false);
@@ -1027,6 +1028,26 @@ export default function AdminPanel({ onLogout, toast }) {
     const matchS = !filterStatus || o.status === filterStatus;
     return matchQ && matchS;
   });
+
+  const monthOptions = Array.from(new Set(
+    orders.filter(o => o.createdAt).map(o => {
+      const d = new Date(o.createdAt);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+    })
+  )).sort().reverse().map(key => {
+    const [y,m] = key.split("-");
+    const label = new Date(Number(y), Number(m)-1, 1).toLocaleDateString("es-CO",{ month:"long", year:"numeric" });
+    return { key, label: label.charAt(0).toUpperCase() + label.slice(1) };
+  });
+
+  const ordersForExport = !exportMonth
+    ? orders
+    : orders.filter(o => {
+        if (!o.createdAt) return false;
+        const d = new Date(o.createdAt);
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+        return key === exportMonth;
+      });
 
   // Stats
   const loadStats = useCallback(async () => {
@@ -1362,19 +1383,26 @@ export default function AdminPanel({ onLogout, toast }) {
                     <p style={{ fontSize:13, color:"#9ca3af" }}>{filtered.length} resultado{filtered.length!==1?"s":""}</p>
                   </div>
                   <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+                    <select value={exportMonth} onChange={e=>setExportMonth(e.target.value)}
+                      style={{ padding:"9px 10px", borderRadius:8, border:"1px solid #d1d5db", fontSize:12, color:"#374151", outline:"none" }}>
+                      <option value="">Todos los meses</option>
+                      {monthOptions.map(m => (
+                        <option key={m.key} value={m.key}>{m.label}</option>
+                      ))}
+                    </select>
                     <button
-                      onClick={() => exportOrdersToExcel(orders)}
-                      disabled={orders.length === 0}
+                      onClick={() => exportOrdersToExcel(ordersForExport)}
+                      disabled={ordersForExport.length === 0}
                       style={{
                         display:"flex", alignItems:"center", gap:7,
                         padding:"9px 16px", borderRadius:8,
                         border:"1.5px solid #16a34a", background:"#f0fdf4",
                         color:"#15803d", fontSize:12, fontWeight:700,
-                        cursor: orders.length === 0 ? "not-allowed" : "pointer",
-                        opacity: orders.length === 0 ? 0.5 : 1,
+                        cursor: ordersForExport.length === 0 ? "not-allowed" : "pointer",
+                        opacity: ordersForExport.length === 0 ? 0.5 : 1,
                         transition:"all .15s",
                       }}
-                      onMouseEnter={e => { if(orders.length > 0) e.currentTarget.style.background="#dcfce7"; }}
+                      onMouseEnter={e => { if(ordersForExport.length > 0) e.currentTarget.style.background="#dcfce7"; }}
                       onMouseLeave={e => { e.currentTarget.style.background="#f0fdf4"; }}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
