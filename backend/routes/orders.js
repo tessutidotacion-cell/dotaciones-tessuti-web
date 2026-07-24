@@ -72,7 +72,7 @@ router.get("/admin/stats", requireAdmin, async (req, res) => {
 // POST /api/orders  — crear pedido + enviar email de confirmación
 router.post("/", validateCreateOrder, async (req, res) => {
   try {
-    const { collegeId, collegeName, items, student, guardian, delivery } = req.body;
+    const { collegeId, collegeName, items, student, guardian, delivery, coupon } = req.body;
     if (!collegeId || !collegeName)
       return res.status(400).json({ success:false, error:"Faltan datos del colegio" });
     if (!items || items.length === 0)
@@ -90,7 +90,7 @@ router.post("/", validateCreateOrder, async (req, res) => {
     if (delivery?.address?.street && delivery.address.street.length > 200)
       return res.status(400).json({ success:false, error:"Dirección demasiado larga" });
 
-    const order = await createOrder({ collegeId, collegeName, items, student, guardian, delivery });
+    const order = await createOrder({ collegeId, collegeName, items, student, guardian, delivery, coupon });
 
     // Email de confirmación (no bloqueante)
     sendOrderConfirmation(order).catch(err =>

@@ -262,7 +262,7 @@ export const DEMO_COLLEGES = [
         id: "bambolino",
         name: "Bambolino",
         uniforms: [
-          { id: 100, name: "Camiseta Bambolino", price: 40900, sizePrices: { "0": 40900, "2": 40900, "4": 44900, "6": 44900 }, sizes: ["0", "2", "4", "6"], category: "Diario", description: "Talla 0–2: $40.900 · Talla 4–6: $44.900" },
+          { id: 100, name: "Camiseta Bambolino", price: 40900, sizePrices: { "0": 40900, "2": 40900, "4": 44900, "6": 44900, "8": 44900 }, sizes: ["0", "2", "4", "6", "8"], category: "Diario", description: "Talla 0–2: $40.900 · Talla 4–8: $44.900" },
           { id: 102, name: "Sudadera Bambolino", price: 60900, sizePrices: { "0": 60900, "2": 60900, "4": 64900, "6": 64900 }, sizes: ["0", "2", "4", "6"], category: "Deportivo", description: "Talla 0–2: $60.900 · Talla 4–6: $64.900" },
           { id: 103, name: "Delantal Bambolino", price: 60900, sizePrices: { "2": 60900, "4": 64900, "6": 64900 }, sizes: ["2", "4", "6"], category: "Diario", description: "Talla 2: $60.900 · Talla 4–6: $64.900" },
           { id: 101, name: "Chompa Bambolino", price: 60900, sizePrices: { "2": 60900, "4": 64900, "6": 64900, "8": 64900 }, sizes: ["2", "4", "6", "8"], category: "Diario", description: "Talla 2: $60.900 · Talla 4–8: $64.900" },
@@ -332,7 +332,7 @@ export const DEMO_COLLEGES = [
         name: "Masc. Grado 4° - 6°",
         uniforms: [
           { id: 302, name: "Camisa Gala Masculino", price: 62900, sizePrices: { "8": 62900, "10": 62900, "12": 62900, "14": 62900, "16": 62900, "18": 62900, "XS": 66900, "S": 66900, "M": 66900 }, sizes: ["8", "10", "12", "14", "16", "18", "XS", "S", "M"], category: "Gala", description: "Talla 8–18: $62.900 · Talla XS–M: $66.900" },
-          { id: 303, name: "Pantalón Gris Gala", price: 86900, sizePrices: { "10": 86900, "12": 86900, "14": 86900, "16": 86900, "18": 86900, "28": 94900 }, sizes: ["10", "12", "14", "16", "18", "28"], category: "Gala", description: "Talla 10–18: $86.900 · Talla 28: $94.900" },
+          { id: 303, name: "Pantalón Gris Gala", price: 86900, sizePrices: { "8": 86900, "10": 86900, "12": 86900, "14": 86900, "16": 86900, "18": 86900, "28": 94900 }, sizes: ["8", "10", "12", "14", "16", "18", "28"], category: "Gala", description: "Talla 8–18: $86.900 · Talla 28: $94.900" },
           { id: 301, name: "Saco Tejido Azul Cuello V", price: 129900, sizePrices: { "12": 129900, "14": 129900, "16": 129900, "S": 134900 }, sizes: ["12", "14", "16", "S"], category: "Gala", description: "Talla 12–16: $129.900 · Talla S: $134.900" },
           { id: 309, name: "Medias Grises Gala Paquete por 3 Pares", price: 38000, sizePrices: { "8 A 10": 38000, "10 A 12": 39000 }, sizes: ["8 A 10", "10 A 12"], category: "Complemento", description: "Talla 8–10: $38.000 · Talla 10–12: $39.000" },
           { id: 310, name: "Correa Negra Gala", price: 48900, sizePrices: { "12 A 18": 48900, "28 A 36": 52900 }, sizes: ["12 A 18", "28 A 36"], category: "Complemento", description: "Talla 12–18: $48.900 · Talla 28–36: $52.900" },
@@ -362,7 +362,7 @@ export const DEMO_COLLEGES = [
         name: "Masc. Bachillerato 7° - 8°",
         uniforms: [
           { id: 302, name: "Camisa Gala Masculino", price: 62900, sizePrices: { "8": 62900, "10": 62900, "12": 62900, "14": 62900, "16": 62900, "18": 62900, "XS": 66900, "S": 66900, "M": 66900 }, sizes: ["8", "10", "12", "14", "16", "18", "XS", "S", "M"], category: "Gala", description: "Talla 8–18: $62.900 · Talla XS–M: $66.900" },
-          { id: 303, name: "Pantalón Gris Gala", price: 86900, sizePrices: { "10": 86900, "12": 86900, "14": 86900, "16": 86900, "18": 86900, "28": 94900 }, sizes: ["10", "12", "14", "16", "18", "28"], category: "Gala", description: "Talla 10–18: $86.900 · Talla 28: $94.900" },
+          { id: 303, name: "Pantalón Gris Gala", price: 86900, sizePrices: { "8": 86900, "10": 86900, "12": 86900, "14": 86900, "16": 86900, "18": 86900, "28": 94900 }, sizes: ["8", "10", "12", "14", "16", "18", "28"], category: "Gala", description: "Talla 8–18: $86.900 · Talla 28: $94.900" },
           { id: 301, name: "Saco Tejido Azul Cuello V", price: 129900, sizePrices: { "12": 129900, "14": 129900, "16": 129900, "S": 134900 }, sizes: ["12", "14", "16", "S"], category: "Gala", description: "Talla 12–16: $129.900 · Talla S: $134.900" },
           { id: 309, name: "Medias Grises Gala Paquete por 3 Pares", price: 38000, sizePrices: { "8 A 10": 38000, "10 A 12": 39000 }, sizes: ["8 A 10", "10 A 12"], category: "Complemento", description: "Talla 8–10: $38.000 · Talla 10–12: $39.000" },
           { id: 310, name: "Correa Negra Gala", price: 48900, sizePrices: { "12 A 18": 48900, "28 A 36": 52900 }, sizes: ["12 A 18", "28 A 36"], category: "Complemento", description: "Talla 12–18: $48.900 · Talla 28–36: $52.900" },

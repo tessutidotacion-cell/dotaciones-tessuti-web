@@ -1490,6 +1490,13 @@ export default function AdminPanel({ onLogout, toast }) {
                                       Con reservas
                                     </span>
                                   )}
+                                  {o.coupon?.code && (
+                                    <span style={{ display:"block", fontSize:9, fontWeight:700, letterSpacing:".08em",
+                                      background:"#f0fdf4", color:"#15803d", border:"1px solid #86efac",
+                                      padding:"1px 6px", borderRadius:4, marginTop:3, width:"fit-content" }}>
+                                      Cupón {o.coupon.code}
+                                    </span>
+                                  )}
                                 </td>
                                 <td style={{ padding:"11px 13px" }}>
                                   <div style={{ fontWeight:500, fontSize:13 }}>{o.student?.name}</div>
@@ -1566,6 +1573,13 @@ export default function AdminPanel({ onLogout, toast }) {
                                 background:"#fff7ed", color:"#c2410c", border:"1px solid #fed7aa",
                                 padding:"1px 6px", borderRadius:4, marginTop:3 }}>
                                 Con reservas
+                              </span>
+                            )}
+                            {o.coupon?.code && (
+                              <span style={{ display:"inline-block", fontSize:9, fontWeight:700, letterSpacing:".08em",
+                                background:"#f0fdf4", color:"#15803d", border:"1px solid #86efac",
+                                padding:"1px 6px", borderRadius:4, marginTop:3, marginLeft:4 }}>
+                                Cupón {o.coupon.code}
                               </span>
                             )}
                           </div>

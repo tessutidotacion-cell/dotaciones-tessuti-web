@@ -69,8 +69,9 @@ export const createOrder = async (orderData) => {
   const orderId    = await generateOrderId();
   const isDelivery = orderData.delivery?.type === "domicilio";
   const itemsTotal = orderData.items.reduce((s, i) => s + i.price * i.qty, 0);
+  const couponDiscount = orderData.coupon?.pct ? Math.round(itemsTotal * orderData.coupon.pct / 100) : 0;
 
-  const total = itemsTotal + (isDelivery ? 15000 : 0);
+  const total = itemsTotal + (isDelivery ? 15000 : 0) - couponDiscount;
 
   // Genera link de pago Bold con monto exacto
   const boldPaymentUrl = await createBoldPaymentLink({
@@ -101,6 +102,7 @@ export const createOrder = async (orderData) => {
     itemCount:       orderData.items.reduce((s, i) => s + i.qty, 0),
     status:          "Pago en validación",
     statusHistory:   [{ status: "Pago en validación", changedAt: new Date().toISOString(), changedBy: "sistema" }],
+    coupon:          orderData.coupon?.code ? { code: orderData.coupon.code, pct: orderData.coupon.pct, discount: couponDiscount } : null,
     paymentProofUrl: null,
     boldPaymentUrl:  boldPaymentUrl || null,
     createdAt:       new Date().toISOString(),
