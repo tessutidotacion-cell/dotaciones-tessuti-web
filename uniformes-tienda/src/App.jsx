@@ -452,24 +452,6 @@ export default function App() {
 
       {isPublic && (
         <>
-          {/* ── Aviso cambio de WhatsApp ── */}
-          <div
-            style={{
-              background: "#fef3c7",
-              color: "#78350f",
-              textAlign: "center",
-              padding: "8px 12px",
-              fontSize: "13px",
-              fontWeight: 600,
-              lineHeight: 1.4,
-            }}
-          >
-            Nuestro número de WhatsApp cambió temporalmente. Escríbenos al nuevo número:{" "}
-            <a href={waLink("Hola, quiero hacer un pedido")} target="_blank" rel="noreferrer" style={{ color: "#78350f", textDecoration: "underline" }}>
-              301 228 1886
-            </a>
-          </div>
-
           {/* ── Navbar ── */}
           <nav className={`app-nav${scrolled ? " scrolled" : ""}`} role="navigation" aria-label="Navegación principal">
             <button
