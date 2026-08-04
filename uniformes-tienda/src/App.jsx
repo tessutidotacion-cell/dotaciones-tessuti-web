@@ -7,6 +7,7 @@ import Toast from "./components/ui/Toast";
 import { LOGO_TESSUTI } from "./assets";
 import { DEMO_COLLEGES, loadCollegeImages } from "./data/colleges";
 import { COP } from "./utils/money";
+import { getCartTotal } from "./utils/cartPricing";
 import { useToast } from "./hooks/useToast";
 const CollegeSelector = lazy(() => import("./pages/Home/CollegesSelector"));
 const Catalog         = lazy(() => import("./pages/Catalog/Catalog"));
@@ -157,7 +158,7 @@ export default function App() {
 
   const isPublic  = !ADMIN_VIEWS.includes(view);
   const cartQty   = cart.reduce((s, i) => s + i.qty, 0);
-  const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const cartTotal = getCartTotal(cart);
 
   return (
     <>

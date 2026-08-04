@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { createOrder, uploadPaymentProof, validateCoupon, getWompiSignature } from "../../services/api";
 import { COP } from "../../utils/money";
+import { getCartTotal } from "../../utils/cartPricing";
 import { imgQrPago } from "../../assets";
 import Spinner from "../../components/ui/Spinner";
 
@@ -63,7 +64,7 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
   const [touched, setTouched] = useState({});
   const touch = (k) => setTouched(t => ({ ...t, [k]: true }));
 
-  const subtotal    = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const subtotal    = getCartTotal(cart);
   const deliveryFee = form.deliveryType === "domicilio" ? DELIVERY_FEE : 0;
   const discount    = coupon ? Math.round(subtotal * coupon.pct / 100) : 0;
   const total       = subtotal + deliveryFee - discount;

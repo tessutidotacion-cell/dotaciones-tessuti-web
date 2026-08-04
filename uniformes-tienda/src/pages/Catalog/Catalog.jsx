@@ -2,6 +2,7 @@ import { useState } from "react";
 import LogoBox from "../../components/ui/LogoBox";
 import { COP } from "../../utils/money";
 import { waLink } from "../../constants/contact";
+import { getCartTotal, getBundlePromoLabel } from "../../utils/cartPricing";
 
 const safeCSSColor = (color) => {
   if (typeof color !== "string") return "#4a2510";
@@ -50,7 +51,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
   const cats      = ["Todos", ...new Set(visibleUniforms.map(u => u.category))];
   const items     = filter === "Todos" ? visibleUniforms : visibleUniforms.filter(u => u.category === filter);
   const cartQty   = cart.reduce((s, i) => s + i.qty, 0);
-  const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const cartTotal = getCartTotal(cart);
 
   const P = safeCSSColor(college.primaryColor);
   const isEmpresarial = college.id === "empresarial";
@@ -330,6 +331,16 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           transition: transform .32s cubic-bezier(.16,1,.3,1);
         }
         .prod-card:hover { transform: translateY(-4px); }
+
+        .prod-promo-badge {
+          display: inline-block;
+          background: #c0392b; color: #fff;
+          font-family: var(--font);
+          font-size: 9px; font-weight: 800;
+          letter-spacing: .06em; text-transform: uppercase;
+          padding: 4px 8px; border-radius: 3px;
+          margin-bottom: 6px;
+        }
 
         .prod-img {
           aspect-ratio: 3 / 4;
@@ -1297,6 +1308,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
               const allOut = u.sizes?.length > 0 && sizeStock &&
                 u.sizes.every(sz => (sizeStock[sz] ?? null) === 0);
               const qtyInCart = cart.filter(ci => ci.id === u.id).reduce((s, ci) => s + ci.qty, 0);
+              const promoLabel = getBundlePromoLabel(u.id);
 
               return (
                 <article
@@ -1306,6 +1318,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
                   style={{ animationDelay: `${i * 0.045}s`, opacity: allOut ? 0.65 : 1 }}
                   onClick={() => openProduct(u)}
                 >
+                  {promoLabel && <span className="prod-promo-badge">Promo {promoLabel}</span>}
                   <div className="prod-img">
                     {imgSrc
                       ? <>
