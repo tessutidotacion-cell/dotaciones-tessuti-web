@@ -206,12 +206,11 @@ const _decrementStock = async (collegeId, items, orderId) => {
 // ── LISTAR PEDIDOS ────────────────────────────────────────────
 export const getOrders = async (filters = {}) => {
   if (IS_MOCK) {
-    return Array.from(_mockStore.values()).slice(0, 200);
+    return Array.from(_mockStore.values());
   }
   let query = db.collection(ORDERS_COL).orderBy("createdAt", "desc");
   if (filters.collegeId) query = query.where("collegeId", "==", filters.collegeId);
   if (filters.status)    query = query.where("status",    "==", filters.status);
-  query = query.limit(200);
   const snapshot = await query.get();
   let orders = snapshot.docs.map(d => d.data());
   if (filters.dateFrom) orders = orders.filter(o => o.createdAt >= filters.dateFrom);
