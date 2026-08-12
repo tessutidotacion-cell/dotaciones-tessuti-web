@@ -336,9 +336,11 @@ export const getStats = async () => {
       if (stats.byStatus[o.status] !== undefined) stats.byStatus[o.status]++;
       if (!stats.byCollege[o.collegeName]) stats.byCollege[o.collegeName] = { count: 0, revenue: 0 };
       stats.byCollege[o.collegeName].count++;
-      stats.byCollege[o.collegeName].revenue += o.total || 0;
-      stats.totalRevenue += o.total || 0;
-      if (o.status !== "Pago en validación") stats.confirmedRevenue += o.total || 0;
+      if (o.status === "Entregado") {
+        stats.byCollege[o.collegeName].revenue += o.total || 0;
+        stats.totalRevenue   += o.total || 0;
+        stats.confirmedRevenue += o.total || 0;
+      }
     });
     return stats;
   }
@@ -350,9 +352,11 @@ export const getStats = async () => {
     if (stats.byStatus[o.status] !== undefined) stats.byStatus[o.status]++;
     if (!stats.byCollege[o.collegeName]) stats.byCollege[o.collegeName] = { count: 0, revenue: 0 };
     stats.byCollege[o.collegeName].count++;
-    stats.byCollege[o.collegeName].revenue += o.total || 0;
-    stats.totalRevenue += o.total || 0;
-    if (o.status !== "Pago en validación") stats.confirmedRevenue += o.total || 0;
+    if (o.status === "Entregado") {
+      stats.byCollege[o.collegeName].revenue += o.total || 0;
+      stats.totalRevenue   += o.total || 0;
+      stats.confirmedRevenue += o.total || 0;
+    }
   });
   return stats;
 };
