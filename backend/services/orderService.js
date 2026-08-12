@@ -98,6 +98,7 @@ export const createOrder = async (orderData) => {
       billingAddress: orderData.guardian.billingAddress || "",
     },
     delivery:        orderData.delivery || { type: "recogida" },
+    paymentMethod:   orderData.paymentMethod || "transfer",
     total,
     itemCount:       orderData.items.reduce((s, i) => s + i.qty, 0),
     status:          "Pago en validación",

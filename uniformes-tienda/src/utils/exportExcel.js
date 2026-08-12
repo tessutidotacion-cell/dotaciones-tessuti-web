@@ -79,34 +79,51 @@ function buildSalesRows(orders) {
 }
 
 export function exportOrdersToExcel(orders) {
-  const rows = orders.map(o => ({
-    "N° Pedido":      o.id,
-    "Fecha":          o.createdAt ? new Date(o.createdAt).toLocaleDateString("es-CO") : "—",
-    "Estado":         o.status,
-    "Institución":    o.collegeName || "—",
-    "Estudiante":     o.student?.name || "—",
-    "Grado":          o.student?.grade || "—",
-    "Documento":      o.student?.document || "—",
-    "Acudiente":      o.guardian?.name || "—",
-    "Cédula Acudiente": o.guardian?.document || "—",
-    "Teléfono":       o.guardian?.phone || "—",
-    "Email":          o.guardian?.email || "—",
-    "Entrega":        o.delivery?.type === "domicilio"
-                        ? `Domicilio: ${o.delivery.address?.street || ""}, ${o.delivery.address?.neighborhood || ""}`
-                        : o.delivery?.type === "domicilio_coordinado"
-                        ? `Por coordinar${o.delivery.coordinationNote ? ": " + o.delivery.coordinationNote : ""}`
-                        : "Recogida en tienda",
-    "Pago":           o.paymentMethod || "—",
-    "Trans. Wompi":   o.wompiTransactionId || "—",
-    "Prendas":        (o.items || []).map(i => `${i.name} T${i.size} ×${i.qty}`).join(" | "),
-    "Total":          o.total || 0,
-  }));
+  const rows = orders.map(o => {
+    const itemsTotal = (o.items || []).reduce((s, i) => s + (i.price || 0) * (i.qty || 0), 0);
+    const couponDiscount = o.coupon?.discount || 0;
+    const itemsNetTotal = itemsTotal - couponDiscount;
+    const totalSinIva = Math.round(itemsNetTotal / 1.19);
+    const deliveryType = o.delivery?.type;
+    const deliveryCol = deliveryType === "domicilio"
+      ? 15000
+      : deliveryType === "domicilio_coordinado"
+      ? "Contactar al cliente"
+      : "Recogida en tienda";
+    const totalConDomicilio = deliveryType === "domicilio"
+      ? itemsNetTotal + 15000
+      : itemsNetTotal;
+
+    return {
+      "N° Pedido":          o.id,
+      "Fecha":              o.createdAt ? new Date(o.createdAt).toLocaleDateString("es-CO") : "—",
+      "Estado":             o.status,
+      "Institución":        o.collegeName || "—",
+      "Acudiente":          o.guardian?.name || "—",
+      "Cédula Acudiente":   o.guardian?.document || "—",
+      "Teléfono":           o.guardian?.phone || "—",
+      "Email":              o.guardian?.email || "—",
+      "Dir. Facturación":   o.guardian?.billingAddress || "—",
+      "Entrega":            deliveryType === "domicilio"
+                              ? "Domicilio"
+                              : deliveryType === "domicilio_coordinado"
+                              ? `Por coordinar${o.delivery.coordinationNote ? ": " + o.delivery.coordinationNote : ""}`
+                              : "Recogida en tienda",
+      "Pago":               o.paymentMethod || "—",
+      "Trans. Wompi":       o.wompiTransactionId || "—",
+      "Prendas":            (o.items || []).map(i => `${i.name} T${i.size} ×${i.qty}`).join(" | "),
+      "Domicilio":               deliveryCol,
+      "Total sin IVA (prendas)": totalSinIva,
+      "Total sin domicilio":     itemsNetTotal,
+      "Total con domicilio":     totalConDomicilio,
+    };
+  });
 
   const wb = XLSX.utils.book_new();
   const ws = rows.length > 0
     ? XLSX.utils.json_to_sheet(rows)
     : XLSX.utils.json_to_sheet([{ "N° Pedido": "Sin pedidos" }]);
-  ws["!cols"] = [18, 12, 14, 22, 22, 8, 14, 22, 16, 14, 24, 36, 12, 18, 50, 14].map(w => ({ wch: w }));
+  ws["!cols"] = [18, 12, 14, 22, 22, 16, 14, 24, 28, 20, 12, 18, 50, 18, 22, 20, 20].map(w => ({ wch: w }));
   XLSX.utils.book_append_sheet(wb, ws, "Pedidos");
 
   const date = new Date().toISOString().slice(0, 10);

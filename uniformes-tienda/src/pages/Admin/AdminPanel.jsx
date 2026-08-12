@@ -278,18 +278,11 @@ function OrderDetailModal({ order, onClose, onOrderUpdate }) {
             </div>
           )}
 
-          {/* Estudiante / Acudiente */}
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px 16px" }}>
-            {[
-              ["Estudiante", [order.student?.name, `Grado: ${order.student?.grade}`, order.student?.document && `Doc: ${order.student.document}`]],
-              ["Acudiente",  [order.guardian?.name, order.guardian?.phone, order.guardian?.email, order.guardian?.billingAddress && `Dir. facturación: ${order.guardian.billingAddress}`]],
-            ].map(([title, lines]) => (
-              <div key={title} style={{ background:"#f9fafb", borderRadius:8, padding:"12px 14px" }}>
-                <div style={{ fontSize:10, fontWeight:700, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".1em", marginBottom:8 }}>{title}</div>
-                {lines.filter(Boolean).map((l,i) => (
-                  <div key={i} style={{ fontSize:i===0?13:12, fontWeight:i===0?600:400, color:i===0?"#111":"#6b7280", marginBottom:2 }}>{l}</div>
-                ))}
-              </div>
+          {/* Acudiente */}
+          <div style={{ background:"#f9fafb", borderRadius:8, padding:"12px 14px" }}>
+            <div style={{ fontSize:10, fontWeight:700, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".1em", marginBottom:8 }}>Acudiente</div>
+            {[order.guardian?.name, order.guardian?.phone, order.guardian?.email, order.guardian?.billingAddress && `Dir. facturación: ${order.guardian.billingAddress}`].filter(Boolean).map((l,i) => (
+              <div key={i} style={{ fontSize:i===0?13:12, fontWeight:i===0?600:400, color:i===0?"#111":"#6b7280", marginBottom:2 }}>{l}</div>
             ))}
           </div>
 
@@ -984,7 +977,8 @@ export default function AdminPanel({ onLogout, toast }) {
   const [updatingId, setUpdatingId]     = useState(null);
   const [updatingPayment, setUpdatingPayment] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [exportMonth, setExportMonth] = useState("");
+  const [exportDateFrom, setExportDateFrom] = useState("");
+  const [exportDateTo,   setExportDateTo]   = useState("");
   const [statsData, setStatsData]   = useState(null);
   const [stockData, setStockData]   = useState({});
   const [loadingStock, setLoadingStock] = useState(false);
@@ -1029,25 +1023,13 @@ export default function AdminPanel({ onLogout, toast }) {
     return matchQ && matchS;
   });
 
-  const monthOptions = Array.from(new Set(
-    orders.filter(o => o.createdAt).map(o => {
-      const d = new Date(o.createdAt);
-      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
-    })
-  )).sort().reverse().map(key => {
-    const [y,m] = key.split("-");
-    const label = new Date(Number(y), Number(m)-1, 1).toLocaleDateString("es-CO",{ month:"long", year:"numeric" });
-    return { key, label: label.charAt(0).toUpperCase() + label.slice(1) };
+  const ordersForExport = orders.filter(o => {
+    if (!o.createdAt) return !exportDateFrom && !exportDateTo;
+    const day = o.createdAt.slice(0, 10);
+    if (exportDateFrom && day < exportDateFrom) return false;
+    if (exportDateTo   && day > exportDateTo)   return false;
+    return true;
   });
-
-  const ordersForExport = !exportMonth
-    ? orders
-    : orders.filter(o => {
-        if (!o.createdAt) return false;
-        const d = new Date(o.createdAt);
-        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
-        return key === exportMonth;
-      });
 
   // Stats
   const loadStats = useCallback(async () => {
@@ -1382,14 +1364,24 @@ export default function AdminPanel({ onLogout, toast }) {
                     <h2 style={{ fontSize:22, fontWeight:700, color:"#111", marginBottom:2 }}>Pedidos</h2>
                     <p style={{ fontSize:13, color:"#9ca3af" }}>{filtered.length} resultado{filtered.length!==1?"s":""}</p>
                   </div>
-                  <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-                    <select value={exportMonth} onChange={e=>setExportMonth(e.target.value)}
-                      style={{ padding:"9px 10px", borderRadius:8, border:"1px solid #d1d5db", fontSize:12, color:"#374151", outline:"none" }}>
-                      <option value="">Todos los meses</option>
-                      {monthOptions.map(m => (
-                        <option key={m.key} value={m.key}>{m.label}</option>
-                      ))}
-                    </select>
+                  <div style={{ display:"flex", gap:10, alignItems:"center", flexWrap:"wrap" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                      <label style={{ fontSize:11, fontWeight:600, color:"#6b7280", whiteSpace:"nowrap" }}>Desde</label>
+                      <input type="date" value={exportDateFrom} onChange={e=>setExportDateFrom(e.target.value)}
+                        style={{ padding:"8px 10px", borderRadius:8, border:"1px solid #d1d5db", fontSize:12, color:"#374151", outline:"none" }} />
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                      <label style={{ fontSize:11, fontWeight:600, color:"#6b7280", whiteSpace:"nowrap" }}>Hasta</label>
+                      <input type="date" value={exportDateTo} onChange={e=>setExportDateTo(e.target.value)}
+                        style={{ padding:"8px 10px", borderRadius:8, border:"1px solid #d1d5db", fontSize:12, color:"#374151", outline:"none" }} />
+                    </div>
+                    {(exportDateFrom || exportDateTo) && (
+                      <button onClick={()=>{ setExportDateFrom(""); setExportDateTo(""); }}
+                        style={{ fontSize:11, fontWeight:600, color:"#6b7280", background:"#f3f4f6", border:"1px solid #e5e7eb",
+                          borderRadius:7, padding:"8px 12px", cursor:"pointer" }}>
+                        Limpiar
+                      </button>
+                    )}
                     <button
                       onClick={() => exportOrdersToExcel(ordersForExport)}
                       disabled={ordersForExport.length === 0}
@@ -1462,7 +1454,7 @@ export default function AdminPanel({ onLogout, toast }) {
                         <table>
                           <thead>
                             <tr style={{ background:"#f3f4f6", borderBottom:"1px solid #e5e7eb" }}>
-                              {["","N° Pedido","Estudiante","Institución","Entrega","Total","Comprobante","Estado","Cambiar estado"].map(h=>(
+                              {["","N° Pedido","Acudiente","Institución","Entrega","Total","Comprobante","Estado","Cambiar estado"].map(h=>(
                                 <th key={h}>{h}</th>
                               ))}
                             </tr>
@@ -1499,8 +1491,7 @@ export default function AdminPanel({ onLogout, toast }) {
                                   )}
                                 </td>
                                 <td style={{ padding:"11px 13px" }}>
-                                  <div style={{ fontWeight:500, fontSize:13 }}>{o.student?.name}</div>
-                                  <div style={{ fontSize:11, color:"#9ca3af" }}>{o.guardian?.name}</div>
+                                  <div style={{ fontWeight:500, fontSize:13 }}>{o.guardian?.name}</div>
                                   {o.guardian?.document && (
                                     <div style={{ fontSize:10, color:"#b0a89f", fontFamily:"monospace", marginTop:1 }}>CC {o.guardian.document}</div>
                                   )}
@@ -1587,9 +1578,8 @@ export default function AdminPanel({ onLogout, toast }) {
                         </div>
                         <div className="order-card-body">
                           <div>
-                            <div className="order-card-field">Estudiante</div>
-                            <div className="order-card-value">{o.student?.name}</div>
-                            <div style={{ fontSize:11, color:"#9ca3af" }}>{o.guardian?.name}</div>
+                            <div className="order-card-field">Acudiente</div>
+                            <div className="order-card-value">{o.guardian?.name}</div>
                             {o.guardian?.document && (
                               <div style={{ fontSize:10, color:"#b0a89f", fontFamily:"monospace", marginTop:1 }}>CC {o.guardian.document}</div>
                             )}
