@@ -1258,22 +1258,29 @@ export default function AdminPanel({ onLogout, toast }) {
         .stock-card{border:1px solid #e5e7eb;border-radius:12px;background:#fff;padding:16px 18px;margin-bottom:12px;transition:border-color .15s}
         .stock-card:hover{border-color:#c7d2fe}
         .mobile-stock-cards{display:none}
-        @media(max-width:768px){
+        .admin-export-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+        .admin-export-date{display:flex;align-items:center;gap:6px}
+        @media(max-width:1024px){
           .admin-tabs-desktop{display:none!important}
           .admin-tabs-mobile{display:block!important}
           .sidebar{position:fixed;top:0;left:0;height:100%;z-index:999;transform:translateX(-100%)}
           .sidebar.open{transform:translateX(0);animation:slideIn .25s ease}
           .mobile-overlay.visible{display:block}
           .mobile-topbar{display:flex}
+          .stats-grid{grid-template-columns:1fr 1fr!important}
+          .stat-bar-label{width:auto!important;flex:1}
+        }
+        @media(max-width:768px){
           .desktop-table{display:none!important}
           .order-card{display:block}
           .mobile-stock-cards{display:block}
-          .stats-grid{grid-template-columns:1fr 1fr!important}
-          .stat-bar-label{width:auto!important;flex:1}
+          .admin-export-date label{display:none}
+          .admin-export-bar{gap:6px}
         }
         @media(max-width:480px){
           .stats-grid{grid-template-columns:1fr!important}
           .order-card-body{grid-template-columns:1fr}
+          .admin-export-date input{width:130px}
         }
       `}</style>
 
@@ -1364,13 +1371,13 @@ export default function AdminPanel({ onLogout, toast }) {
                     <h2 style={{ fontSize:22, fontWeight:700, color:"#111", marginBottom:2 }}>Pedidos</h2>
                     <p style={{ fontSize:13, color:"#9ca3af" }}>{filtered.length} resultado{filtered.length!==1?"s":""}</p>
                   </div>
-                  <div style={{ display:"flex", gap:10, alignItems:"center", flexWrap:"wrap" }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                  <div className="admin-export-bar">
+                    <div className="admin-export-date">
                       <label style={{ fontSize:11, fontWeight:600, color:"#6b7280", whiteSpace:"nowrap" }}>Desde</label>
                       <input type="date" value={exportDateFrom} onChange={e=>setExportDateFrom(e.target.value)}
                         style={{ padding:"8px 10px", borderRadius:8, border:"1px solid #d1d5db", fontSize:12, color:"#374151", outline:"none" }} />
                     </div>
-                    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                    <div className="admin-export-date">
                       <label style={{ fontSize:11, fontWeight:600, color:"#6b7280", whiteSpace:"nowrap" }}>Hasta</label>
                       <input type="date" value={exportDateTo} onChange={e=>setExportDateTo(e.target.value)}
                         style={{ padding:"8px 10px", borderRadius:8, border:"1px solid #d1d5db", fontSize:12, color:"#374151", outline:"none" }} />

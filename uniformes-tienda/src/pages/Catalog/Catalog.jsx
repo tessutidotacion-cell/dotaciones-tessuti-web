@@ -206,15 +206,13 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           background: #fff;
           padding: 8px clamp(16px,4vw,36px);
           display: flex;
+          flex-wrap: wrap;
           gap: 6px;
-          overflow-x: auto;
           position: sticky;
           top: calc(64px + env(safe-area-inset-top) + 60px);
           z-index: 50;
-          scrollbar-width: none;
           border-bottom: 1px solid #e8e5e1;
         }
-        .cat-sections::-webkit-scrollbar { display: none; }
         .cat-section-btn {
           padding: 8px 16px;
           border: 1.5px solid #e8e5e1;
@@ -271,14 +269,12 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           border-bottom: 1px solid #e8e5e1;
           padding: 0 clamp(16px,4vw,36px);
           display: flex;
+          flex-wrap: wrap;
           gap: 0;
-          overflow-x: auto;
           position: sticky;
           top: calc(64px + env(safe-area-inset-top) + 60px);
           z-index: 49;
-          scrollbar-width: none;
         }
-        .cat-filters::-webkit-scrollbar { display: none; }
         .cat-filter-btn {
           padding: 14px clamp(12px,2vw,20px);
           border: none;
@@ -863,9 +859,9 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
         /* ── Mobile ── */
         @media (max-width: 640px) {
           .cat-header { height: 44px; top: calc(56px + env(safe-area-inset-top)); padding: 0 12px; }
-          .cat-sections { display: flex; padding: 6px 12px; top: calc(56px + env(safe-area-inset-top) + 44px); }
-          .cat-section-select { display: none; }
-          .cat-filters { position: relative; top: auto; padding: 0 12px; }
+          .cat-sections { display: none; }
+          .cat-section-select { display: block; }
+          .cat-filters { position: relative; top: auto; padding: 0 12px; flex-wrap: wrap; }
           .cat-filter-btn { padding: 10px 10px; font-size: 9px; }
           .cat-col-sub { display: none; }
           .cat-col-name { font-size: 13px; }
