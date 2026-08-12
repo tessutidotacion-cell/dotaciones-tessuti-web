@@ -68,6 +68,12 @@ export const trackOrder = async (orderId) => {
   return handleResponse(res);
 };
 
+export const customerLookup = async (document) => {
+  const params = new URLSearchParams({ document });
+  const res = await fetch(`${BASE_URL}/orders/customer-lookup?${params}`, { headers:publicHeaders });
+  return handleResponse(res);
+};
+
 // ── PEDIDOS — ADMIN ───────────────────────────────────────────
 
 export const getOrders = async (filters = {}) => {

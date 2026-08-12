@@ -1,5 +1,6 @@
 import { db } from "../config/firebase.js";
 import { createBoldPaymentLink } from "./boldService.js";
+import { sendReservedItemAvailable } from "./emailService.js";
 
 const ORDERS_COL  = "pedidos";
 const STOCK_COL   = "stock";
@@ -129,6 +130,75 @@ export const createOrder = async (orderData) => {
   return newOrder;
 };
 
+// Restaura stock al anular un pedido (inverso de _decrementStock)
+const _restoreStock = async (collegeId, items, orderId) => {
+  if (IS_MOCK) return;
+
+  const stockRef = db.collection(STOCK_COL).doc(String(collegeId));
+  const movements = [];
+
+  await db.runTransaction(async (tx) => {
+    const stockDoc = await tx.get(stockRef);
+    const current  = stockDoc.exists ? (stockDoc.data().products || {}) : {};
+    const updated  = { ...current };
+    for (const item of items) {
+      const pid     = String(item.id);
+      const sizes   = updated[pid] ? { ...updated[pid] } : {};
+      const prevQty = sizes[item.size] ?? 0;
+      sizes[item.size] = prevQty + item.qty;
+      movements.push({
+        timestamp:   new Date().toISOString(),
+        collegeId:   String(collegeId),
+        productId:   pid,
+        productName: item.name || "",
+        size:        item.size,
+        delta:       item.qty,
+        prevQty,
+        newQty:      sizes[item.size],
+        source:      "anulacion",
+        orderId:     orderId || null,
+      });
+      updated[pid] = sizes;
+
+      const sharedIds = _sharedGroup(collegeId, pid, item.size);
+      if (sharedIds) {
+        for (const sibPid of sharedIds) {
+          if (sibPid === pid) continue;
+          const sibSizes   = updated[sibPid] ? { ...updated[sibPid] } : {};
+          const sibPrevQty = sibSizes[item.size] ?? 0;
+          sibSizes[item.size] = sibPrevQty + item.qty;
+          movements.push({
+            timestamp:   new Date().toISOString(),
+            collegeId:   String(collegeId),
+            productId:   sibPid,
+            productName: "",
+            size:        item.size,
+            delta:       item.qty,
+            prevQty:     sibPrevQty,
+            newQty:      sibSizes[item.size],
+            source:      "anulacion_compartido",
+            orderId:     orderId || null,
+          });
+          updated[sibPid] = sibSizes;
+        }
+      }
+    }
+    tx.set(stockRef, {
+      collegeId: String(collegeId),
+      products:  updated,
+      updatedAt: new Date().toISOString(),
+    }, { merge: true });
+  });
+
+  stockCache.delete(String(collegeId));
+
+  const batch = db.batch();
+  for (const mv of movements) {
+    batch.set(db.collection(HISTORY_COL).doc(), mv);
+  }
+  await batch.commit();
+};
+
 // Descuenta stock (solo en producción real)
 const _decrementStock = async (collegeId, items, orderId) => {
   if (IS_MOCK) return;
@@ -220,6 +290,21 @@ export const getOrders = async (filters = {}) => {
 };
 
 // ── OBTENER POR ID ────────────────────────────────────────────
+export const lookupCustomer = async (document) => {
+  if (IS_MOCK) {
+    for (const order of _mockStore.values()) {
+      if (order.guardian?.document === document) return order.guardian;
+    }
+    return null;
+  }
+  const snapshot = await db.collection(ORDERS_COL)
+    .where("guardian.document", "==", document)
+    .limit(1)
+    .get();
+  if (snapshot.empty) return null;
+  return snapshot.docs[0].data().guardian || null;
+};
+
 export const getOrderById = async (orderId) => {
   if (IS_MOCK) {
     return _mockStore.get(orderId) || null;
@@ -255,6 +340,14 @@ export const updateOrderStatus = async (orderId, newStatus, changedBy = "admin")
     { status: newStatus, changedAt: new Date().toISOString(), changedBy },
   ];
   await ref.update({ status: newStatus, statusHistory, updatedAt: new Date().toISOString() });
+
+  // Restaurar stock si se anula y no estaba ya anulado
+  if (newStatus === "Anulado" && order.status !== "Anulado" && order.collegeId && order.items?.length) {
+    _restoreStock(order.collegeId, order.items, orderId).catch(err =>
+      console.error("Error restaurando stock al anular:", err.message)
+    );
+  }
+
   return { ...order, status: newStatus, statusHistory };
 };
 
@@ -378,6 +471,52 @@ export const getStock = async (collegeId) => {
   return data;
 };
 
+// Busca pedidos con items reservados para product/size, notifica y descuenta
+const _fulfillReservations = async (collegeId, productId, size, availableQty) => {
+  if (availableQty <= 0) return 0;
+
+  const TERMINAL = ["Anulado", "Entregado"];
+  const snapshot = await db.collection(ORDERS_COL)
+    .where("collegeId", "==", String(collegeId))
+    .orderBy("createdAt", "asc")
+    .get();
+
+  let consumed = 0;
+  const batch = db.batch();
+
+  for (const docSnap of snapshot.docs) {
+    if (consumed >= availableQty) break;
+    const order = docSnap.data();
+    if (TERMINAL.includes(order.status)) continue;
+
+    const updatedItems = order.items?.map(item => ({ ...item })) || [];
+    let orderChanged = false;
+
+    for (const item of updatedItems) {
+      if (consumed >= availableQty) break;
+      if (!item.reserved) continue;
+      if (String(item.id) !== String(productId)) continue;
+      if (item.size !== size) continue;
+
+      const fulfill = Math.min(item.qty, availableQty - consumed);
+      consumed += fulfill;
+      item.reserved = false;
+      orderChanged = true;
+
+      sendReservedItemAvailable(order, item.name, size, fulfill).catch(err =>
+        console.error("Error enviando email reserva:", err.message)
+      );
+    }
+
+    if (orderChanged) {
+      batch.update(docSnap.ref, { items: updatedItems, updatedAt: new Date().toISOString() });
+    }
+  }
+
+  if (consumed > 0) await batch.commit();
+  return consumed;
+};
+
 export const setStock = async (collegeId, productId, size, quantity) => {
   if (IS_MOCK) {
     _mockHistory.push({
@@ -426,6 +565,25 @@ export const setStock = async (collegeId, productId, size, quantity) => {
 
   await ref.set({ collegeId: key, products: updated, updatedAt: new Date().toISOString() }, { merge: true });
   stockCache.delete(key);
+
+  // Cumplir reservas si el nuevo stock es > 0
+  if (quantity > 0) {
+    _fulfillReservations(collegeId, productId, size, quantity).then(async (consumed) => {
+      if (consumed > 0) {
+        // Descontar del stock lo que se asignó a reservas
+        const ref2 = db.collection(STOCK_COL).doc(key);
+        const doc2 = await ref2.get();
+        const cur  = doc2.exists ? (doc2.data().products || {}) : {};
+        const pid  = String(productId);
+        const prev = cur[pid]?.[size] ?? 0;
+        const next = Math.max(0, prev - consumed);
+        const updProd = { ...(cur[pid] || {}), [size]: next };
+        await ref2.set({ products: { ...cur, [pid]: updProd }, updatedAt: new Date().toISOString() }, { merge: true });
+        stockCache.delete(key);
+        console.log(`[reservas] ${consumed} ud(s) de ${productId} talla ${size} asignadas a pedidos reservados`);
+      }
+    }).catch(err => console.error("Error cumpliendo reservas:", err.message));
+  }
 
   // Registrar movimiento solo si hubo cambio real
   const delta = quantity - prevQty;

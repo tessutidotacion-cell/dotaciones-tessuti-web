@@ -89,7 +89,7 @@ export function exportOrdersToExcel(orders) {
       ? 15000
       : deliveryType === "domicilio_coordinado"
       ? "Contactar al cliente"
-      : "Recogida en tienda";
+      : "—";
     const totalConDomicilio = deliveryType === "domicilio"
       ? itemsNetTotal + 15000
       : itemsNetTotal;
@@ -110,7 +110,6 @@ export function exportOrdersToExcel(orders) {
                               ? `Por coordinar${o.delivery.coordinationNote ? ": " + o.delivery.coordinationNote : ""}`
                               : "Recogida en tienda",
       "Pago":               o.paymentMethod || "—",
-      "Trans. Wompi":       o.wompiTransactionId || "—",
       "Prendas":            (o.items || []).map(i => `${i.name} T${i.size} ×${i.qty}`).join(" | "),
       "Domicilio":               deliveryCol,
       "Total sin IVA (prendas)": totalSinIva,
@@ -123,7 +122,7 @@ export function exportOrdersToExcel(orders) {
   const ws = rows.length > 0
     ? XLSX.utils.json_to_sheet(rows)
     : XLSX.utils.json_to_sheet([{ "N° Pedido": "Sin pedidos" }]);
-  ws["!cols"] = [18, 12, 14, 22, 22, 16, 14, 24, 28, 20, 12, 18, 50, 18, 22, 20, 20].map(w => ({ wch: w }));
+  ws["!cols"] = [18, 12, 14, 22, 22, 16, 14, 24, 28, 20, 12, 50, 18, 22, 20, 20].map(w => ({ wch: w }));
   XLSX.utils.book_append_sheet(wb, ws, "Pedidos");
 
   const date = new Date().toISOString().slice(0, 10);

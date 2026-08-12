@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { createOrder, uploadPaymentProof, validateCoupon, getWompiSignature } from "../../services/api";
+import React, { useState, useEffect, useRef } from "react";
+import { createOrder, uploadPaymentProof, validateCoupon, getWompiSignature, customerLookup } from "../../services/api";
 import { COP } from "../../utils/money";
 import { getCartTotal } from "../../utils/cartPricing";
 import { imgQrPago } from "../../assets";
@@ -63,6 +63,37 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
 
   const [touched, setTouched] = useState({});
   const touch = (k) => setTouched(t => ({ ...t, [k]: true }));
+
+  const [foundCustomer,    setFoundCustomer]    = useState(null);
+  const [lookupLoading,    setLookupLoading]    = useState(false);
+  const lookupTimer = useRef(null);
+
+  useEffect(() => {
+    const doc = form.guardianDoc.trim();
+    setFoundCustomer(null);
+    if (doc.length < 6) return;
+    clearTimeout(lookupTimer.current);
+    lookupTimer.current = setTimeout(async () => {
+      setLookupLoading(true);
+      try {
+        const { data } = await customerLookup(doc);
+        if (data) setFoundCustomer(data);
+      } catch (_) {}
+      finally { setLookupLoading(false); }
+    }, 600);
+    return () => clearTimeout(lookupTimer.current);
+  }, [form.guardianDoc]);
+
+  const applyFoundCustomer = () => {
+    setForm(f => ({
+      ...f,
+      guardianName:   foundCustomer.name           || f.guardianName,
+      phone:          foundCustomer.phone          || f.phone,
+      email:          foundCustomer.email          || f.email,
+      billingAddress: foundCustomer.billingAddress || f.billingAddress,
+    }));
+    setFoundCustomer(null);
+  };
 
   const subtotal    = getCartTotal(cart);
   const deliveryFee = form.deliveryType === "domicilio" ? DELIVERY_FEE : 0;
@@ -550,6 +581,26 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                 </div>
                 <div style={{ padding:"clamp(16px,3vw,22px)", display:"flex", flexDirection:"column", gap:14 }}>
                   <div className="co-grid">
+                    <Field label="Cédula / NIT" required
+                      error={touched.guardianDoc && !form.guardianDoc.trim() ? "Este campo es obligatorio" : ""}
+                    >
+                      <div style={{ position:"relative" }}>
+                        <input
+                          value={form.guardianDoc}
+                          placeholder="N° cédula o NIT"
+                          inputMode="numeric"
+                          autoFocus
+                          onChange={e => set("guardianDoc", e.target.value.replace(/[^0-9-]/g, ""))}
+                          onBlur={() => touch("guardianDoc")}
+                          style={{ borderColor: touched.guardianDoc && !form.guardianDoc.trim() ? "#dc2626" : foundCustomer ? "#b89a6a" : undefined, width:"100%", boxSizing:"border-box" }}
+                        />
+                        {lookupLoading && (
+                          <span style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)" }}>
+                            <Spinner size={14} color="#b89a6a" />
+                          </span>
+                        )}
+                      </div>
+                    </Field>
                     <div className="co-full">
                       <Field label="Nombre completo" required
                         error={touched.guardianName && !form.guardianName.trim() ? "Este campo es obligatorio" : ""}
@@ -564,18 +615,27 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                         />
                       </Field>
                     </div>
-                    <Field label="Cédula / NIT" required
-                      error={touched.guardianDoc && !form.guardianDoc.trim() ? "Este campo es obligatorio" : ""}
-                    >
-                      <input
-                        value={form.guardianDoc}
-                        placeholder="N° cédula o NIT"
-                        inputMode="numeric"
-                        onChange={e => set("guardianDoc", e.target.value.replace(/[^0-9-]/g, ""))}
-                        onBlur={() => touch("guardianDoc")}
-                        style={{ borderColor: touched.guardianDoc && !form.guardianDoc.trim() ? "#dc2626" : undefined }}
-                      />
-                    </Field>
+                    {foundCustomer && (
+                      <div style={{ gridColumn:"1 / -1", background:"#fdf8f0", border:"1.5px solid #b89a6a", borderRadius:10, padding:"14px 16px", display:"flex", alignItems:"flex-start", gap:12 }}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b89a6a" strokeWidth="2" strokeLinecap="round" style={{ flexShrink:0, marginTop:1 }}><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontSize:11, fontWeight:700, color:"#92753a", textTransform:"uppercase", letterSpacing:".08em", marginBottom:4 }}>
+                            Cliente registrado
+                          </div>
+                          <div style={{ fontSize:13, color:"#5a4a2a", fontWeight:500, marginBottom:2 }}>{foundCustomer.name}</div>
+                          <div style={{ fontSize:12, color:"#92753a" }}>{foundCustomer.phone} · {foundCustomer.email}</div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={applyFoundCustomer}
+                          style={{ flexShrink:0, padding:"8px 16px", borderRadius:8, border:"none", background:"#b89a6a", color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap", transition:"background .15s" }}
+                          onMouseEnter={e => e.currentTarget.style.background="#a08555"}
+                          onMouseLeave={e => e.currentTarget.style.background="#b89a6a"}
+                        >
+                          Completar datos
+                        </button>
+                      </div>
+                    )}
                     <Field
                       label="Teléfono"
                       required

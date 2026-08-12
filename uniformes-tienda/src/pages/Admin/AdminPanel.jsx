@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   getOrders, updateOrderStatus, updatePaymentMethod, updateDeliveryNote, updateGuardianDocument,
@@ -994,6 +994,32 @@ export default function AdminPanel({ onLogout, toast }) {
   }, [toast]);
 
   useEffect(() => { if(tab==="orders") loadOrders(); }, [tab, loadOrders]);
+
+  // ── Notificaciones de pedidos nuevos (polling) ─────────────────
+  const knownIds = useRef(null);
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const { data } = await getOrders();
+        const incoming = data || [];
+        if (knownIds.current === null) {
+          knownIds.current = new Set(incoming.map(o => o.id));
+          return;
+        }
+        const newOrders = incoming.filter(o => !knownIds.current.has(o.id));
+        newOrders.forEach(o => {
+          toast(`🛍 Nuevo pedido: ${o.id} — ${o.collegeName}`, "success");
+          knownIds.current.add(o.id);
+        });
+        if (newOrders.length > 0) {
+          setOrders(incoming);
+        }
+      } catch (_) {}
+    };
+    poll();
+    const interval = setInterval(poll, 25000);
+    return () => clearInterval(interval);
+  }, [toast]);
 
   const handleStatus = async (id, status) => {
     setUpdatingId(id);

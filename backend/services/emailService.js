@@ -463,7 +463,42 @@ export const sendAdminNewOrderNotification = async (order) => {
   });
 };
 
-// ── 4. Correo de prueba ───────────────────────────────────────────────────────
+// ── 4. Notificación talla reservada ahora disponible ─────────────────────────
+export const sendReservedItemAvailable = async (order, itemName, size, qty) => {
+  const content = `
+    <h2>¡Tu prenda reservada ya está disponible!</h2>
+    <p>Estimado/a <strong>${order.guardian.name}</strong>, tenemos buenas noticias sobre tu pedido.</p>
+
+    <div class="order-block">
+      <div class="order-block-label">Número de pedido</div>
+      <div class="order-num">${order.id}</div>
+    </div>
+
+    <div class="section-title">Prenda disponible</div>
+    <div class="data-block">
+      <div class="data-row"><span class="data-label">Prenda</span><span class="data-value">${itemName}</span></div>
+      <div class="data-row"><span class="data-label">Talla</span><span class="data-value">${size}</span></div>
+      <div class="data-row"><span class="data-label">Cantidad</span><span class="data-value">${qty} ud${qty > 1 ? "s" : ""}.</span></div>
+      <div class="data-row"><span class="data-label">Institución</span><span class="data-value">${order.collegeName}</span></div>
+    </div>
+
+    <hr class="divider"/>
+
+    <div class="notice">
+      La prenda que tenías reservada ya está en inventario. Tu pedido <strong>${order.id}</strong> será procesado a la brevedad.
+      Puedes hacer seguimiento con el número de pedido en nuestra plataforma.
+    </div>
+  `;
+
+  return getTransporter().sendMail({
+    from:    FROM(),
+    to:      order.guardian.email,
+    subject: `¡Talla disponible! Pedido ${order.id} — ${itemName} talla ${size}`,
+    html:    baseHtml(content),
+  });
+};
+
+// ── 5. Correo de prueba ───────────────────────────────────────────────────────
 export const sendTestEmail = async (to) => {
   const content = `
     <h2>Verificacion de configuracion SMTP</h2>

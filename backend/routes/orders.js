@@ -7,7 +7,7 @@ import {
   createOrder, getOrders, getOrderById,
   updateOrderStatus, updatePaymentProof, updatePaymentMethod, getStats,
   getStock, setStock, updateDeliveryNote, getStockHistory,
-  updateGuardianDocument,
+  updateGuardianDocument, lookupCustomer,
 } from "../services/orderService.js";
 import { uploadPaymentProof } from "../services/uploadService.js";
 import { sendOrderConfirmation, sendStatusUpdate, sendAdminNewOrderNotification } from "../services/emailService.js";
@@ -103,6 +103,27 @@ router.post("/", validateCreateOrder, async (req, res) => {
     res.status(201).json({ success:true, message:"Pedido creado exitosamente", data:order });
   } catch(e) {
     console.error("Error creando pedido:", e);
+    res.status(500).json({ success:false, error:e.message });
+  }
+});
+
+// GET /api/orders/customer-lookup?document=XXXXX  — público, retorna datos básicos del acudiente
+router.get("/customer-lookup", async (req, res) => {
+  try {
+    const doc = req.query.document?.trim();
+    console.log("[customer-lookup] document:", doc);
+    if (!doc) return res.status(400).json({ success:false, error:"Documento requerido" });
+    const guardian = await lookupCustomer(doc);
+    console.log("[customer-lookup] result:", guardian);
+    if (!guardian) return res.json({ success:true, data:null });
+    res.json({ success:true, data: {
+      name:           guardian.name           || "",
+      phone:          guardian.phone          || "",
+      email:          guardian.email          || "",
+      billingAddress: guardian.billingAddress || "",
+    }});
+  } catch(e) {
+    console.error("[customer-lookup] error:", e.message);
     res.status(500).json({ success:false, error:e.message });
   }
 });
