@@ -995,12 +995,13 @@ export default function AdminPanel({ onLogout, toast }) {
 
   useEffect(() => { if(tab==="orders") loadOrders(); }, [tab, loadOrders]);
 
-  // ── Notificaciones de pedidos nuevos (polling) ─────────────────
+  // ── Notificaciones de pedidos nuevos (polling liviano) ────────
   const knownIds = useRef(null);
   useEffect(() => {
     const poll = async () => {
       try {
-        const { data } = await getOrders();
+        // Solo trae los últimos 20 pedidos para detectar nuevos — no lee todo Firestore
+        const { data } = await getOrders({ limit: 20 });
         const incoming = data || [];
         if (knownIds.current === null) {
           knownIds.current = new Set(incoming.map(o => o.id));
@@ -1012,14 +1013,14 @@ export default function AdminPanel({ onLogout, toast }) {
           knownIds.current.add(o.id);
         });
         if (newOrders.length > 0) {
-          setOrders(incoming);
+          loadOrders();
         }
       } catch (_) {}
     };
     poll();
-    const interval = setInterval(poll, 25000);
+    const interval = setInterval(poll, 60000); // cada 60s — menos reads
     return () => clearInterval(interval);
-  }, [toast]);
+  }, [toast, loadOrders]);
 
   const handleStatus = async (id, status) => {
     setUpdatingId(id);

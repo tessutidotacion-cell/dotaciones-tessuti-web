@@ -82,6 +82,7 @@ export const getOrders = async (filters = {}) => {
   if (filters.status)    p.append("status",    filters.status);
   if (filters.dateFrom)  p.append("dateFrom",  filters.dateFrom);
   if (filters.dateTo)    p.append("dateTo",    filters.dateTo);
+  if (filters.limit)     p.append("limit",     filters.limit);
   const res = await fetch(`${BASE_URL}/orders?${p}`, { headers:adminHeaders() });
   return handleResponse(res);
 };

@@ -282,6 +282,7 @@ export const getOrders = async (filters = {}) => {
   let query = db.collection(ORDERS_COL).orderBy("createdAt", "desc");
   if (filters.collegeId) query = query.where("collegeId", "==", filters.collegeId);
   if (filters.status)    query = query.where("status",    "==", filters.status);
+  if (filters.limit)     query = query.limit(Number(filters.limit));
   const snapshot = await query.get();
   let orders = snapshot.docs.map(d => d.data());
   if (filters.dateFrom) orders = orders.filter(o => o.createdAt >= filters.dateFrom);

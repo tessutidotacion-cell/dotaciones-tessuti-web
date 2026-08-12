@@ -55,8 +55,8 @@ const upload = multer({
 // GET /api/orders  — listar (admin)
 router.get("/", requireAdmin, async (req, res) => {
   try {
-    const { collegeId, status, dateFrom, dateTo } = req.query;
-    const orders = await getOrders({ collegeId, status, dateFrom, dateTo });
+    const { collegeId, status, dateFrom, dateTo, limit } = req.query;
+    const orders = await getOrders({ collegeId, status, dateFrom, dateTo, limit });
     res.json({ success:true, count:orders.length, data:orders });
   } catch(e) { res.status(500).json({ success:false, error:e.message }); }
 });
