@@ -94,7 +94,7 @@ export function exportOrdersToExcel(orders) {
     const totalConDomicilio = deliveryType === "domicilio"
       ? itemsNetTotal + 15000
       : itemsNetTotal;
-    const totalSinIva = totalConDomicilio / 1.19;
+    const totalSinIva = itemsNetTotal / 1.19;
 
     return {
       "N° Pedido":           o.id,
