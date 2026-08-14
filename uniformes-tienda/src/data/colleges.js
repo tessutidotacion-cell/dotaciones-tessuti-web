@@ -219,6 +219,7 @@ export const DEMO_COLLEGES = [
             sizes: ["Única"],
             category: "Complemento",
           },
+          { id: 11, name: "Medias Blancas Cortas Paquete por 2 Pares", price: 22000, sizePrices: { "2 A 4": 22000, "4 A 6": 23000, "6 A 8": 24000, "8 A 10": 25000, "10 A 12": 26000 }, sizes: ["2 A 4", "4 A 6", "6 A 8", "8 A 10", "10 A 12"], category: "Complemento", description: "Precio según talla" },
         ],
       },
       {
@@ -424,6 +425,7 @@ export const DEMO_COLLEGES = [
           { id: 514, name: "Delantal", price: 74000, sizes: ["4", "6", "8"], stock: { "4": 14, "6": 20, "8": 16 }, category: "Complemento" },
           { id: 516, name: "Sudadera Primaria", price: 77000, sizes: ["2", "4", "6", "8", "10", "12", "14"], stock: { "2": 10, "4": 35, "6": 33, "8": 33, "10": 17, "12": 41, "14": 17 }, category: "Deportivo" },
           { id: 512, name: "Chaqueta Primaria", price: 122000, sizePrices: { "4": 122000, "6": 122000, "8": 122000, "10": 122000, "12": 122000, "14": 122000, "16": 130000, "S": 130000, "M": 130000 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "S", "M"], stock: { "4": 34, "6": 26, "8": 26, "10": 12, "12": 0, "14": 29, "16": 10, "S": 0, "M": 0 }, category: "Diario", description: "Talla 4–14: $122.000 · Talla 16–M: $130.000" },
+          { id: 517, name: "Medias Blancas Cortas Paquete por 2 Pares", price: 22000, sizePrices: { "2 A 4": 22000, "4 A 6": 23000, "6 A 8": 24000, "8 A 10": 25000, "10 A 12": 26000 }, sizes: ["2 A 4", "4 A 6", "6 A 8", "8 A 10", "10 A 12"], category: "Complemento", description: "Precio según talla" },
         ],
       },
       {
