@@ -161,63 +161,80 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
     if (paymentMethod === "transfer" && !proofFile) { toast("Adjunta el comprobante de pago", "error"); return; }
     setLoading(true);
     try {
-      const orderPayload = {
-        collegeId:   college.id,
-        collegeName: college.name,
-        items: cart.map(i => ({
-          id:i.id, name:i.name, size:i.size, qty:i.qty, price:i.price, category:i.category,
-          reserved: i.reserved || false,
-        })),
-        guardian: {
-          name:           form.guardianName.trim(),
-          document:       form.guardianDoc.trim(),
-          phone:          form.phone.trim(),
-          email:          form.email.trim(),
-          billingAddress: form.billingAddress.trim(),
-        },
-        delivery: {
-          type: form.deliveryType,
-          address: needsStreet
-            ? { street:form.street.trim(), neighborhood:form.neighborhood.trim(), city:form.city.trim() }
-            : needsShipCoord
-            ? { street:form.shippingStreet.trim(), neighborhood:form.shippingNeighborhood.trim(), city:form.shippingCity.trim() }
-            : null,
-        },
-        notes: form.notes.trim(),
-        coupon: coupon ? { code: coupon.code, pct: coupon.pct, discount } : null,
-        paymentMethod,
+      // Agrupar items por colegio
+      const byCollege = {};
+      for (const item of cart) {
+        const key = item.collegeId || college?.id || "sin-colegio";
+        if (!byCollege[key]) byCollege[key] = { collegeId: key, collegeName: item.collegeName || college?.name || "", items: [] };
+        byCollege[key].items.push(item);
+      }
+      const groups = Object.values(byCollege);
+
+      const guardian = {
+        name:           form.guardianName.trim(),
+        document:       form.guardianDoc.trim(),
+        phone:          form.phone.trim(),
+        email:          form.email.trim(),
+        billingAddress: form.billingAddress.trim(),
+      };
+      const delivery = {
+        type: form.deliveryType,
+        address: needsStreet
+          ? { street:form.street.trim(), neighborhood:form.neighborhood.trim(), city:form.city.trim() }
+          : needsShipCoord
+          ? { street:form.shippingStreet.trim(), neighborhood:form.shippingNeighborhood.trim(), city:form.shippingCity.trim() }
+          : null,
       };
 
-      const orderResult = await createOrder(orderPayload);
-      const orderId = orderResult.data?.id || orderResult.data?.orderId;
-
-      if (paymentMethod === "transfer" && orderId && proofFile) {
-        try { await uploadPaymentProof(orderId, proofFile); }
-        catch { toast("Pedido creado. Envía el comprobante por WhatsApp.", "warning"); }
+      const orders = [];
+      for (const group of groups) {
+        const payload = {
+          collegeId:   group.collegeId,
+          collegeName: group.collegeName,
+          items: group.items.map(i => ({
+            id:i.id, name:i.name, size:i.size, qty:i.qty, price:i.price, category:i.category,
+            reserved: i.reserved || false,
+          })),
+          guardian,
+          delivery,
+          notes: form.notes.trim(),
+          coupon: groups.indexOf(group) === 0 && coupon ? { code: coupon.code, pct: coupon.pct, discount } : null,
+          paymentMethod,
+        };
+        const result = await createOrder(payload);
+        orders.push(result.data);
       }
 
-      // ── Wompi redirect ──────────────────────────────────────
-      if (paymentMethod === "wompi" && orderId) {
+      const firstOrder = orders[0];
+      const firstOrderId = firstOrder?.id || firstOrder?.orderId;
+
+      if (paymentMethod === "transfer" && firstOrderId && proofFile) {
+        try {
+          for (const o of orders) {
+            const oid = o?.id || o?.orderId;
+            if (oid) await uploadPaymentProof(oid, proofFile);
+          }
+        } catch { toast("Pedidos creados. Envía el comprobante por WhatsApp.", "warning"); }
+      }
+
+      // ── Wompi redirect (primer pedido) ──────────────────────
+      if (paymentMethod === "wompi" && firstOrderId) {
         const amountInCents = total * 100;
-        const signRes = await getWompiSignature(orderId, amountInCents);
+        const signRes = await getWompiSignature(firstOrderId, amountInCents);
         const { signature, publicKey } = signRes.data;
-
-        // Guardar pedido antes de salir de la SPA
-        sessionStorage.setItem("wompi_pending_order", JSON.stringify(orderResult.data));
-
+        sessionStorage.setItem("wompi_pending_order", JSON.stringify(firstOrder));
         const wompiUrl = new URL("https://checkout.wompi.co/p/");
-        wompiUrl.searchParams.set("public-key",         publicKey);
-        wompiUrl.searchParams.set("currency",           "COP");
-        wompiUrl.searchParams.set("amount-in-cents",    String(amountInCents));
-        wompiUrl.searchParams.set("reference",          orderId);
-        wompiUrl.searchParams.set("signature:integrity",signature);
-        wompiUrl.searchParams.set("redirect-url",       window.location.origin + "/");
-
+        wompiUrl.searchParams.set("public-key",          publicKey);
+        wompiUrl.searchParams.set("currency",            "COP");
+        wompiUrl.searchParams.set("amount-in-cents",     String(amountInCents));
+        wompiUrl.searchParams.set("reference",           firstOrderId);
+        wompiUrl.searchParams.set("signature:integrity", signature);
+        wompiUrl.searchParams.set("redirect-url",        window.location.origin + "/");
         window.location.href = wompiUrl.toString();
-        return; // no llama onSuccess — Wompi redirige de vuelta
+        return;
       }
 
-      onSuccess(orderResult.data);
+      onSuccess(firstOrder);
     } catch (err) {
       toast(err.message || "Error al crear el pedido", "error");
     } finally {
@@ -1228,12 +1245,6 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
             </div>
             <div style={{ padding:"clamp(14px,2vw,18px)" }}>
 
-              {/* Colegio */}
-              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14, paddingBottom:14, borderBottom:"1px solid #f0ede9" }}>
-                <div style={{ width:8, height:8, borderRadius:"50%", background:college.primaryColor, flexShrink:0, boxShadow:`0 0 0 3px ${college.primaryColor}22` }}/>
-                <span style={{ fontSize:12, fontWeight:600, color:"#4b4844" }}>{college.name}</span>
-              </div>
-
               {/* Aviso prendas reservadas */}
               {cart.some(i => i.reserved) && (
                 <div style={{ display:"flex", alignItems:"flex-start", gap:8,
@@ -1248,46 +1259,61 @@ export default function Checkout({ college, cart, setCart, onSuccess, onBack, to
                 </div>
               )}
 
-              {/* Items */}
-              <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:14 }}>
-                {cart.map(item => (
-                  <div key={item.id+item.size}>
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:8, marginBottom:6 }}>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ display:"flex", alignItems:"center", gap:5, flexWrap:"wrap" }}>
-                          <div style={{ fontSize:12, fontWeight:600, color:INK, lineHeight:1.35, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.name}</div>
-                          {item.reserved && (
-                            <span style={{ fontSize:9, fontWeight:700, letterSpacing:".06em", textTransform:"uppercase",
-                              background:"#fff7ed", color:"#c2410c", border:"1px solid #fed7aa",
-                              padding:"1px 6px", borderRadius:4, flexShrink:0, whiteSpace:"nowrap" }}>
-                              Reservado
-                            </span>
-                          )}
-                        </div>
-                        <div style={{ fontSize:10, color:"#9b9591", marginTop:2 }}>Talla {item.size} · {COP(item.price)} c/u</div>
-                      </div>
-                      <div style={{ fontSize:12, fontWeight:700, color:INK, flexShrink:0 }}>{COP(item.price*item.qty)}</div>
+              {/* Items agrupados por colegio */}
+              {(() => {
+                const byCollege = {};
+                for (const item of cart) {
+                  const key = item.collegeId || "general";
+                  if (!byCollege[key]) byCollege[key] = { name: item.collegeName || college?.name || "", items: [] };
+                  byCollege[key].items.push(item);
+                }
+                return Object.entries(byCollege).map(([cid, group]) => (
+                  <div key={cid} style={{ marginBottom:14 }}>
+                    <div style={{ fontSize:10, fontWeight:700, color:"#9b9591", textTransform:"uppercase", letterSpacing:".12em", marginBottom:10, paddingBottom:6, borderBottom:"1px solid #f0ede9" }}>
+                      {group.name}
                     </div>
-                    <div className="qty-ctrl">
-                      <button className="qty-btn"
-                        onClick={() => setCart(prev => {
-                          if (item.qty <= 1) return prev.filter(i => !(i.id===item.id && i.size===item.size));
-                          return prev.map(i => i.id===item.id && i.size===item.size ? {...i, qty:i.qty-1} : i);
-                        })}
-                      >
-                        {item.qty <= 1
-                          ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.5" strokeLinecap="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-                          : "−"
-                        }
-                      </button>
-                      <div className="qty-val">{item.qty}</div>
-                      <button className="qty-btn"
-                        onClick={() => setCart(prev => prev.map(i => i.id===item.id && i.size===item.size ? {...i, qty:i.qty+1} : i))}
-                      >+</button>
+                    <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                      {group.items.map(item => (
+                        <div key={item.id+item.size}>
+                          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:8, marginBottom:6 }}>
+                            <div style={{ flex:1, minWidth:0 }}>
+                              <div style={{ display:"flex", alignItems:"center", gap:5, flexWrap:"wrap" }}>
+                                <div style={{ fontSize:12, fontWeight:600, color:INK, lineHeight:1.35, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.name}</div>
+                                {item.reserved && (
+                                  <span style={{ fontSize:9, fontWeight:700, letterSpacing:".06em", textTransform:"uppercase",
+                                    background:"#fff7ed", color:"#c2410c", border:"1px solid #fed7aa",
+                                    padding:"1px 6px", borderRadius:4, flexShrink:0, whiteSpace:"nowrap" }}>
+                                    Reservado
+                                  </span>
+                                )}
+                              </div>
+                              <div style={{ fontSize:10, color:"#9b9591", marginTop:2 }}>Talla {item.size} · {COP(item.price)} c/u</div>
+                            </div>
+                            <div style={{ fontSize:12, fontWeight:700, color:INK, flexShrink:0 }}>{COP(item.price*item.qty)}</div>
+                          </div>
+                          <div className="qty-ctrl">
+                            <button className="qty-btn"
+                              onClick={() => setCart(prev => {
+                                if (item.qty <= 1) return prev.filter(i => !(i.id===item.id && i.size===item.size && i.collegeId===item.collegeId));
+                                return prev.map(i => i.id===item.id && i.size===item.size && i.collegeId===item.collegeId ? {...i, qty:i.qty-1} : i);
+                              })}
+                            >
+                              {item.qty <= 1
+                                ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.5" strokeLinecap="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                                : "−"
+                              }
+                            </button>
+                            <div className="qty-val">{item.qty}</div>
+                            <button className="qty-btn"
+                              onClick={() => setCart(prev => prev.map(i => i.id===item.id && i.size===item.size && i.collegeId===item.collegeId ? {...i, qty:i.qty+1} : i))}
+                            >+</button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
-              </div>
+                ));
+              })()}
 
               {/* Totales */}
               <div style={{ borderTop:"1px solid #e8e5e1", paddingTop:12, display:"flex", flexDirection:"column", gap:7 }}>

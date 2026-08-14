@@ -91,7 +91,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
     setCart(prev => {
       const ex = prev.find(i => i.id === u.id && i.size === size);
       if (ex) return prev.map(i => i.id === u.id && i.size === size ? { ...i, qty: i.qty + 1 } : i);
-      return [...prev, { id: u.id, name: u.name, price: finalPrice, size, qty: 1, reserved: isReserved }];
+      return [...prev, { id: u.id, name: u.name, price: finalPrice, size, qty: 1, reserved: isReserved, collegeId: college.id, collegeName: college.name }];
     });
 
     const key = `${u.id}-${size}`;

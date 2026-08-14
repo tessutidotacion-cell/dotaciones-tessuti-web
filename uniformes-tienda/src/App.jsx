@@ -490,7 +490,7 @@ export default function App() {
             </button>
 
             <div className="nav-actions">
-              {view === "catalog" && cartQty > 0 && (
+              {(view === "catalog" || view === "home") && cartQty > 0 && (
                 <button className="nav-btn primary" onClick={() => go("checkout")}>
                   <ShoppingBag size={13} strokeWidth={2} />
                   <span className="cart-qty">{cartQty}</span>
@@ -534,7 +534,7 @@ export default function App() {
             role="menu"
             aria-label="Menú móvil"
           >
-            {view === "catalog" && cartQty > 0 && (
+            {(view === "catalog" || view === "home") && cartQty > 0 && (
               <button className="mob-btn primary" onClick={() => go("checkout")} role="menuitem">
                 <span className="mob-btn-left">
                   <ShoppingBag size={15} strokeWidth={2} />
@@ -571,7 +571,7 @@ export default function App() {
           {view === "home" && (
             <CollegeSelector onSelect={async (c) => {
               const enriched = await loadCollegeImages(c);
-              setCollege(enriched); setCart([]); go("catalog", enriched);
+              setCollege(enriched); go("catalog", enriched);
             }} />
           )}
           {view === "catalog" && college && (
@@ -583,7 +583,7 @@ export default function App() {
               discounts={discounts[college?.id] || {}}
             />
           )}
-          {view === "checkout" && college && (
+          {view === "checkout" && (
             <Checkout
               college={college} cart={cart} setCart={setCart}
               onSuccess={(o) => { setSuccessOrder(o); setCart([]); go("success"); }}
@@ -711,7 +711,7 @@ export default function App() {
       )}
 
       {/* ── Cart FAB ── */}
-      {view === "catalog" && cartQty > 0 && (
+      {(view === "catalog" || view === "home") && cartQty > 0 && (
         <button
           className="cart-fab"
           onClick={() => go("checkout")}
