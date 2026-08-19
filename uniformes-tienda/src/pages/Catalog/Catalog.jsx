@@ -99,6 +99,73 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
     setTimeout(() => setFlash(f => ({ ...f, [key]: false })), 900);
   };
 
+  const renderCard = (u, i) => {
+    const allImgs = getImages(u);
+    const imgSrc = allImgs[0] || null;
+    const hoverSrc = allImgs[1] || null;
+    const pct = getDiscountPct(u.id);
+    const finalPrice = getFinalPrice(u);
+    const sizeStock = collegeStock?.[String(u.id)];
+    const allOut = u.sizes?.length > 0 && sizeStock &&
+      u.sizes.every(sz => (sizeStock[sz] ?? null) === 0);
+    const qtyInCart = cart.filter(ci => ci.id === u.id).reduce((s, ci) => s + ci.qty, 0);
+    const promoLabel = getBundlePromoLabel(u.id);
+    return (
+      <article
+        key={u.id}
+        className="prod-card"
+        role="listitem"
+        style={{ animationDelay: `${i * 0.045}s`, opacity: allOut ? 0.65 : 1 }}
+        onClick={() => openProduct(u)}
+      >
+        {promoLabel && <span className="prod-promo-badge">Promo {promoLabel}</span>}
+        <div className="prod-img">
+          {imgSrc
+            ? <>
+                <img className={hoverSrc ? "prod-img-main" : ""} src={imgSrc} alt={u.name} loading="lazy" />
+                {hoverSrc && <img className="prod-img-hover" src={hoverSrc} alt={`${u.name} reverso`} loading="lazy" />}
+              </>
+            : (
+              <div className="prod-img-placeholder">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="1">
+                  <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/>
+                </svg>
+              </div>
+            )
+          }
+          {pct > 0 && !allOut && <span className="prod-disc-badge">-{pct}%</span>}
+          {allOut && (
+            <span style={{
+              position: "absolute", top: 10, left: 10,
+              background: "#1c1c1c", color: "#fff",
+              fontSize: 9, fontWeight: 700,
+              padding: "4px 9px", letterSpacing: ".08em",
+              textTransform: "uppercase", pointerEvents: "none",
+            }}>
+              Reservar
+            </span>
+          )}
+          {qtyInCart > 0 && (
+            <span className="prod-cart-badge">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18"/></svg>
+              {qtyInCart}
+            </span>
+          )}
+        </div>
+        <div className="prod-info">
+          <div className="prod-name">{u.name}</div>
+          {isEmpresarial
+            ? <div className="prod-price">Precio a consultar</div>
+            : <div className="prod-price">
+                {COP(finalPrice)}
+                {pct > 0 && <span style={{ textDecoration: "line-through", color: "#b0a89f", marginLeft: 8, fontSize: 11 }}>{COP(u.price)}</span>}
+              </div>
+          }
+        </div>
+      </article>
+    );
+  };
+
   return (
     <div style={{ minHeight: "calc(100vh - 64px)", background: "#fff" }}>
       <style>{`
@@ -908,6 +975,24 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
         @media (max-width: 280px) {
           .cat-grid { grid-template-columns: 1fr; }
         }
+
+        /* ── Liceo Francés mobile all-sections ── */
+        .lf-mobile-all { display: none; }
+        .lf-section-block { margin-bottom: 8px; }
+        .lf-section-label {
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: .15em;
+          text-transform: uppercase;
+          color: ${P};
+          padding: 16px 12px 10px;
+          border-bottom: 2px solid ${P};
+          margin-bottom: 4px;
+        }
+        @media (max-width: 640px) {
+          .lf-mobile-all { display: block; }
+          .cat-grid-lf-desktop { display: none !important; }
+        }
       `}</style>
 
       {/* Header */}
@@ -1180,16 +1265,18 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
                   </button>
                 ))}
               </nav>
-              <select
-                className="cat-section-select"
-                value={activeSection}
-                onChange={e => { setActiveSection(e.target.value); setFilter("Todos"); }}
-                aria-label="Seleccionar sección"
-              >
-                {college.sections.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
+              {college.id !== "liceo-frances" && (
+                <select
+                  className="cat-section-select"
+                  value={activeSection}
+                  onChange={e => { setActiveSection(e.target.value); setFilter("Todos"); }}
+                  aria-label="Seleccionar sección"
+                >
+                  {college.sections.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              )}
             </>
           )}
 
@@ -1261,7 +1348,7 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
           })()}
 
           {/* Grid limpio */}
-          <div className="cat-grid" role="list" aria-label="Productos">
+          <div className={`cat-grid${college.id === "liceo-frances" ? " cat-grid-lf-desktop" : ""}`} role="list" aria-label="Productos">
             {items.length === 0 && (
               <div className="cat-empty">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c4bfba" strokeWidth="1.2">
@@ -1293,75 +1380,27 @@ export default function Catalog({ college, cart, setCart, onCheckout, onBack, co
                 </button>
               </div>
             )}
-
-            {items.map((u, i) => {
-              const allImgs = getImages(u);
-              const imgSrc = allImgs[0] || null;
-              const hoverSrc = allImgs[1] || null;
-              const pct = getDiscountPct(u.id);
-              const finalPrice = getFinalPrice(u);
-              const sizeStock = collegeStock?.[String(u.id)];
-              const allOut = u.sizes?.length > 0 && sizeStock &&
-                u.sizes.every(sz => (sizeStock[sz] ?? null) === 0);
-              const qtyInCart = cart.filter(ci => ci.id === u.id).reduce((s, ci) => s + ci.qty, 0);
-              const promoLabel = getBundlePromoLabel(u.id);
-
-              return (
-                <article
-                  key={u.id}
-                  className="prod-card"
-                  role="listitem"
-                  style={{ animationDelay: `${i * 0.045}s`, opacity: allOut ? 0.65 : 1 }}
-                  onClick={() => openProduct(u)}
-                >
-                  {promoLabel && <span className="prod-promo-badge">Promo {promoLabel}</span>}
-                  <div className="prod-img">
-                    {imgSrc
-                      ? <>
-                          <img className={hoverSrc ? "prod-img-main" : ""} src={imgSrc} alt={u.name} loading="lazy" />
-                          {hoverSrc && <img className="prod-img-hover" src={hoverSrc} alt={`${u.name} reverso`} loading="lazy" />}
-                        </>
-                      : (
-                        <div className="prod-img-placeholder">
-                          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="1">
-                            <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/>
-                          </svg>
-                        </div>
-                      )
-                    }
-                    {pct > 0 && !allOut && <span className="prod-disc-badge">-{pct}%</span>}
-                    {allOut && (
-                      <span style={{
-                        position: "absolute", top: 10, left: 10,
-                        background: "#1c1c1c", color: "#fff",
-                        fontSize: 9, fontWeight: 700,
-                        padding: "4px 9px", letterSpacing: ".08em",
-                        textTransform: "uppercase", pointerEvents: "none",
-                      }}>
-                        Reservar
-                      </span>
-                    )}
-                    {qtyInCart > 0 && (
-                      <span className="prod-cart-badge">
-                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18"/></svg>
-                        {qtyInCart}
-                      </span>
-                    )}
-                  </div>
-                  <div className="prod-info">
-                    <div className="prod-name">{u.name}</div>
-                    {isEmpresarial
-                      ? <div className="prod-price">Precio a consultar</div>
-                      : <div className="prod-price">
-                          {COP(finalPrice)}
-                          {pct > 0 && <span style={{ textDecoration: "line-through", color: "#b0a89f", marginLeft: 8, fontSize: 11 }}>{COP(u.price)}</span>}
-                        </div>
-                    }
-                  </div>
-                </article>
-              );
-            })}
+            {items.map(renderCard)}
           </div>
+
+          {/* LF mobile: both sections visible simultaneously */}
+          {college.id === "liceo-frances" && (
+            <div className="lf-mobile-all">
+              {college.sections.map(section => {
+                const sectionItems = filter === "Todos"
+                  ? section.uniforms
+                  : section.uniforms.filter(u => u.category === filter);
+                return (
+                  <div key={section.id} className="lf-section-block">
+                    <div className="lf-section-label">{section.name}</div>
+                    <div className="cat-grid">
+                      {sectionItems.map(renderCard)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </>
       )}
     </div>

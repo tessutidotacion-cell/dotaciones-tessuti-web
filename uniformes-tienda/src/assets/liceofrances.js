@@ -1,3 +1,7 @@
+// Shared images from other schools
+import imgCamibusoBlanco from "./TheNewSchool/camibuso blanco.webp";
+import imgMediasBlancasFisica from "./Cumbres/medias blancas fisica.webp";
+
 // Bachillerato / High School
 import imgChaquetaHS1 from "./LiceoFrances/LF Chaqueta HS 1.webp";
 import imgChaquetaHS2 from "./LiceoFrances/LF Chaqueta HS 2.webp";
@@ -24,6 +28,9 @@ import imgSud1 from "./LiceoFrances/LF Sud 1.webp";
 import imgSud2 from "./LiceoFrances/LF Sud 2.webp";
 
 export {
+  // Shared
+  imgCamibusoBlanco,
+  imgMediasBlancasFisica,
   // Bachillerato / High School
   imgChaquetaHS1,
   imgChaquetaHS2,

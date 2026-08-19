@@ -28,6 +28,18 @@ const SHARED_STOCK_LINKS = {
   ],
 };
 
+// ── Stock compartido entre TODOS los colegios ─────────────────
+// productId → collegeId canónico donde se almacena el stock real.
+// Camibuso Blanco (5) y Medias Blancas Cortas (11) son la misma
+// prenda física sin importar en qué colegio se vende.
+const CROSS_COLLEGE_CANONICAL = {
+  "5":  "1",  // Camibuso Blanco — stock en New School
+  "11": "1",  // Medias Blancas Cortas — stock en New School
+};
+
+const _canonicalRef = (productId) =>
+  CROSS_COLLEGE_CANONICAL[String(productId)] || null;
+
 const _sharedGroup = (collegeId, productId, size) => {
   const groups = SHARED_STOCK_LINKS[String(collegeId)];
   if (!groups) return null;
@@ -134,66 +146,84 @@ export const createOrder = async (orderData) => {
 const _restoreStock = async (collegeId, items, orderId) => {
   if (IS_MOCK) return;
 
-  const stockRef = db.collection(STOCK_COL).doc(String(collegeId));
-  const movements = [];
+  // Agrupar: items compartidos van al doc canónico, los demás al propio
+  const ownItems    = items.filter(i => !_canonicalRef(i.id));
+  const sharedItems = items.filter(i =>  _canonicalRef(i.id));
+  const sharedByCanon = {};
+  for (const item of sharedItems) {
+    const cid = _canonicalRef(item.id);
+    if (!sharedByCanon[cid]) sharedByCanon[cid] = [];
+    sharedByCanon[cid].push(item);
+  }
 
-  await db.runTransaction(async (tx) => {
-    const stockDoc = await tx.get(stockRef);
-    const current  = stockDoc.exists ? (stockDoc.data().products || {}) : {};
-    const updated  = { ...current };
-    for (const item of items) {
-      const pid     = String(item.id);
-      const sizes   = updated[pid] ? { ...updated[pid] } : {};
-      const prevQty = sizes[item.size] ?? 0;
-      sizes[item.size] = prevQty + item.qty;
-      movements.push({
-        timestamp:   new Date().toISOString(),
-        collegeId:   String(collegeId),
-        productId:   pid,
-        productName: item.name || "",
-        size:        item.size,
-        delta:       item.qty,
-        prevQty,
-        newQty:      sizes[item.size],
-        source:      "anulacion",
-        orderId:     orderId || null,
-      });
-      updated[pid] = sizes;
+  const allMovements = [];
 
-      const sharedIds = _sharedGroup(collegeId, pid, item.size);
-      if (sharedIds) {
-        for (const sibPid of sharedIds) {
-          if (sibPid === pid) continue;
-          const sibSizes   = updated[sibPid] ? { ...updated[sibPid] } : {};
-          const sibPrevQty = sibSizes[item.size] ?? 0;
-          sibSizes[item.size] = sibPrevQty + item.qty;
-          movements.push({
-            timestamp:   new Date().toISOString(),
-            collegeId:   String(collegeId),
-            productId:   sibPid,
-            productName: "",
-            size:        item.size,
-            delta:       item.qty,
-            prevQty:     sibPrevQty,
-            newQty:      sibSizes[item.size],
-            source:      "anulacion_compartido",
-            orderId:     orderId || null,
-          });
-          updated[sibPid] = sibSizes;
+  const restoreDoc = async (docCollegeId, docItems) => {
+    const ref = db.collection(STOCK_COL).doc(String(docCollegeId));
+    const movements = [];
+    await db.runTransaction(async (tx) => {
+      const stockDoc = await tx.get(ref);
+      const current  = stockDoc.exists ? (stockDoc.data().products || {}) : {};
+      const updated  = { ...current };
+      for (const item of docItems) {
+        const pid     = String(item.id);
+        const sizes   = updated[pid] ? { ...updated[pid] } : {};
+        const prevQty = sizes[item.size] ?? 0;
+        sizes[item.size] = prevQty + item.qty;
+        movements.push({
+          timestamp:   new Date().toISOString(),
+          collegeId:   String(docCollegeId),
+          productId:   pid,
+          productName: item.name || "",
+          size:        item.size,
+          delta:       item.qty,
+          prevQty,
+          newQty:      sizes[item.size],
+          source:      "anulacion",
+          orderId:     orderId || null,
+        });
+        updated[pid] = sizes;
+
+        const sharedIds = _sharedGroup(docCollegeId, pid, item.size);
+        if (sharedIds) {
+          for (const sibPid of sharedIds) {
+            if (sibPid === pid) continue;
+            const sibSizes   = updated[sibPid] ? { ...updated[sibPid] } : {};
+            const sibPrevQty = sibSizes[item.size] ?? 0;
+            sibSizes[item.size] = sibPrevQty + item.qty;
+            movements.push({
+              timestamp:   new Date().toISOString(),
+              collegeId:   String(docCollegeId),
+              productId:   sibPid,
+              productName: "",
+              size:        item.size,
+              delta:       item.qty,
+              prevQty:     sibPrevQty,
+              newQty:      sibSizes[item.size],
+              source:      "anulacion_compartido",
+              orderId:     orderId || null,
+            });
+            updated[sibPid] = sibSizes;
+          }
         }
       }
-    }
-    tx.set(stockRef, {
-      collegeId: String(collegeId),
-      products:  updated,
-      updatedAt: new Date().toISOString(),
-    }, { merge: true });
-  });
+      tx.set(ref, {
+        collegeId: String(docCollegeId),
+        products:  updated,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
+    });
+    stockCache.delete(String(docCollegeId));
+    allMovements.push(...movements);
+  };
 
-  stockCache.delete(String(collegeId));
+  if (ownItems.length > 0) await restoreDoc(collegeId, ownItems);
+  for (const [cid, citems] of Object.entries(sharedByCanon)) {
+    await restoreDoc(cid, citems);
+  }
 
   const batch = db.batch();
-  for (const mv of movements) {
+  for (const mv of allMovements) {
     batch.set(db.collection(HISTORY_COL).doc(), mv);
   }
   await batch.commit();
@@ -203,75 +233,100 @@ const _restoreStock = async (collegeId, items, orderId) => {
 const _decrementStock = async (collegeId, items, orderId) => {
   if (IS_MOCK) return;
 
-  const stockRef = db.collection(STOCK_COL).doc(String(collegeId));
-  const movements = [];
+  // Agrupar items: los de stock compartido van al doc canónico, los demás al propio
+  const ownItems      = items.filter(i => !_canonicalRef(i.id));
+  const sharedItems   = items.filter(i =>  _canonicalRef(i.id));
 
-  await db.runTransaction(async (tx) => {
-    const stockDoc = await tx.get(stockRef);
-    const current  = stockDoc.exists ? (stockDoc.data().products || {}) : {};
-    const updated  = { ...current };
-    for (const item of items) {
-      const pid     = String(item.id);
-      const sizes   = updated[pid] ? { ...updated[pid] } : {};
-      const prevQty = sizes[item.size] ?? 0;
-      if (sizes[item.size] !== undefined) {
-        sizes[item.size] = Math.max(0, prevQty - item.qty);
-        movements.push({
-          timestamp:   new Date().toISOString(),
-          collegeId:   String(collegeId),
-          productId:   pid,
-          productName: item.name || "",
-          size:        item.size,
-          delta:       -(item.qty),
-          prevQty,
-          newQty:      sizes[item.size],
-          source:      "pedido",
-          orderId:     orderId || null,
-        });
-      }
-      updated[pid] = sizes;
+  // Agrupar items compartidos por su collegeId canónico
+  const sharedByCanon = {};
+  for (const item of sharedItems) {
+    const cid = _canonicalRef(item.id);
+    if (!sharedByCanon[cid]) sharedByCanon[cid] = [];
+    sharedByCanon[cid].push(item);
+  }
 
-      // Descontar también en las prendas que comparten esta talla físicamente
-      const sharedIds = _sharedGroup(collegeId, pid, item.size);
-      if (sharedIds) {
-        for (const sibPid of sharedIds) {
-          if (sibPid === pid) continue;
-          const sibSizes   = updated[sibPid] ? { ...updated[sibPid] } : {};
-          const sibPrevQty = sibSizes[item.size] ?? 0;
-          if (sibSizes[item.size] !== undefined) {
-            sibSizes[item.size] = Math.max(0, sibPrevQty - item.qty);
-            movements.push({
-              timestamp:   new Date().toISOString(),
-              collegeId:   String(collegeId),
-              productId:   sibPid,
-              productName: "",
-              size:        item.size,
-              delta:       -(item.qty),
-              prevQty:     sibPrevQty,
-              newQty:      sibSizes[item.size],
-              source:      "pedido_compartido",
-              orderId:     orderId || null,
-            });
+  const allMovements = [];
+
+  // Función interna que descuenta un conjunto de items en un doc de stock
+  const decrementDoc = async (docCollegeId, docItems) => {
+    const ref = db.collection(STOCK_COL).doc(String(docCollegeId));
+    const movements = [];
+    await db.runTransaction(async (tx) => {
+      const stockDoc = await tx.get(ref);
+      const current  = stockDoc.exists ? (stockDoc.data().products || {}) : {};
+      const updated  = { ...current };
+      for (const item of docItems) {
+        const pid     = String(item.id);
+        const sizes   = updated[pid] ? { ...updated[pid] } : {};
+        const prevQty = sizes[item.size] ?? 0;
+        if (sizes[item.size] !== undefined) {
+          sizes[item.size] = Math.max(0, prevQty - item.qty);
+          movements.push({
+            timestamp:   new Date().toISOString(),
+            collegeId:   String(docCollegeId),
+            productId:   pid,
+            productName: item.name || "",
+            size:        item.size,
+            delta:       -(item.qty),
+            prevQty,
+            newQty:      sizes[item.size],
+            source:      "pedido",
+            orderId:     orderId || null,
+          });
+        }
+        updated[pid] = sizes;
+
+        // Descontar también en las prendas que comparten esta talla físicamente
+        const sharedIds = _sharedGroup(docCollegeId, pid, item.size);
+        if (sharedIds) {
+          for (const sibPid of sharedIds) {
+            if (sibPid === pid) continue;
+            const sibSizes   = updated[sibPid] ? { ...updated[sibPid] } : {};
+            const sibPrevQty = sibSizes[item.size] ?? 0;
+            if (sibSizes[item.size] !== undefined) {
+              sibSizes[item.size] = Math.max(0, sibPrevQty - item.qty);
+              movements.push({
+                timestamp:   new Date().toISOString(),
+                collegeId:   String(docCollegeId),
+                productId:   sibPid,
+                productName: "",
+                size:        item.size,
+                delta:       -(item.qty),
+                prevQty:     sibPrevQty,
+                newQty:      sibSizes[item.size],
+                source:      "pedido_compartido",
+                orderId:     orderId || null,
+              });
+            }
+            updated[sibPid] = sibSizes;
           }
-          updated[sibPid] = sibSizes;
         }
       }
-    }
-    tx.set(stockRef, {
-      collegeId: String(collegeId),
-      products:  updated,
-      updatedAt: new Date().toISOString(),
-    }, { merge: true });
-  });
+      tx.set(ref, {
+        collegeId: String(docCollegeId),
+        products:  updated,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
+    });
+    stockCache.delete(String(docCollegeId));
+    allMovements.push(...movements);
+  };
 
-  stockCache.delete(String(collegeId));
+  // Descontar items propios del colegio
+  if (ownItems.length > 0) await decrementDoc(collegeId, ownItems);
+  // Descontar items compartidos en su doc canónico
+  for (const [cid, citems] of Object.entries(sharedByCanon)) {
+    await decrementDoc(cid, citems);
+  }
 
   // Escribir movimientos fuera de la transacción (no bloqueante)
-  const batch = db.batch();
-  for (const mv of movements) {
-    batch.set(db.collection(HISTORY_COL).doc(), mv);
+  if (allMovements.length > 0) {
+    const batch = db.batch();
+    for (const mv of allMovements) {
+      batch.set(db.collection(HISTORY_COL).doc(), mv);
+    }
+    await batch.commit();
   }
-  await batch.commit();
 };
 
 // ── LISTAR PEDIDOS ────────────────────────────────────────────
@@ -456,13 +511,7 @@ export const getStats = async () => {
 };
 
 // ── STOCK ─────────────────────────────────────────────────────
-export const getStock = async (collegeId) => {
-  if (IS_MOCK) {
-    return {
-      "1": { "S": 100, "M": 100, "L": 100, "XL": 100 },
-      "2": { "S": 100, "M": 100, "L": 100, "XL": 100 },
-    };
-  }
+const _getRawStock = async (collegeId) => {
   const key    = String(collegeId);
   const cached = stockCache.get(key);
   if (cached && Date.now() - cached.ts < STOCK_TTL) return cached.data;
@@ -470,6 +519,31 @@ export const getStock = async (collegeId) => {
   const data = doc.exists ? (doc.data().products || {}) : {};
   stockCache.set(key, { data, ts: Date.now() });
   return data;
+};
+
+export const getStock = async (collegeId) => {
+  if (IS_MOCK) {
+    return {
+      "1": { "S": 100, "M": 100, "L": 100, "XL": 100 },
+      "2": { "S": 100, "M": 100, "L": 100, "XL": 100 },
+    };
+  }
+  const data = await _getRawStock(collegeId);
+
+  // Inyectar stock canónico de prendas compartidas entre colegios
+  const canonicalCids = [...new Set(Object.values(CROSS_COLLEGE_CANONICAL))];
+  const canonicalData = {};
+  for (const cid of canonicalCids) {
+    if (cid !== String(collegeId)) {
+      canonicalData[cid] = await _getRawStock(cid);
+    }
+  }
+  const merged = { ...data };
+  for (const [pid, cid] of Object.entries(CROSS_COLLEGE_CANONICAL)) {
+    const source = cid === String(collegeId) ? data : (canonicalData[cid] || {});
+    if (source[pid] !== undefined) merged[pid] = source[pid];
+  }
+  return merged;
 };
 
 // Busca pedidos con items reservados para product/size, notifica y descuenta
@@ -519,11 +593,14 @@ const _fulfillReservations = async (collegeId, productId, size, availableQty) =>
 };
 
 export const setStock = async (collegeId, productId, size, quantity) => {
+  // Redirigir al colegio canónico si este producto tiene stock compartido
+  const canonicalCid = _canonicalRef(productId) || collegeId;
+
   if (IS_MOCK) {
     _mockHistory.push({
       id:          `mock-${Date.now()}`,
       timestamp:   new Date().toISOString(),
-      collegeId:   String(collegeId),
+      collegeId:   String(canonicalCid),
       productId:   String(productId),
       productName: "",
       size,
@@ -536,7 +613,7 @@ export const setStock = async (collegeId, productId, size, quantity) => {
     return { [String(productId)]: { [String(size)]: quantity } };
   }
 
-  const key            = String(collegeId);
+  const key            = String(canonicalCid);
   const ref            = db.collection(STOCK_COL).doc(key);
   const doc            = await ref.get();
   const current        = doc.exists ? (doc.data().products || {}) : {};

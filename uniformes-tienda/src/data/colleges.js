@@ -47,6 +47,7 @@ function applyNewSchoolImages(college, imgs) {
     6: { image: imgs.imgSudadera },
     7: { image: imgs.imgBusoUltimasUnidades },
     8: { image: imgs.imgPava },
+    11: { image: imgs.imgMediasBlancasFisica },
   };
 
   return {
@@ -60,6 +61,7 @@ function applyNewSchoolImages(college, imgs) {
 
 function applyLiceoImages(college, imgs) {
   const imageMap = {
+    5: { image: imgs.imgCamibusoBlanco },
     500: { image: imgs.imgChaquetaHS1, hoverImage: imgs.imgChaquetaHS2, galleryImages: [imgs.imgChaquetaHS3] },
     501: { image: imgs.imgPoloHS },
     503: { image: imgs.imgPantaloneta },
@@ -72,6 +74,7 @@ function applyLiceoImages(college, imgs) {
     514: { image: imgs.imgDelantal },
     515: { image: imgs.imgChalecoPrim1, hoverImage: imgs.imgChalecoPrim2 },
     516: { image: imgs.imgSud1, hoverImage: imgs.imgSud2 },
+    11: { image: imgs.imgMediasBlancasFisica },
   };
 
   return {
@@ -421,11 +424,12 @@ export const DEMO_COLLEGES = [
         name: "Primaria",
         uniforms: [
           { id: 511, name: "Camiseta Polo Diario", price: 76000, sizes: ["4", "6", "8", "10", "12"], stock: { "4": 64, "6": 60, "8": 22, "10": 25, "12": 5 }, category: "Diario" },
+          { id: 5, name: "Camibuso Blanco", price: 42000, sizes: ["2-4", "6-8", "10"], category: "Diario", description: "Primaria" },
           { id: 515, name: "Chaleco Azul", price: 77000, sizes: ["4", "6", "8", "10", "12", "14"], stock: { "4": 15, "6": 8, "8": 10, "10": 3, "12": 0, "14": 1 }, category: "Diario" },
           { id: 514, name: "Delantal", price: 74000, sizes: ["4", "6", "8"], stock: { "4": 14, "6": 20, "8": 16 }, category: "Complemento" },
           { id: 516, name: "Sudadera Primaria", price: 77000, sizes: ["2", "4", "6", "8", "10", "12", "14"], stock: { "2": 10, "4": 35, "6": 33, "8": 33, "10": 17, "12": 41, "14": 17 }, category: "Deportivo" },
           { id: 512, name: "Chaqueta Primaria", price: 122000, sizePrices: { "4": 122000, "6": 122000, "8": 122000, "10": 122000, "12": 122000, "14": 122000, "16": 130000, "S": 130000, "M": 130000 }, sizes: ["4", "6", "8", "10", "12", "14", "16", "S", "M"], stock: { "4": 34, "6": 26, "8": 26, "10": 12, "12": 0, "14": 29, "16": 10, "S": 0, "M": 0 }, category: "Diario", description: "Talla 4–14: $122.000 · Talla 16–M: $130.000" },
-          { id: 517, name: "Medias Blancas Cortas Paquete por 2 Pares", price: 22000, sizePrices: { "2 A 4": 22000, "4 A 6": 23000, "6 A 8": 24000, "8 A 10": 25000, "10 A 12": 26000 }, sizes: ["2 A 4", "4 A 6", "6 A 8", "8 A 10", "10 A 12"], category: "Complemento", description: "Precio según talla" },
+          { id: 11, name: "Medias Blancas Cortas Paquete por 2 Pares", price: 22000, sizePrices: { "2 A 4": 22000, "4 A 6": 23000, "6 A 8": 24000, "8 A 10": 25000, "10 A 12": 26000 }, sizes: ["2 A 4", "4 A 6", "6 A 8", "8 A 10", "10 A 12"], category: "Complemento", description: "Precio según talla" },
         ],
       },
       {

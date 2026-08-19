@@ -1,4 +1,5 @@
 import imgCamisaPolo from "./TheNewSchool/camisa-polo.webp";
+import imgMediasBlancasFisica from "./Cumbres/medias blancas fisica.webp";
 import imgCamibusoBlanco from "./TheNewSchool/camibuso blanco.webp";
 import imgBusoAzul1 from "./TheNewSchool/TNS Buzo azul 1.webp";
 import imgBusoAzul2 from "./TheNewSchool/TNS Buso azul 2.webp";
@@ -12,6 +13,7 @@ import imgDalilaCamiseta from "./TheNewSchool/Dalila camiseta conciensia.webp";
 
 export {
   imgCamisaPolo,
+  imgMediasBlancasFisica,
   imgCamibusoBlanco,
   imgBusoAzul1,
   imgBusoAzul2,
